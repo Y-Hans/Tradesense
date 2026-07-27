@@ -22,6 +22,12 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/intelligence/domain/risk_reason_code_evaluator.dart`
 - `lib/features/intelligence/domain/discipline_reason_code_evaluator.dart`
 
+### Provider-Independent AI Coach Domain Foundation
+- `lib/features/coach/domain/coach_context.dart`
+- `lib/features/coach/domain/coach_context_builder.dart`
+- `lib/features/coach/domain/fallback_coach.dart`
+
+
 ### Central Integration & Coordination Documentation (Lead Responsibility)
 - `docs/ARCHITECTURE.md`
 - `docs/CURRENT_STATE.md`

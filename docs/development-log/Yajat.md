@@ -61,4 +61,21 @@ For meaningful completed work, record:
 - **Integration Impact**: Guarantees deterministic reason codes strictly align with score component calculations before downstream AI Coach consumption.
 - **Known Issues**: None.
 
+### [2026-07-27] — Provider-Independent Deterministic AI Coach Foundation
+
+- **Completed Functionality**: Created provider-independent domain representation `CoachContext` to hold trusted trade/portfolio facts and machine-readable `RiskReasonCode` / `DisciplineReasonCode` instances without OpenRouter, prompt strings, API keys, or UI markup. Implemented pure deterministic `CoachContextBuilder` assembling `CoachContext` from pre-calculated facts without score recalculation or network calls. Created deterministic `FallbackCoach` producing structured `CoachResponse` when AI is unavailable, supporting positive/adverse feedback, RiskLevel summaries, priority rules, profit-independent evaluation, and AI safety boundaries. Added comprehensive unit tests. Preserved all shared contracts, formulas, and developer boundaries intact.
+- **Important Files Created / Modified**:
+  - `lib/features/coach/domain/coach_context.dart`
+  - `lib/features/coach/domain/coach_context_builder.dart`
+  - `lib/features/coach/domain/fallback_coach.dart`
+  - `test/unit/coach/coach_context_test.dart`
+  - `test/unit/coach/fallback_coach_test.dart`
+  - `docs/ownership/Yajat.md`
+  - `docs/development-log/Yajat.md`
+- **Tests**: `test/unit/coach/coach_context_test.dart`, `test/unit/coach/fallback_coach_test.dart`
+- **Integration Impact**: Establishes provider-decoupled AI Coach architecture ready for downstream OpenRouter proxy adapter or custom model provider integration.
+- **Known Issues**: None.
+
+
+
 
