@@ -17,6 +17,11 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/core/utils/risk_calculator.dart`
 - `lib/core/utils/discipline_calculator.dart`
 
+### Intelligence Domain Reason Codes & Evaluators
+- `lib/features/intelligence/domain/reason_code.dart`
+- `lib/features/intelligence/domain/risk_reason_code_evaluator.dart`
+- `lib/features/intelligence/domain/discipline_reason_code_evaluator.dart`
+
 ### Central Integration & Coordination Documentation (Lead Responsibility)
 - `docs/ARCHITECTURE.md`
 - `docs/CURRENT_STATE.md`
