@@ -37,16 +37,26 @@ class PortfolioScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Available Cash', style: TextStyle(color: AppColors.textSecondary)),
-                          Text(FinancialMath.formatInr(portfolio.wallet.availableBalanceInr), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('Available Cash',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                          Text(
+                              FinancialMath.formatInr(
+                                  portfolio.wallet.availableBalanceInr),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                       const Divider(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Holdings Valuation', style: TextStyle(color: AppColors.textSecondary)),
-                          Text(FinancialMath.formatInr(portfolio.holdingsValueInr), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          const Text('Holdings Valuation',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                          Text(
+                              FinancialMath.formatInr(
+                                  portfolio.holdingsValueInr),
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ],
@@ -54,13 +64,16 @@ class PortfolioScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              Text('Active Holdings', style: Theme.of(context).textTheme.titleLarge),
+              Text('Active Holdings',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
               if (portfolio.holdings.isEmpty)
                 const Card(
                   child: Padding(
                     padding: EdgeInsets.all(24.0),
-                    child: Center(child: Text('No active holdings. Place a trade from Markets!')),
+                    child: Center(
+                        child: Text(
+                            'No active holdings. Place a trade from Markets!')),
                   ),
                 )
               else
@@ -68,16 +81,26 @@ class PortfolioScreen extends ConsumerWidget {
                   children: portfolio.holdings.map((h) {
                     return Card(
                       child: ListTile(
-                        title: Text('${h.symbol} (${h.quantity.toStringAsFixed(4)})', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text('Avg Entry: ${FinancialMath.formatInr(h.averageEntryPriceInr)}'),
+                        title: Text(
+                            '${h.symbol} (${h.quantity.toStringAsFixed(4)})',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        subtitle: Text(
+                            'Avg Entry: ${FinancialMath.formatInr(h.averageEntryPriceInr)}'),
                         trailing: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(FinancialMath.formatInr(h.currentValueInr), style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(FinancialMath.formatInr(h.currentValueInr),
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold)),
                             Text(
                               '${FinancialMath.formatInr(h.unrealisedPnlInr)} (${h.unrealisedPnlPercent.toStringAsFixed(2)}%)',
-                              style: TextStyle(color: h.unrealisedPnlInr >= 0 ? AppColors.profit : AppColors.loss, fontSize: 12),
+                              style: TextStyle(
+                                  color: h.unrealisedPnlInr >= 0
+                                      ? AppColors.profit
+                                      : AppColors.loss,
+                                  fontSize: 12),
                             ),
                           ],
                         ),

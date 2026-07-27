@@ -28,9 +28,12 @@ class TradeHistoryScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final trade = trades[index];
               return ListTile(
-                title: Text('${trade.side.name.toUpperCase()} ${trade.symbol}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text('Qty: ${trade.quantity} @ ${FinancialMath.formatInr(trade.executionPriceInr)}'),
-                trailing: Text(FinancialMath.formatInr(trade.totalAmountInr), style: const TextStyle(fontWeight: FontWeight.bold)),
+                title: Text('${trade.side.name.toUpperCase()} ${trade.symbol}',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(
+                    'Qty: ${trade.quantity} @ ${FinancialMath.formatInr(trade.executionPriceInr)}'),
+                trailing: Text(FinancialMath.formatInr(trade.totalAmountInr),
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () => context.push('/coach-result/${trade.id}'),
               );
             },

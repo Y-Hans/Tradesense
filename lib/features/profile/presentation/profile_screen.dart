@@ -21,7 +21,8 @@ class ProfileScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const CircleAvatar(child: Icon(Icons.person)),
-                  title: Text(user?.displayName ?? 'Discipline Trader', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(user?.displayName ?? 'Discipline Trader',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(user?.email ?? 'trader@cryptoedu.app'),
                 ),
               ),
@@ -29,7 +30,8 @@ class ProfileScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.star, color: AppColors.discipline),
                 title: const Text('Subscription Status'),
-                trailing: Text(user?.isPremium == true ? 'PREMIUM' : 'FREE', style: const TextStyle(fontWeight: FontWeight.bold)),
+                trailing: Text(user?.isPremium == true ? 'PREMIUM' : 'FREE',
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 onTap: () => context.push('/paywall'),
               ),
               const Divider(),
@@ -39,8 +41,10 @@ class ProfileScreen extends ConsumerWidget {
                 onTap: () {},
               ),
               ListTile(
-                leading: const Icon(Icons.delete_forever, color: AppColors.loss),
-                title: const Text('Delete Account & Private Data', style: TextStyle(color: AppColors.loss)),
+                leading:
+                    const Icon(Icons.delete_forever, color: AppColors.loss),
+                title: const Text('Delete Account & Private Data',
+                    style: TextStyle(color: AppColors.loss)),
                 onTap: () async {
                   final auth = ref.read(authRepositoryProvider);
                   await auth.deleteAccount();

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cryptoedu/app/app.dart';
 
 void main() {
-  testWidgets('CryptoEduApp renders HomeScreen dashboard successfully', (WidgetTester tester) async {
+  testWidgets('CryptoEduApp renders HomeScreen dashboard successfully',
+      (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: CryptoEduApp(),

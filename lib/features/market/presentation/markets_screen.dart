@@ -20,14 +20,20 @@ class MarketsScreen extends ConsumerWidget {
           itemBuilder: (context, index) {
             final asset = assets[index];
             return ListTile(
-              title: Text(asset.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              title: Text(asset.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               subtitle: Text(asset.symbol),
               trailing: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(FinancialMath.formatInr(asset.currentPriceInr), style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text('${asset.change24hPercent}%', style: TextStyle(color: asset.change24hPercent >= 0 ? AppColors.profit : AppColors.loss)),
+                  Text(FinancialMath.formatInr(asset.currentPriceInr),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text('${asset.change24hPercent}%',
+                      style: TextStyle(
+                          color: asset.change24hPercent >= 0
+                              ? AppColors.profit
+                              : AppColors.loss)),
                 ],
               ),
               onTap: () => context.push('/asset/${asset.symbol}'),

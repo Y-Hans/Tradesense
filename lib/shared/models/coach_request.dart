@@ -36,7 +36,8 @@ class CoachRequest {
         userId: json['user_id'] as String,
         tradeId: json['trade_id'] as String,
         tradeContext: Map<String, dynamic>.from(json['trade_context'] as Map),
-        portfolioContext: Map<String, dynamic>.from(json['portfolio_context'] as Map),
+        portfolioContext:
+            Map<String, dynamic>.from(json['portfolio_context'] as Map),
         marketContext: Map<String, dynamic>.from(json['market_context'] as Map),
         riskScore: (json['risk_score'] as num).toInt(),
         disciplineScore: (json['discipline_score'] as num).toInt(),
@@ -114,9 +115,12 @@ class TradeAnalysis {
 
   factory TradeAnalysis.fromJson(Map<String, dynamic> json) => TradeAnalysis(
         tradeId: json['trade_id'] as String,
-        disciplineScore: DisciplineScore.fromJson(json['discipline_score'] as Map<String, dynamic>),
-        riskScore: RiskScore.fromJson(json['risk_score'] as Map<String, dynamic>),
-        coachFeedback: CoachResponse.fromJson(json['coach_feedback'] as Map<String, dynamic>),
+        disciplineScore: DisciplineScore.fromJson(
+            json['discipline_score'] as Map<String, dynamic>),
+        riskScore:
+            RiskScore.fromJson(json['risk_score'] as Map<String, dynamic>),
+        coachFeedback: CoachResponse.fromJson(
+            json['coach_feedback'] as Map<String, dynamic>),
         analyzedAt: DateTime.parse(json['analyzed_at'] as String),
       );
 }

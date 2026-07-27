@@ -50,8 +50,14 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('${widget.symbol} Live Price', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(FinancialMath.formatInr(ticker.priceInr), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                        Text('${widget.symbol} Live Price',
+                            style:
+                                const TextStyle(fontWeight: FontWeight.bold)),
+                        Text(FinancialMath.formatInr(ticker.priceInr),
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary)),
                       ],
                     ),
                   ),
@@ -62,26 +68,35 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: isBuy ? AppColors.profit : AppColors.card,
+                          backgroundColor:
+                              isBuy ? AppColors.profit : AppColors.card,
                         ),
                         onPressed: () => setState(() => isBuy = true),
-                        child: const Text('VIRTUAL BUY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: const Text('VIRTUAL BUY',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: !isBuy ? AppColors.loss : AppColors.card,
+                          backgroundColor:
+                              !isBuy ? AppColors.loss : AppColors.card,
                         ),
                         onPressed: () => setState(() => isBuy = false),
-                        child: const Text('VIRTUAL SELL', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        child: const Text('VIRTUAL SELL',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                const Text('Quantity', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text('Quantity',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Row(
                   children: [
@@ -95,15 +110,19 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                         onChanged: (val) => setState(() => quantity = val),
                       ),
                     ),
-                    Text('${quantity.toStringAsFixed(2)} ${widget.symbol}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('${quantity.toStringAsFixed(2)} ${widget.symbol}',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 8),
-                Text('Total Order Value: ${FinancialMath.formatInr(totalInr)}', style: const TextStyle(color: AppColors.textSecondary)),
+                Text('Total Order Value: ${FinancialMath.formatInr(totalInr)}',
+                    style: const TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 20),
                 SwitchListTile(
                   title: const Text('Set Stop-Loss Protection'),
-                  subtitle: Text(useStopLoss ? 'Trigger at ${FinancialMath.formatInr(stopLossPrice)} (-$stopLossPercent%)' : 'No stop-loss protection'),
+                  subtitle: Text(useStopLoss
+                      ? 'Trigger at ${FinancialMath.formatInr(stopLossPrice)} (-$stopLossPercent%)'
+                      : 'No stop-loss protection'),
                   value: useStopLoss,
                   onChanged: (val) => setState(() => useStopLoss = val),
                 ),
@@ -122,7 +141,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                   height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isBuy ? AppColors.profit : AppColors.loss,
+                      backgroundColor:
+                          isBuy ? AppColors.profit : AppColors.loss,
                     ),
                     onPressed: () async {
                       final tradingRepo = ref.read(tradingRepositoryProvider);
@@ -131,7 +151,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                               symbol: widget.symbol,
                               quantity: quantity,
                               executionPriceInr: ticker.priceInr,
-                              stopLossPriceInr: useStopLoss ? stopLossPrice : null,
+                              stopLossPriceInr:
+                                  useStopLoss ? stopLossPrice : null,
                             )
                           : await tradingRepo.executeMarketSell(
                               symbol: widget.symbol,
@@ -144,7 +165,11 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                         context.push('/coach-result/${trade.id}');
                       }
                     },
-                    child: Text('EXECUTE ${isBuy ? "BUY" : "SELL"} ORDER', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    child: Text('EXECUTE ${isBuy ? "BUY" : "SELL"} ORDER',
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
                   ),
                 ),
               ],

@@ -27,20 +27,24 @@ class RiskCalculator {
     }
     double concentrationRaw = (maxConcentration * 100.0).clamp(0.0, 100.0);
     if (concentrationRaw > 50.0) {
-      explanations.add('High portfolio concentration: ${concentrationRaw.toStringAsFixed(1)}% in a single asset.');
+      explanations.add(
+          'High portfolio concentration: ${concentrationRaw.toStringAsFixed(1)}% in a single asset.');
     }
 
     // 2. Position Sizing Score (30%)
-    double tradePercent = totalEquity > 0 ? (proposedTradeSizeInr / totalEquity) * 100.0 : 0.0;
+    double tradePercent =
+        totalEquity > 0 ? (proposedTradeSizeInr / totalEquity) * 100.0 : 0.0;
     double sizingRaw = (tradePercent * 2.0).clamp(0.0, 100.0);
     if (tradePercent > 25.0) {
-      explanations.add('Large position size: ${tradePercent.toStringAsFixed(1)}% of total equity allocated.');
+      explanations.add(
+          'Large position size: ${tradePercent.toStringAsFixed(1)}% of total equity allocated.');
     }
 
     // 3. Volatility Score (20%)
     double volatilityRaw = (assetVolatility * 10.0).clamp(0.0, 100.0);
     if (assetVolatility > 5.0) {
-      explanations.add('Elevated market volatility ($assetVolatility% 24h swing).');
+      explanations
+          .add('Elevated market volatility ($assetVolatility% 24h swing).');
     }
 
     // 4. Stop-Loss Score (10%)

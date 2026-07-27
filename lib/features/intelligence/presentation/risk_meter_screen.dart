@@ -18,11 +18,18 @@ class RiskMeterScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
-                    const Text('Risk Level: MODERATE', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.discipline)),
+                    const Text('Risk Level: MODERATE',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.discipline)),
                     const SizedBox(height: 12),
-                    Text('35/100', style: Theme.of(context).textTheme.displayLarge),
+                    Text('35/100',
+                        style: Theme.of(context).textTheme.displayLarge),
                     const SizedBox(height: 12),
-                    const LinearProgressIndicator(value: 0.35, color: AppColors.discipline, backgroundColor: AppColors.background),
+                    const LinearProgressIndicator(
+                        value: 0.35,
+                        color: AppColors.discipline,
+                        backgroundColor: AppColors.background),
                   ],
                 ),
               ),
@@ -34,7 +41,8 @@ class RiskMeterScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Risk Components:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Risk Components:',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Text('• 40% Concentration (Single Asset % of Equity)'),
                     Text('• 30% Position Sizing (Trade Size % of Equity)'),

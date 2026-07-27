@@ -3,7 +3,9 @@ import 'package:decimal/decimal.dart';
 class FinancialMath {
   /// Converts double INR to integer paise to avoid IEEE floating-point errors
   static int inrToPaise(double inr) {
-    return (Decimal.parse(inr.toStringAsFixed(2)) * Decimal.fromInt(100)).toBigInt().toInt();
+    return (Decimal.parse(inr.toStringAsFixed(2)) * Decimal.fromInt(100))
+        .toBigInt()
+        .toInt();
   }
 
   /// Converts integer paise back to double INR

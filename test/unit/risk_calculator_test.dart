@@ -27,7 +27,8 @@ void main() {
       expect(risk.stopLossScore, 0.0);
     });
 
-    test('DisciplineCalculator rewards stop-loss usage independent of profit', () {
+    test('DisciplineCalculator rewards stop-loss usage independent of profit',
+        () {
       const riskScore = RiskScore(
         score: 30,
         level: RiskLevel.low,
@@ -54,7 +55,8 @@ void main() {
         tradeFrequency24h: 2,
       );
 
-      expect(disciplineWithStopLoss.score, greaterThan(disciplineWithoutStopLoss.score));
+      expect(disciplineWithStopLoss.score,
+          greaterThan(disciplineWithoutStopLoss.score));
     });
   });
 }

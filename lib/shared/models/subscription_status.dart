@@ -33,9 +33,12 @@ class SubscriptionStatus {
         'active_offering': activeOffering,
       };
 
-  factory SubscriptionStatus.fromJson(Map<String, dynamic> json) => SubscriptionStatus(
+  factory SubscriptionStatus.fromJson(Map<String, dynamic> json) =>
+      SubscriptionStatus(
         isPremium: json['is_premium'] as bool? ?? false,
-        activeEntitlements: (json['active_entitlements'] as List<dynamic>?)?.cast<String>() ?? [],
+        activeEntitlements:
+            (json['active_entitlements'] as List<dynamic>?)?.cast<String>() ??
+                [],
         expirationDate: json['expiration_date'] != null
             ? DateTime.parse(json['expiration_date'] as String)
             : null,

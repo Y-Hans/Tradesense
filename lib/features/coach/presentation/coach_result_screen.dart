@@ -58,15 +58,32 @@ class CoachResultScreen extends ConsumerWidget {
                         children: [
                           Column(
                             children: [
-                              const Text('Discipline Score', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                              Text('${analysis.disciplineScore.score}/100', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.discipline)),
+                              const Text('Discipline Score',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary)),
+                              Text('${analysis.disciplineScore.score}/100',
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.discipline)),
                             ],
                           ),
-                          Container(width: 1, height: 40, color: AppColors.textSecondary),
+                          Container(
+                              width: 1,
+                              height: 40,
+                              color: AppColors.textSecondary),
                           Column(
                             children: [
-                              const Text('Risk Score', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                              Text('${analysis.riskScore.score}/100', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.profit)),
+                              const Text('Risk Score',
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary)),
+                              Text('${analysis.riskScore.score}/100',
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.profit)),
                             ],
                           ),
                         ],
@@ -74,7 +91,8 @@ class CoachResultScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text('AI Coach Analysis', style: Theme.of(context).textTheme.titleLarge),
+                  Text('AI Coach Analysis',
+                      style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 12),
                   _buildExplanationCard(
                     context,
@@ -124,7 +142,11 @@ class CoachResultScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildExplanationCard(BuildContext context, {required String title, required String content, required IconData icon, required Color color}) {
+  Widget _buildExplanationCard(BuildContext context,
+      {required String title,
+      required String content,
+      required IconData icon,
+      required Color color}) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -136,7 +158,9 @@ class CoachResultScreen extends ConsumerWidget {
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 8),
-                Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color)),
+                Text(title,
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, color: color)),
               ],
             ),
             const SizedBox(height: 8),
