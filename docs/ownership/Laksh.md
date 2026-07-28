@@ -15,6 +15,9 @@ If a required change belongs to another developer, do not modify that developer'
 
 ### Core Financial Math & Trading Utilities
 - `lib/core/utils/financial_math.dart`
+- `lib/features/trading/domain/trading_domain_service.dart`
+- `lib/features/trading/domain/buy_trade_result.dart`
+- `lib/features/trading/domain/trading_failure.dart`
 
 ## Owned Areas
 
