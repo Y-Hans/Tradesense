@@ -15,10 +15,12 @@ If a required change belongs to another developer, do not modify that developer'
 
 ### Presentation Screens & Views
 - `lib/app/theme/app_theme.dart`
+- `lib/features/home/presentation/app_shell.dart`
 - `lib/features/home/presentation/home_screen.dart`
 - `lib/features/market/presentation/markets_screen.dart`
 - `lib/features/market/presentation/asset_detail_screen.dart`
 - `lib/features/trading/presentation/trade_screen.dart`
+- `lib/features/trading/presentation/trade_entry_screen.dart`
 - `lib/features/portfolio/presentation/portfolio_screen.dart`
 - `lib/features/portfolio/presentation/trade_history_screen.dart`
 - `lib/features/intelligence/presentation/discipline_meter_screen.dart`
@@ -41,6 +43,16 @@ If a required change belongs to another developer, do not modify that developer'
 
 - `test/widget/home_screen_test.dart`
 - `test/widget/*` — All presentation and UI widget tests
+
+### Phase 1 Shared Components
+
+- `lib/shared/widgets/trade_card.dart`
+- `lib/shared/widgets/primary_button.dart`
+- `test/widget/shared_components_test.dart`
+
+### Integration Requests
+
+- `docs/integration-requests/open/phase-2-trading-engine.md`
 
 ## Notes / Boundaries
 

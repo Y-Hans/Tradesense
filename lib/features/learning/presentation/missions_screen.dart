@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../shared/widgets/trade_card.dart';
 
 class MissionsScreen extends StatelessWidget {
   const MissionsScreen({super.key});
@@ -11,25 +12,29 @@ class MissionsScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: const [
-          Card(
+          TradeCard(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.zero,
             child: ListTile(
-              leading: Icon(Icons.check_circle, color: AppColors.profit),
-              title: Text('Mission 1: First Virtual Trade'),
+              leading: const Icon(Icons.check_circle, color: AppColors.profit),
+              title: const Text('Mission 1: First Virtual Trade'),
               subtitle:
-                  Text('Execute a market buy order with ₹100,000 wallet.'),
-              trailing: Text('+100 XP',
+                  const Text('Execute a market buy order with ₹100,000 wallet.'),
+              trailing: const Text('+100 XP',
                   style: TextStyle(
                       color: AppColors.discipline,
                       fontWeight: FontWeight.bold)),
             ),
           ),
-          Card(
+          TradeCard(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.zero,
             child: ListTile(
-              leading: Icon(Icons.shield_outlined, color: AppColors.primary),
-              title: Text('Mission 2: Use a Stop-Loss Protection'),
+              leading: const Icon(Icons.shield_outlined, color: AppColors.primary),
+              title: const Text('Mission 2: Use a Stop-Loss Protection'),
               subtitle:
-                  Text('Set a stop-loss order on any active crypto position.'),
-              trailing: Text('+250 XP',
+                  const Text('Set a stop-loss order on any active crypto position.'),
+              trailing: const Text('+250 XP',
                   style: TextStyle(
                       color: AppColors.discipline,
                       fontWeight: FontWeight.bold)),

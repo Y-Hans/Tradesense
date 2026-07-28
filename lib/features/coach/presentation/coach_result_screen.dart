@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/models/trade.dart';
+import '../../../shared/widgets/trade_card.dart';
 
 class CoachResultScreen extends ConsumerWidget {
   final String tradeId;
@@ -49,45 +50,42 @@ class CoachResultScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Card(
-                    color: AppColors.card,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Column(
-                            children: [
-                              const Text('Discipline Score',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text('${analysis.disciplineScore.score}/100',
-                                  style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.discipline)),
-                            ],
-                          ),
-                          Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.textSecondary),
-                          Column(
-                            children: [
-                              const Text('Risk Score',
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text('${analysis.riskScore.score}/100',
-                                  style: const TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.profit)),
-                            ],
-                          ),
-                        ],
-                      ),
+                  TradeCard(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          children: [
+                            const Text('Discipline Score',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary)),
+                            Text('${analysis.disciplineScore.score}/100',
+                                style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.discipline)),
+                          ],
+                        ),
+                        Container(
+                            width: 1,
+                            height: 40,
+                            color: AppColors.textSecondary),
+                        Column(
+                          children: [
+                            const Text('Risk Score',
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary)),
+                            Text('${analysis.riskScore.score}/100',
+                                style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.profit)),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -147,26 +145,24 @@ class CoachResultScreen extends ConsumerWidget {
       required String content,
       required IconData icon,
       required Color color}) {
-    return Card(
+    return TradeCard(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 20),
-                const SizedBox(width: 8),
-                Text(title,
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, color: color)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(content, style: const TextStyle(fontSize: 14, height: 1.4)),
-          ],
-        ),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(title,
+                  style:
+                      TextStyle(fontWeight: FontWeight.bold, color: color)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(content, style: const TextStyle(fontSize: 14, height: 1.4)),
+        ],
       ),
     );
   }

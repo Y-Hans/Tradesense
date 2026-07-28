@@ -3,10 +3,8 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/market/presentation/markets_screen.dart';
 import '../../features/market/presentation/asset_detail_screen.dart';
 import '../../features/trading/presentation/trade_screen.dart';
-import '../../features/portfolio/presentation/portfolio_screen.dart';
 import '../../features/portfolio/presentation/trade_history_screen.dart';
 import '../../features/intelligence/presentation/risk_meter_screen.dart';
 import '../../features/intelligence/presentation/discipline_meter_screen.dart';
@@ -36,7 +34,11 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/markets',
-      builder: (context, state) => const MarketsScreen(),
+      builder: (context, state) => const HomeScreen(initialIndex: 1),
+    ),
+    GoRoute(
+      path: '/trade',
+      builder: (context, state) => const HomeScreen(initialIndex: 2),
     ),
     GoRoute(
       path: '/asset/:symbol',
@@ -52,7 +54,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/portfolio',
-      builder: (context, state) => const PortfolioScreen(),
+      builder: (context, state) => const HomeScreen(initialIndex: 3),
     ),
     GoRoute(
       path: '/trade-history',

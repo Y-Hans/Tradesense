@@ -1,6 +1,8 @@
 import 'dart:async';
 import '../../contracts/repository_contracts.dart';
 import '../../contracts/provider_contracts.dart';
+import '../../contracts/market_provider.dart';
+import '../../../shared/models/market_ticker.dart';
 import '../../../shared/models/user_profile.dart';
 import '../../../shared/models/virtual_wallet.dart';
 import '../../../shared/models/holding.dart';
@@ -14,13 +16,119 @@ import '../../../shared/models/feature_flags.dart';
 import '../../utils/risk_calculator.dart';
 import '../../utils/discipline_calculator.dart';
 
+class _ActiveStopLoss {
+  final String symbol;
+  final double quantity;
+  final double stopLossPriceInr;
+
+  _ActiveStopLoss({
+    required this.symbol,
+    required this.quantity,
+    required this.stopLossPriceInr,
+  });
+}
+
 class MockTradingRepository implements TradingRepository {
-  VirtualWallet _wallet = VirtualWallet.initial();
+  final MarketProvider _marketProvider;
+  VirtualWallet _wallet;
   final List<Holding> _holdings = [];
   final List<Trade> _trades = [];
+  
+  final Map<String, StreamSubscription> _tickerSubscriptions = {};
+  final List<_ActiveStopLoss> _activeStopLosses = [];
+
+  MockTradingRepository(this._marketProvider, {double initialBalance = 100000.0})
+      : _wallet = VirtualWallet(
+          balanceInr: initialBalance,
+          lockedInr: 0.0,
+          initialBalanceInr: initialBalance,
+        );
 
   VirtualWallet get wallet => _wallet;
   List<Holding> get holdings => List.unmodifiable(_holdings);
+
+  double get totalPortfolioValueInr {
+    final holdingsValue = _holdings.fold(0.0, (sum, h) => sum + (h.quantity * h.currentPriceInr));
+    return _wallet.balanceInr + holdingsValue;
+  }
+
+  void dispose() {
+    for (final sub in _tickerSubscriptions.values) {
+      sub.cancel();
+    }
+    _tickerSubscriptions.clear();
+    _activeStopLosses.clear();
+  }
+
+  void _subscribeToTickerIfNeeded(String symbol) {
+    if (!_tickerSubscriptions.containsKey(symbol)) {
+      _tickerSubscriptions[symbol] = _marketProvider.streamTicker(symbol).listen((ticker) {
+        _onTickerUpdate(ticker);
+      });
+    }
+  }
+
+  void _onTickerUpdate(MarketTicker ticker) {
+    final symbol = ticker.symbol;
+    
+    // Update holding price
+    final index = _holdings.indexWhere((h) => h.symbol == symbol);
+    if (index >= 0) {
+      _holdings[index] = _holdings[index].copyWith(currentPriceInr: ticker.priceInr);
+    }
+
+    // Evaluate stop losses
+    final triggered = _activeStopLosses
+        .where((sl) => sl.symbol == symbol && ticker.priceInr <= sl.stopLossPriceInr)
+        .toList();
+
+    for (final sl in triggered) {
+      _activeStopLosses.remove(sl);
+      _executeInternalStopLossSell(
+        symbol: symbol,
+        quantity: sl.quantity,
+        executionPriceInr: ticker.priceInr,
+      );
+    }
+  }
+
+  void _executeInternalStopLossSell({
+    required String symbol,
+    required double quantity,
+    required double executionPriceInr,
+  }) {
+    final existingIndex = _holdings.indexWhere((h) => h.symbol == symbol);
+    if (existingIndex < 0 || _holdings[existingIndex].quantity < quantity) {
+      return; // Could happen if user manually sold it already
+    }
+
+    final existing = _holdings[existingIndex];
+    final proceedInr = quantity * executionPriceInr;
+    _wallet = _wallet.copyWith(balanceInr: _wallet.balanceInr + proceedInr);
+
+    final remainingQty = existing.quantity - quantity;
+    if (remainingQty <= 0.000001) {
+      _holdings.removeAt(existingIndex);
+    } else {
+      _holdings[existingIndex] = existing.copyWith(quantity: remainingQty);
+    }
+
+    final trade = Trade(
+      id: 'tr_${DateTime.now().millisecondsSinceEpoch}',
+      userId: 'mock_user_1',
+      symbol: symbol,
+      side: TradeSide.sell,
+      type: OrderType.stopLoss,
+      quantity: quantity,
+      executionPriceInr: executionPriceInr,
+      totalAmountInr: proceedInr,
+      timestamp: DateTime.now(),
+      disciplineScoreAtTrade: 90, // Followed stop loss discipline
+      riskScoreAtTrade: 20,
+    );
+
+    _trades.add(trade);
+  }
 
   @override
   Future<Trade> executeMarketBuy({
@@ -29,10 +137,24 @@ class MockTradingRepository implements TradingRepository {
     required double executionPriceInr,
     double? stopLossPriceInr,
   }) async {
+    if (quantity <= 0) {
+      throw Exception('Quantity must be greater than 0.');
+    }
+
+    if (stopLossPriceInr != null && stopLossPriceInr >= executionPriceInr) {
+      throw Exception('Stop-loss price must be below the current market price for buy orders.');
+    }
+
     final totalCost = quantity * executionPriceInr;
     if (_wallet.availableBalanceInr < totalCost) {
-      throw Exception(
-          'Insufficient funds. Available: ${_wallet.availableBalanceInr}, Required: $totalCost');
+      throw Exception('Insufficient funds. Available: ${_wallet.availableBalanceInr}, Required: $totalCost');
+    }
+
+    // Max Position Size Limit: 25% of total portfolio value
+    final portfolioValue = totalPortfolioValueInr;
+    final maxAllowedSize = portfolioValue * 0.25;
+    if (totalCost > maxAllowedSize) {
+      throw Exception('Position size exceeds the 25% limit (Max allowed: $maxAllowedSize).');
     }
 
     _wallet = _wallet.copyWith(balanceInr: _wallet.balanceInr - totalCost);
@@ -60,6 +182,15 @@ class MockTradingRepository implements TradingRepository {
       ));
     }
 
+    if (stopLossPriceInr != null) {
+      _activeStopLosses.add(_ActiveStopLoss(
+        symbol: symbol,
+        quantity: quantity,
+        stopLossPriceInr: stopLossPriceInr,
+      ));
+      _subscribeToTickerIfNeeded(symbol);
+    }
+
     final trade = Trade(
       id: 'tr_${DateTime.now().millisecondsSinceEpoch}',
       userId: 'mock_user_1',
@@ -72,7 +203,7 @@ class MockTradingRepository implements TradingRepository {
       stopLossPriceInr: stopLossPriceInr,
       timestamp: DateTime.now(),
       disciplineScoreAtTrade: stopLossPriceInr != null ? 85 : 45,
-      riskScoreAtTrade: (totalCost / 100000.0 * 100.0).round().clamp(10, 90),
+      riskScoreAtTrade: (totalCost / portfolioValue * 100.0).round().clamp(10, 90),
     );
 
     _trades.add(trade);
@@ -85,9 +216,13 @@ class MockTradingRepository implements TradingRepository {
     required double quantity,
     required double executionPriceInr,
   }) async {
+    if (quantity <= 0) {
+      throw Exception('Quantity must be greater than 0.');
+    }
+
     final existingIndex = _holdings.indexWhere((h) => h.symbol == symbol);
     if (existingIndex < 0 || _holdings[existingIndex].quantity < quantity) {
-      throw Exception('Insufficient holding quantity for $symbol');
+      throw Exception('Insufficient holding quantity for $symbol. Cannot oversell.');
     }
 
     final existing = _holdings[existingIndex];
@@ -99,6 +234,14 @@ class MockTradingRepository implements TradingRepository {
       _holdings.removeAt(existingIndex);
     } else {
       _holdings[existingIndex] = existing.copyWith(quantity: remainingQty);
+    }
+
+    // Cancel proportional stop loss quantities manually, or just clear them for simplicity if fully sold
+    if (remainingQty <= 0.000001) {
+       _activeStopLosses.removeWhere((sl) => sl.symbol == symbol);
+    } else {
+       // Ideally we'd reduce the stop loss quantities, but for simulation, we'll keep it simple:
+       // The stop-loss evaluator `_executeInternalStopLossSell` already checks if enough holdings exist.
     }
 
     final trade = Trade(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../shared/widgets/trade_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -18,7 +19,8 @@ class ProfileScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Card(
+              TradeCard(
+                padding: EdgeInsets.zero,
                 child: ListTile(
                   leading: const CircleAvatar(child: Icon(Icons.person)),
                   title: Text(user?.displayName ?? 'Discipline Trader',
