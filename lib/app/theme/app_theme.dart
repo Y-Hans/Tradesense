@@ -19,6 +19,7 @@ class AppColors {
 
   static const Color textPrimary = Color(0xFFF8FAFC);
   static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color outline = Color(0xFF262D3D);
 }
 
 class AppTheme {
