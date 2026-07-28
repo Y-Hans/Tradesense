@@ -6,6 +6,15 @@ import '../../../core/providers/app_providers.dart';
 import '../../../shared/models/trade.dart';
 import '../../../shared/widgets/trade_card.dart';
 
+final tradeByIdProvider = FutureProvider.family<Trade?, String>((ref, id) async {
+  final tradingRepo = ref.read(tradingRepositoryProvider);
+  final history = await tradingRepo.getTradeHistory();
+  for (final trade in history) {
+    if (trade.id == id) return trade;
+  }
+  return null;
+});
+
 class CoachResultScreen extends ConsumerWidget {
   final String tradeId;
   const CoachResultScreen({super.key, required this.tradeId});
@@ -15,29 +24,23 @@ class CoachResultScreen extends ConsumerWidget {
     final intelRepo = ref.watch(intelligenceRepositoryProvider);
     final portfolioAsync = ref.watch(portfolioProvider);
 
+    final tradeAsync = ref.watch(tradeByIdProvider(tradeId));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Coach Trade Explanation'),
       ),
-      body: portfolioAsync.when(
-        data: (portfolio) => FutureBuilder(
-          future: intelRepo.analyzeTrade(
-            Trade(
-              id: tradeId,
-              userId: 'user_1',
-              symbol: 'BTC',
-              side: TradeSide.buy,
-              type: OrderType.market,
-              quantity: 0.1,
-              executionPriceInr: 5850000.0,
-              totalAmountInr: 585000.0,
-              stopLossPriceInr: 5557500.0,
-              timestamp: DateTime.now(),
-              disciplineScoreAtTrade: 85,
-              riskScoreAtTrade: 35,
-            ),
-            portfolio,
-          ),
+      body: tradeAsync.when(
+        data: (trade) {
+          if (trade == null) {
+            return const Center(child: Text('Trade Not Found'));
+          }
+          return portfolioAsync.when(
+            data: (portfolio) => FutureBuilder(
+              future: intelRepo.analyzeTrade(
+                trade,
+                portfolio,
+              ),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const Center(child: CircularProgressIndicator());
@@ -136,6 +139,10 @@ class CoachResultScreen extends ConsumerWidget {
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Text('Error: $err'),
+      );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
