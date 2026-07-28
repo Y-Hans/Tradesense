@@ -26,6 +26,7 @@ If a required change belongs to another developer, do not modify that developer'
 ## Tests Owned
 
 - `test/unit/financial_math_test.dart`
+- `test/unit/portfolio/virtual_wallet_initialization_test.dart`
 - `test/unit/trading/*` — Trading engine unit tests
 - `test/unit/portfolio/*` — Portfolio and P&L calculation unit tests
 

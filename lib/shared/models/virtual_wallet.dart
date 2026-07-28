@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 @immutable
 class VirtualWallet {
+  static const double startingBalanceInr = 10000000.0;
+
   final double balanceInr;
   final double lockedInr;
   final double initialBalanceInr;
@@ -9,13 +11,13 @@ class VirtualWallet {
   const VirtualWallet({
     required this.balanceInr,
     required this.lockedInr,
-    this.initialBalanceInr = 100000.0,
+    this.initialBalanceInr = startingBalanceInr,
   });
 
   factory VirtualWallet.initial() => const VirtualWallet(
-        balanceInr: 100000.0,
+        balanceInr: startingBalanceInr,
         lockedInr: 0.0,
-        initialBalanceInr: 100000.0,
+        initialBalanceInr: startingBalanceInr,
       );
 
   double get availableBalanceInr => balanceInr - lockedInr;
@@ -41,7 +43,7 @@ class VirtualWallet {
   factory VirtualWallet.fromJson(Map<String, dynamic> json) => VirtualWallet(
         balanceInr: (json['balance_inr'] as num).toDouble(),
         lockedInr: (json['locked_inr'] as num).toDouble(),
-        initialBalanceInr:
-            (json['initial_balance_inr'] as num?)?.toDouble() ?? 100000.0,
+        initialBalanceInr: (json['initial_balance_inr'] as num?)?.toDouble() ??
+            startingBalanceInr,
       );
 }
