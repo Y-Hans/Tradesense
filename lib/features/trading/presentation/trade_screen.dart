@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../shared/widgets/trade_card.dart';
 
 class TradeScreen extends ConsumerStatefulWidget {
   final String symbol;
@@ -44,22 +45,19 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('${widget.symbol} Live Price',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        Text(FinancialMath.formatInr(ticker.priceInr),
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary)),
-                      ],
-                    ),
+                TradeCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('${widget.symbol} Live Price',
+                          style:
+                              const TextStyle(fontWeight: FontWeight.bold)),
+                      Text(FinancialMath.formatInr(ticker.priceInr),
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary)),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 16),

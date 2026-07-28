@@ -25,9 +25,13 @@ final marketRepositoryProvider = Provider<MarketProvider>((ref) {
   return MockMarketRepository();
 });
 
-/// Trading Repository Provider
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
-  return MockTradingRepository();
+  final marketRepo = ref.watch(marketRepositoryProvider);
+  final repo = MockTradingRepository(marketRepo, initialBalance: 100000.0);
+  ref.onDispose(() {
+    repo.dispose();
+  });
+  return repo;
 });
 
 /// Portfolio Repository Provider

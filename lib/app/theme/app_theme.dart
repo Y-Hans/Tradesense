@@ -2,26 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const Color background = Color(0xFF0F172A); // Slate 900
-  static const Color surface = Color(0xFF1E293B); // Slate 800
-  static const Color card = Color(0xFF334155); // Slate 700
-  static const Color primary = Color(0xFF6366F1); // Indigo 500
-  static const Color accent = Color(0xFF8B5CF6); // Violet 500
+  static const Color background = Color(0xFF000000);
+  static const Color surface = Color(0xFF0B0E14);
+  static const Color card = Color(0xFF121620);
+  static const Color primary = Color(0xFF2979FF);
+  static const Color accent = Color(0xFF5E5CE6);
+  static const Color outline = Color(0xFF262D3D);
 
-  // Core Financial Colors
-  static const Color profit = Color(0xFF10B981); // Emerald 500
-  static const Color loss = Color(0xFFEF4444); // Red 500
-  static const Color discipline = Color(0xFFF59E0B); // Amber 500 (Gold)
-  static const Color riskLow = Color(0xFF10B981);
-  static const Color riskModerate = Color(0xFFF59E0B);
-  static const Color riskHigh = Color(0xFFF97316);
-  static const Color riskExtreme = Color(0xFFEF4444);
+  static const Color profit = Color(0xFF00E676);
+  static const Color buy = profit;
+  static const Color loss = Color(0xFFFF3B30);
+  static const Color sell = loss;
+  static const Color discipline = Color(0xFFFFD60A);
+  static const Color riskLow = profit;
+  static const Color riskModerate = Color(0xFFFF9F0A);
+  static const Color riskHigh = Color(0xFFFF453A);
+  static const Color riskExtreme = loss;
 
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFFA0AABF);
+  static const Color disabled = Color(0xFF3E4659);
 }
 
 class AppTheme {
+  static const _cardRadius = BorderRadius.all(Radius.circular(20));
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -29,38 +34,112 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
+        onPrimary: AppColors.textPrimary,
         secondary: AppColors.accent,
+        onSecondary: AppColors.textPrimary,
         surface: AppColors.surface,
+        onSurface: AppColors.textPrimary,
         error: AppColors.loss,
+        onError: AppColors.textPrimary,
       ),
       textTheme:
           GoogleFonts.interTextTheme(ThemeData.dark().textTheme).copyWith(
         displayLarge: GoogleFonts.outfit(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 32),
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 32,
+          letterSpacing: -0.5,
+        ),
         headlineMedium: GoogleFonts.outfit(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-            fontSize: 24),
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+          fontSize: 24,
+          letterSpacing: -0.5,
+        ),
         titleLarge: GoogleFonts.outfit(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-            fontSize: 20),
-        bodyLarge:
-            GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
-        bodyMedium:
-            GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 14),
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+          fontSize: 20,
+          letterSpacing: -0.5,
+        ),
+        titleMedium: GoogleFonts.inter(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+        bodyLarge: GoogleFonts.inter(
+          color: AppColors.textPrimary,
+          fontSize: 16,
+          height: 1.5,
+        ),
+        bodyMedium: GoogleFonts.inter(
+          color: AppColors.textSecondary,
+          fontSize: 14,
+          height: 1.45,
+        ),
+        labelLarge: GoogleFonts.inter(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          letterSpacing: 0.2,
+        ),
       ),
-      cardTheme: CardThemeData(
-        color: AppColors.surface,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      cardTheme: const CardThemeData(
+        color: AppColors.card,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: _cardRadius,
+          side: BorderSide(color: AppColors.outline, width: 1.5),
+        ),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
+        foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          disabledBackgroundColor: AppColors.disabled,
+          disabledForegroundColor: AppColors.textSecondary,
+          foregroundColor: AppColors.textPrimary,
+          minimumSize: const Size(0, 52),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(14)),
+          ),
+          textStyle: GoogleFonts.inter(fontWeight: FontWeight.w700),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surface,
+        elevation: 6,
+        height: 72,
+        indicatorColor: AppColors.primary.withValues(alpha: 0.22),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => GoogleFonts.inter(
+            color: states.contains(WidgetState.selected)
+                ? AppColors.textPrimary
+                : AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w700
+                : FontWeight.w500,
+          ),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.textSecondary,
+          ),
+        ),
+      ),
+      dividerColor: AppColors.outline,
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
+        color: AppColors.primary,
       ),
     );
   }
