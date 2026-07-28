@@ -21,6 +21,28 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-28] - Deterministic BUY Trading Domain Engine
+
+- **Completed Functionality**: Added a pure `TradingDomainService.calculateBuy` domain operation for virtual market BUY calculations. The service accepts caller-supplied wallet, asset, ticker, optional existing holding, explicit trade/holding/user identifiers, execution timestamp, and evaluation timestamp; it returns either a typed success result or a machine-readable failure.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/domain/trading_domain_service.dart`
+  - `lib/features/trading/domain/buy_trade_result.dart`
+  - `lib/features/trading/domain/trading_failure.dart`
+  - `test/unit/trading/trading_domain_service_buy_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/development-log/Laksh.md`
+- **Formulas Used**:
+  - Purchased quantity = INR amount spent / execution market price.
+  - Updated wallet cash = previous wallet balance - INR amount spent.
+  - First holding cost basis = INR amount spent; average entry = execution market price.
+  - Repeated holding cost basis = previous cost basis + INR amount spent.
+  - Repeated holding weighted average entry = new cost basis / new total quantity.
+- **Validation Rules**: Rejects blank/unsupported/invalid assets, invalid trade metadata, zero/negative/non-finite buy amounts, invalid wallet cash state, insufficient funds, zero/negative/non-finite ticker price data, mismatched ticker asset, stale ticker data, mismatched holdings, and invalid existing holding financial state.
+- **Precision Strategy**: Reuses `FinancialMath.inrToPaise` / `paiseToInr` at INR boundaries and uses `Decimal` for purchased quantity, cost basis, and weighted average entry calculations. Crypto quantity and average entry are retained to 18 decimal places for model-boundary conversion to existing `double` model fields. No rounding is applied at intermediate calculation steps beyond explicit INR paise normalization.
+- **Tests**: Added comprehensive BUY unit coverage for first purchase, repeated purchase weighted average, exact-balance purchase, insufficient funds, invalid amounts, invalid prices, stale ticker, ticker mismatch, invalid holdings, precision-sensitive math, determinism, and no side effects.
+- **Integration Impact**: No Supabase, Firebase, HTTP, local storage, UI, navigation, or mock repository integration was added. Future UI/debug harness code can call `TradingDomainService.calculateBuy` and then hand the returned wallet, holding, and trade to persistence/integration layers.
+- **Known Issues / Remaining Work**: SELL, realized P&L, unrealized P&L, portfolio valuation, stop-loss execution, persistence transactions, repository implementations, and production UI wiring remain out of scope for later Laksh/integration tasks.
+
 ### [2026-07-28] - One Crore Virtual Wallet Initialization Foundation
 
 - **Completed Functionality**: Updated the authoritative `VirtualWallet` initialization semantic from ₹100,000 to ₹1,00,00,000 virtual cash using a single `startingBalanceInr` constant. Added focused portfolio-domain tests proving exact one crore initialization, idempotent factory behavior, preservation of existing financial state, and empty portfolio valuation.
