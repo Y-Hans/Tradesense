@@ -13,12 +13,16 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/subscription/presentation/paywall_screen.dart';
 import '../../features/learning/presentation/missions_screen.dart';
 
+import '../../features/learning/presentation/news_detective_screen.dart';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/home',
   routes: [
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      builder: (context, state) => OnboardingScreen(
+        onGetStarted: () => context.go('/home'),
+      ),
     ),
     GoRoute(
       path: '/login',
@@ -85,6 +89,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/missions',
       builder: (context, state) => const MissionsScreen(),
+    ),
+    GoRoute(
+      path: '/news-detective',
+      builder: (context, state) => const NewsDetectiveScreen(),
     ),
   ],
 );

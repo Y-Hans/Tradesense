@@ -11,6 +11,10 @@ import '../../shared/models/market_ticker.dart';
 import '../../shared/models/subscription_status.dart';
 import '../../shared/models/feature_flags.dart';
 
+import '../../features/auth/data/supabase_auth_repository.dart';
+import '../../features/auth/domain/auth_state.dart';
+import '../../features/auth/application/auth_notifier.dart';
+
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
 
@@ -42,7 +46,17 @@ final intelligenceRepositoryProvider = Provider<IntelligenceRepository>((ref) {
 
 /// Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository();
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock) {
+    return MockAuthRepository();
+  }
+  return SupabaseAuthRepository();
+});
+
+/// Auth State Provider (manages session lifecycle)
+final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authRepo = ref.watch(authRepositoryProvider);
+  return AuthNotifier(authRepo);
 });
 
 /// Subscription Provider
@@ -55,10 +69,17 @@ final remoteConfigProvider = Provider<RemoteConfigProvider>((ref) {
   return MockRemoteConfigRepository();
 });
 
-/// Current User State Provider
-final currentUserProvider = FutureProvider<UserProfile?>((ref) async {
-  final authRepo = ref.watch(authRepositoryProvider);
-  return authRepo.getCurrentUser();
+/// Current User State Provider (wired to authStateProvider for seamless reactive access)
+final currentUserProvider = Provider<AsyncValue<UserProfile?>>((ref) {
+  final authState = ref.watch(authStateProvider);
+  if (authState.isRestoring || authState.isAuthenticating) {
+    return const AsyncValue.loading();
+  }
+  if (authState.hasError) {
+    return AsyncValue.error(
+        authState.errorMessage ?? 'Authentication error', StackTrace.current);
+  }
+  return AsyncValue.data(authState.user);
 });
 
 /// Current Portfolio State Provider
