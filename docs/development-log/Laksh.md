@@ -21,6 +21,26 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-29] - Deterministic Portfolio Engine
+
+- **Completed Functionality**: Added a pure `PortfolioEngine.calculate` domain operation that accepts caller-supplied `VirtualWallet`, holdings, market tickers, optional trade history, and an explicit evaluation timestamp. The engine returns an immutable portfolio-domain snapshot or a typed `TradingFailure` rejection.
+- **Important Files Created / Modified**:
+  - `lib/features/portfolio/domain/portfolio_engine.dart`
+  - `lib/features/portfolio/domain/portfolio_engine_result.dart`
+  - `test/unit/portfolio/portfolio_engine_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/development-log/Laksh.md`
+- **Inputs**: Domain models only: wallet cash state, `List<Holding>`, `List<MarketTicker>`, optional `List<Trade>`, and evaluation timestamp. No repositories, DTOs, UI, providers, persistence, Supabase, Firebase, HTTP, CoinGecko, or Binance code was added.
+- **Outputs**: Immutable aggregate snapshot containing wallet summary, portfolio totals, per-asset summaries, allocation summary, performance highlights, and evaluation timestamp.
+- **Calculations**: Per asset, market value is quantity times latest ticker price; cost basis is remaining quantity times average entry; unrealized P&L is market value minus cost basis; return percent is unrealized P&L over cost basis. Portfolio value is cash plus crypto value; total unrealized P&L is the sum of asset unrealized P&L; overall P&L is unrealized plus realized P&L.
+- **Realized P&L**: When trades are supplied, realized sell profit/loss is deterministically replayed from trade history using the same proportional average-cost basis rule as the SELL engine. When trades are omitted, realized P&L remains zero.
+- **Allocation**: Cash, crypto, and per-asset allocations are calculated against total portfolio value with zero-denominator protection for empty portfolios.
+- **Precision Strategy**: Reuses `FinancialMath.inrToPaise` / `paiseToInr` at INR output boundaries and uses `Decimal` for quantity, cost basis, market value, P&L, and percentage calculations before converting to existing double-based model fields.
+- **Failure Handling**: Reuses `TradingFailure` and existing codes for invalid wallet state, invalid holdings, invalid or duplicate tickers, stale tickers, invalid trade metadata, and trade-history oversells. No generic exceptions are thrown for expected invalid data.
+- **Tests**: Added deterministic portfolio coverage for empty portfolio, wallet-only state, profitable and losing assets, multiple assets, mixed gains/losses, portfolio totals, unrealized P&L, realized P&L, allocation totals, best/worst performers, largest/smallest positions, zero movement, decimal precision, determinism, input immutability, immutable output lists, and invalid data rejection.
+- **Future Integration Points**: Divyanshu can connect persisted wallet, holdings, trades, and market ticker providers to the pure engine from repository/application boundaries. Somya can consume the snapshot from a future portfolio controller/provider to render dashboard totals, allocation, and performance highlights.
+- **Remaining Before Production Portfolio Is Live**: Concrete persistence reads, authenticated user scoping, live market provider integration, portfolio application boundary, state-management wiring, UI rendering, loading/error states, and production snapshot storage remain outside this milestone.
+
 ### [2026-07-29] - Dynamic BUY Application Orchestration Foundation
 
 - **Completed Functionality**: Added `ExecuteBuyUseCase` as the production-facing application boundary around the pure deterministic BUY domain engine. The use case accepts caller-supplied authenticated user id, selected asset, INR buy amount, required trade score snapshots, and optional deterministic timestamps/ids; it dynamically loads persisted wallet state, current holding, and fresh market ticker before invoking `TradingDomainService.calculateBuy`.
