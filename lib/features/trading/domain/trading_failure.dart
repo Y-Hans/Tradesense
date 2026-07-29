@@ -4,13 +4,18 @@ enum TradingFailureCode {
   invalidAsset,
   unsupportedAsset,
   invalidBuyAmount,
+  invalidSellQuantity,
   invalidWallet,
+  walletOwnershipMismatch,
   insufficientFunds,
+  missingHolding,
+  insufficientHoldings,
   invalidMarketPrice,
   mismatchedTicker,
   staleTicker,
   invalidExistingHolding,
   mismatchedHolding,
+  holdingOwnershipMismatch,
   invalidTradeMetadata,
 }
 
