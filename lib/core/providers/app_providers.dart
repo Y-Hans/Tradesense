@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../contracts/market_provider.dart';
 import '../contracts/provider_contracts.dart';
 import '../contracts/repository_contracts.dart';
-import 'mocks/mock_market_repository.dart';
 import 'mocks/mock_repositories.dart';
 import '../../shared/models/user_profile.dart';
 import '../../shared/models/portfolio.dart';
@@ -16,12 +15,14 @@ export '../services/connectivity/connectivity_service.dart';
 export '../services/connectivity/connectivity_status.dart';
 
 
+import '../../features/market/providers/market_cache_providers.dart';
+
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
 
 /// Market Provider
 final marketRepositoryProvider = Provider<MarketProvider>((ref) {
-  return MockMarketRepository();
+  return ref.watch(cachedMarketRepositoryProvider);
 });
 
 /// Trading Repository Provider
