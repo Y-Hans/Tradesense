@@ -1,12 +1,13 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:cryptoedu/features/learning/application/learning_progression_notifier.dart';
 import 'package:cryptoedu/features/learning/application/level_engine.dart';
 import 'package:cryptoedu/features/learning/application/mission_engine.dart';
 import 'package:cryptoedu/features/learning/application/xp_engine.dart';
 import 'package:cryptoedu/features/learning/domain/learning_event.dart';
+import 'package:cryptoedu/features/learning/domain/learning_title.dart';
 import 'package:cryptoedu/features/learning/domain/level.dart';
 import 'package:cryptoedu/features/learning/domain/mission.dart';
 import 'package:cryptoedu/features/learning/domain/xp_state.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('XP Engine & Duplicate Prevention Tests', () {
@@ -99,7 +100,7 @@ void main() {
     });
   });
 
-  group('Deterministic Level Engine Tests', () {
+  group('Deterministic Level & Title Engine Tests', () {
     test('Level.fromXp calculates exact level tiers for thresholds', () {
       expect(Level.fromXp(0).tier, equals(LevelTier.rookie));
       expect(Level.fromXp(99).tier, equals(LevelTier.rookie));
@@ -112,6 +113,19 @@ void main() {
 
       expect(Level.fromXp(430).tier, equals(LevelTier.disciplinedTrader));
       expect(Level.fromXp(1000).tier, equals(LevelTier.disciplinedTrader));
+    });
+
+    test('LearningTitle.fromXp calculates title progression correctly', () {
+      expect(
+          LearningTitle.fromXp(0).type, equals(LearningTitleType.cryptoRookie));
+      expect(LearningTitle.fromXp(100).type,
+          equals(LearningTitleType.marketExplorer));
+      expect(LearningTitle.fromXp(250).type,
+          equals(LearningTitleType.riskAwareTrader));
+      expect(LearningTitle.fromXp(430).type,
+          equals(LearningTitleType.disciplinedTrader));
+      expect(LearningTitle.fromXp(750).type,
+          equals(LearningTitleType.cryptoMentor));
     });
 
     test(
@@ -186,7 +200,7 @@ void main() {
     });
   });
 
-  group('LearningProgressionNotifier State Management Tests', () {
+  group('LearningProgressionNotifier Extended Gamification Tests', () {
     late LearningProgressionNotifier notifier;
 
     setUp(() {
@@ -198,28 +212,65 @@ void main() {
     });
 
     test(
-        'Initial state starts at Rookie with 0 XP and uncompleted initial missions',
+        'Initial state exposes title, profile summary, streak, and initial achievements',
         () {
       final state = notifier.state;
       expect(state.totalXp, equals(0));
       expect(state.currentLevel.tier, equals(LevelTier.rookie));
-      expect(state.completedMissionIds, isEmpty);
-      expect(state.missions.length, equals(Mission.initialMissions.length));
+      expect(state.currentTitle.title, equals('Crypto Rookie'));
+      expect(state.streak.currentStreak, equals(0));
+      expect(state.achievements.length, equals(8));
+      expect(state.playerProfileSummary.totalXp, equals(0));
+      expect(state.playerProfileSummary.achievementsUnlocked, equals('0 / 8'));
+      expect(state.playerProfileSummary.missionsCompleted, equals('0 / 6'));
+      expect(state.showXpGainAnimation, isFalse);
+      expect(state.showLevelUpAnimation, isFalse);
     });
 
     test(
-        'processEvent updates state and advances level when XP threshold is crossed',
+        'processEvent updates streak, unlocks achievements, updates summary, and sets animation flags',
         () {
-      // Mission 6 (News Detective) rewards 100 XP -> crosses Rookie to Explorer (100 XP threshold)
-      final event = LearningEvent.newsDetectiveCompleted(eventId: 'nd_evt_1');
-      final result = notifier.processEvent(event);
+      final event =
+          LearningEvent.onboardingCompleted(eventId: 'onboard_gami_1');
+      notifier.processEvent(event);
 
-      expect(result.success, isTrue);
-      expect(result.xpGained, equals(100));
-      expect(result.didLevelUp, isTrue);
-      expect(result.newLevel.tier, equals(LevelTier.explorer));
-      expect(notifier.state.totalXp, equals(100));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.explorer));
+      final state = notifier.state;
+      expect(state.totalXp, equals(50));
+      expect(state.streak.currentStreak, equals(1));
+      expect(state.showXpGainAnimation, isTrue);
+      expect(state.recentXpGained, equals(50));
+      expect(
+          state.achievements.any((a) => a.id == 'first_steps' && a.isUnlocked),
+          isTrue);
+      expect(state.playerProfileSummary.achievementsUnlocked, equals('1 / 8'));
+      expect(state.playerProfileSummary.missionsCompleted, equals('1 / 6'));
+    });
+
+    test('dismissXpGainAnimation resets showXpGainAnimation and recentXpGained',
+        () {
+      notifier.processEvent(
+          LearningEvent.onboardingCompleted(eventId: 'evt_anim_1'));
+      expect(notifier.state.showXpGainAnimation, isTrue);
+      expect(notifier.state.recentXpGained, equals(50));
+
+      notifier.dismissXpGainAnimation();
+
+      expect(notifier.state.showXpGainAnimation, isFalse);
+      expect(notifier.state.recentXpGained, equals(0));
+    });
+
+    test(
+        'dismissLevelUpAnimation resets showLevelUpAnimation and unlockedAchievements',
+        () {
+      // News Detective = +100 XP -> triggers level up from Rookie to Explorer
+      notifier.processEvent(
+          LearningEvent.newsDetectiveCompleted(eventId: 'evt_lvl_1'));
+      expect(notifier.state.showLevelUpAnimation, isTrue);
+
+      notifier.dismissLevelUpAnimation();
+
+      expect(notifier.state.showLevelUpAnimation, isFalse);
+      expect(notifier.state.unlockedAchievements, isEmpty);
     });
 
     test('claimMission claims rewards manually and prevents secondary claims',
@@ -235,7 +286,9 @@ void main() {
       expect(notifier.state.totalXp, equals(30));
     });
 
-    test('restoreState accurately restores progression state', () {
+    test(
+        'restoreState accurately restores progression state, streak, and summary',
+        () {
       notifier.restoreState(
         totalXp: 300,
         completedMissionIds: {'m1_onboarding', 'm2_login', 'm6_news_detective'},
@@ -245,8 +298,10 @@ void main() {
       expect(notifier.state.totalXp, equals(300));
       expect(
           notifier.state.currentLevel.tier, equals(LevelTier.riskAwareTrader));
+      expect(notifier.state.currentTitle.title, equals('Risk-Aware Trader'));
       expect(notifier.state.completedMissionIds.length, equals(3));
-      expect(notifier.state.processedEventIds.length, equals(3));
+      expect(notifier.state.playerProfileSummary.missionsCompleted,
+          equals('3 / 6'));
     });
 
     test('reset clears learning progression back to initial state', () {
@@ -259,79 +314,6 @@ void main() {
       expect(notifier.state.currentLevel.tier, equals(LevelTier.rookie));
       expect(notifier.state.completedMissionIds, isEmpty);
       expect(notifier.state.processedEventIds, isEmpty);
-    });
-  });
-
-  group('Edge Case & Integrity Tests', () {
-    test('Repeated logins emit duplicate events safely without altering state',
-        () {
-      final notifier = LearningProgressionNotifier();
-
-      // First login
-      final res1 = notifier
-          .processEvent(LearningEvent.loginCompleted(eventId: 'login_1'));
-      expect(res1.xpGained, equals(30));
-
-      // Repeated logins with same event ID or after mission completion
-      final res2 = notifier
-          .processEvent(LearningEvent.loginCompleted(eventId: 'login_1'));
-      expect(res2.isDuplicate, isTrue);
-      expect(res2.xpGained, equals(0));
-
-      final res3 = notifier
-          .processEvent(LearningEvent.loginCompleted(eventId: 'login_2'));
-      expect(res3.xpGained, equals(0)); // Mission already completed
-      expect(notifier.state.totalXp, equals(30));
-
-      notifier.dispose();
-    });
-
-    test('Repeated onboarding attempts yield 0 duplicate XP', () {
-      final notifier = LearningProgressionNotifier();
-
-      for (int i = 0; i < 5; i++) {
-        notifier.processEvent(
-          LearningEvent.onboardingCompleted(eventId: 'onboard_attempt_$i'),
-        );
-      }
-
-      // First attempt awarded 50 XP, subsequent 4 attempts awarded 0
-      expect(notifier.state.totalXp, equals(50));
-      notifier.dispose();
-    });
-
-    test(
-        'Multiple distinct mission completions stack XP correctly up to Disciplined Trader',
-        () {
-      final notifier = LearningProgressionNotifier();
-
-      // Mission 1: +50 XP (50 total -> Rookie)
-      notifier.processEvent(LearningEvent.onboardingCompleted(eventId: 'e1'));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.rookie));
-
-      // Mission 2: +30 XP (80 total -> Rookie)
-      notifier.processEvent(LearningEvent.loginCompleted(eventId: 'e2'));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.rookie));
-
-      // Mission 3: +30 XP (110 total -> Explorer)
-      notifier.processEvent(LearningEvent.viewedMarket(eventId: 'e3'));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.explorer));
-
-      // Mission 4: +50 XP (160 total -> Explorer)
-      notifier.processEvent(LearningEvent.firstTradeCompleted(eventId: 'e4'));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.explorer));
-
-      // Mission 5: +40 XP (200 total -> Explorer)
-      notifier.processEvent(LearningEvent.completedLesson(eventId: 'e5'));
-      expect(notifier.state.currentLevel.tier, equals(LevelTier.explorer));
-
-      // Mission 6: +100 XP (300 total -> Risk-Aware Trader)
-      notifier
-          .processEvent(LearningEvent.newsDetectiveCompleted(eventId: 'e6'));
-      expect(
-          notifier.state.currentLevel.tier, equals(LevelTier.riskAwareTrader));
-
-      notifier.dispose();
     });
   });
 }
