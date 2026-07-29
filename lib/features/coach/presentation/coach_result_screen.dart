@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/contracts/provider_contracts.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../shared/constants/app_strings.dart';
 import '../../../shared/models/coach_request.dart';
 import '../../../shared/models/trade.dart';
+import '../../../shared/widgets/offline_state_widget.dart';
 import '../../../shared/widgets/trade_card.dart';
 import '../../intelligence/domain/discipline_reason_code_evaluator.dart';
 import '../../intelligence/domain/risk_reason_code_evaluator.dart';
@@ -109,125 +111,140 @@ class CoachResultScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isOffline = ref.watch(
+      connectivityProvider.select((status) => status == ConnectivityStatus.offline),
+    );
     final resultAsync = ref.watch(coachResultProvider(tradeId));
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('AI Coach Trade Explanation'),
       ),
-      body: resultAsync.when(
-        data: (result) {
-          if (result == null) {
-            return const Center(child: Text('Trade Not Found'));
-          }
-          final feedback = result.coachFeedback;
+      body: isOffline
+          ? const Center(
+              child: OfflineStateWidget(
+                title: 'AI Coach Unavailable',
+                message: AppStrings.coachOfflineMessage,
+              ),
+            )
+          : resultAsync.when(
+              data: (result) {
+                if (result == null) {
+                  return const Center(child: Text('Trade Not Found'));
+                }
+                final feedback = result.coachFeedback;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TradeCard(
+                return SingleChildScrollView(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        children: [
-                          const Text(
-                            'Discipline Score',
-                            style: TextStyle(
-                              fontSize: 12,
+                      TradeCard(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(
+                              children: [
+                                const Text(
+                                  'Discipline Score',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  '${result.disciplineScore.score}/100',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.discipline,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              width: 1,
+                              height: 40,
                               color: AppColors.textSecondary,
                             ),
-                          ),
-                          Text(
-                            '${result.disciplineScore.score}/100',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.discipline,
+                            Column(
+                              children: [
+                                const Text(
+                                  'Risk Score',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  '${result.riskScore.score}/100',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.profit,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        color: AppColors.textSecondary,
+                      const SizedBox(height: 20),
+                      Text(
+                        'AI Coach Analysis',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      Column(
-                        children: [
-                          const Text(
-                            'Risk Score',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          Text(
-                            '${result.riskScore.score}/100',
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.profit,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 12),
+                      _buildExplanationCard(
+                        context,
+                        title: 'What Was Done Well',
+                        content: feedback.whatDoneWell,
+                        icon: Icons.check_circle_outline,
+                        color: AppColors.profit,
+                      ),
+                      _buildExplanationCard(
+                        context,
+                        title: 'What Increased Risk',
+                        content: feedback.whatIncreasedRisk,
+                        icon: Icons.warning_amber_outlined,
+                        color: AppColors.discipline,
+                      ),
+                      _buildExplanationCard(
+                        context,
+                        title: 'Key Educational Takeaway',
+                        content: feedback.whatToLearn,
+                        icon: Icons.school_outlined,
+                        color: AppColors.primary,
+                      ),
+                      _buildExplanationCard(
+                        context,
+                        title: 'What To Consider Next',
+                        content: feedback.whatToConsiderNext,
+                        icon: Icons.lightbulb_outline,
+                        color: AppColors.accent,
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () => context.go('/home'),
+                          child: const Text('BACK TO DASHBOARD'),
+                        ),
                       ),
                     ],
                   ),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => const Center(
+                child: OfflineStateWidget(
+                  title: 'AI Coach Unavailable',
+                  message: AppStrings.coachOfflineMessage,
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  'AI Coach Analysis',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 12),
-                _buildExplanationCard(
-                  context,
-                  title: 'What Was Done Well',
-                  content: feedback.whatDoneWell,
-                  icon: Icons.check_circle_outline,
-                  color: AppColors.profit,
-                ),
-                _buildExplanationCard(
-                  context,
-                  title: 'What Increased Risk',
-                  content: feedback.whatIncreasedRisk,
-                  icon: Icons.warning_amber_outlined,
-                  color: AppColors.discipline,
-                ),
-                _buildExplanationCard(
-                  context,
-                  title: 'Key Educational Takeaway',
-                  content: feedback.whatToLearn,
-                  icon: Icons.school_outlined,
-                  color: AppColors.primary,
-                ),
-                _buildExplanationCard(
-                  context,
-                  title: 'What To Consider Next',
-                  content: feedback.whatToConsiderNext,
-                  icon: Icons.lightbulb_outline,
-                  color: AppColors.accent,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () => context.go('/home'),
-                    child: const Text('BACK TO DASHBOARD'),
-                  ),
-                ),
-              ],
+              ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-      ),
     );
   }
 

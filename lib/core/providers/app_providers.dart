@@ -16,6 +16,9 @@ import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/application/auth_notifier.dart';
 import '../../features/auth/application/user_lifecycle_notifier.dart';
 import '../../features/onboarding/application/onboarding_notifier.dart';
+export '../services/connectivity/connectivity_provider.dart';
+export '../services/connectivity/connectivity_service.dart';
+export '../services/connectivity/connectivity_status.dart';
 
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
