@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../core/widgets/trade_card.dart';
+import '../../../core/widgets/disclaimer_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -33,114 +35,108 @@ class ProfileScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // User Profile Header Card
-                Card(
-                  color: AppColors.surface,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: AppColors.primary,
-                          child: Text(
-                            displayName.isNotEmpty
-                                ? displayName[0].toUpperCase()
-                                : 'T',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                TradeCard(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 28,
+                        backgroundColor: AppColors.primary,
+                        child: Text(
+                          displayName.isNotEmpty
+                              ? displayName[0].toUpperCase()
+                              : 'T',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            Text(
+                              email,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Starting Balance: ${FinancialMath.formatInr(balance)} SIMULATED',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.profit,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                displayName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                email,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Starting Balance: ${FinancialMath.formatInr(balance)} SIMULATED',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.profit,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
 
                 const SizedBox(height: 16),
 
                 // Discipline Tier & XP Badge Card
-                Card(
-                  color: AppColors.card,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'DISCIPLINE TIER',
-                              style: TextStyle(
-                                color: AppColors.discipline,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              levelTitle,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            '$xp XP',
+                TradeCard(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'DISCIPLINE TIER',
                             style: TextStyle(
-                              color: AppColors.primary,
+                              color: AppColors.discipline,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
                             ),
                           ),
+                          SizedBox(height: 4),
+                          Text(
+                            levelTitle,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                      ],
-                    ),
+                        child: const Text(
+                          '$xp XP',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
 
@@ -157,7 +153,8 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // Missions Tile
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.military_tech,
                         color: AppColors.discipline),
@@ -170,8 +167,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 12),
+                
                 // News Detective Tile
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.search_rounded,
                         color: AppColors.primary),
@@ -197,7 +197,8 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // Replay Onboarding
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.replay_rounded,
                         color: AppColors.primary),
@@ -208,8 +209,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Subscription Status
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.star, color: AppColors.discipline),
@@ -222,8 +226,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Sign Out
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.logout, color: AppColors.textPrimary),
@@ -235,8 +242,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Delete Account
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.delete_forever, color: AppColors.loss),
@@ -259,44 +269,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Educational Disclaimer Card
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppColors.primary),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Educational Simulation Notice',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              'This app is an educational trading simulation. No real cryptocurrency is bought or sold.',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                const DisclaimerCard(compact: false),
               ],
             ),
           );

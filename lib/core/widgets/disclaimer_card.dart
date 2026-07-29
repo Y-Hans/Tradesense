@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../app/theme/app_theme.dart';
 import '../constants/disclaimers.dart';
+import 'trade_card.dart';
 
 class DisclaimerCard extends StatelessWidget {
   final bool compact;
@@ -12,22 +13,14 @@ class DisclaimerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return TradeCard(
       padding: EdgeInsets.all(compact ? 12.0 : 16.0),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12.0),
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.3),
-          width: 1.0,
-        ),
-      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.info_outline_rounded,
-            color: AppColors.primary,
+            color: AppColors.discipline, // Neon warning accent
             size: compact ? 18.0 : 22.0,
           ),
           const SizedBox(width: 12.0),
@@ -38,7 +31,7 @@ class DisclaimerCard extends StatelessWidget {
                 Text(
                   'Educational Simulation Notice',
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: AppColors.discipline, // Warning accent
                     fontSize: compact ? 12.0 : 14.0,
                     fontWeight: FontWeight.bold,
                   ),
