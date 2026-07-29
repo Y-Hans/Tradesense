@@ -21,6 +21,20 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-28] - Debug-Only BUY Engine Real-Device Harness
+
+- **Completed Functionality**: Added an isolated Flutter debug harness for exercising the deterministic BUY domain engine from UI code on a real Android device. The harness is debug-only, in-memory, deterministic, non-production, and does not connect to persistence, live market APIs, repository adapters, Supabase, Firebase, RevenueCat, or external services.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/presentation/debug/buy_engine_debug_screen.dart`
+  - `test/widget/trading/buy_engine_debug_screen_test.dart`
+  - `lib/app/routing/app_router.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/development-log/Laksh.md`
+- **Test Data**: Uses supported BTC test data, a Rs 1,00,00,000 virtual wallet, Rs 1,00,000 first BUY at Rs 50,00,000/BTC, Rs 2,00,000 second BUY at Rs 55,00,000/BTC, explicit UTC timestamps, explicit debug trade/user/holding IDs, discipline score 80, and risk score 25.
+- **Integration Impact**: The route `/debug/buy-engine` is registered only when debug routes are enabled. A debug launch can opt into opening the harness first with `--dart-define=BUY_ENGINE_DEBUG_HOME=true`; release behavior remains the normal `/home` route with the debug route omitted.
+- **Tests**: Added widget coverage for initial wallet display, first BUY success, repeated BUY weighted-average display, insufficient-funds rejection without state mutation, reset, invalid text input handling, and route omission when debug routes are disabled.
+- **Known Issues / Remaining Work**: This harness intentionally does not implement production BUY UI, SELL, analytics, stop-loss, persistence, repository adapters, or live market fetching.
+
 ### [2026-07-28] - Deterministic BUY Trading Domain Engine
 
 - **Completed Functionality**: Added a pure `TradingDomainService.calculateBuy` domain operation for virtual market BUY calculations. The service accepts caller-supplied wallet, asset, ticker, optional existing holding, explicit trade/holding/user identifiers, execution timestamp, and evaluation timestamp; it returns either a typed success result or a machine-readable failure.

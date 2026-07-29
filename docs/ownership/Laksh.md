@@ -18,8 +18,11 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/trading/domain/trading_domain_service.dart`
 - `lib/features/trading/domain/buy_trade_result.dart`
 - `lib/features/trading/domain/trading_failure.dart`
+- `lib/features/trading/presentation/debug/buy_engine_debug_screen.dart` — debug-only deterministic BUY engine harness
 
 ## Owned Areas
+
+- `lib/features/trading/presentation/debug/` — isolated development-only harnesses for Laksh-owned trading domain verification
 
 - `lib/features/trading/domain/` — Trading domain logic, trade validation, order execution rules, stop-loss trigger logic
 - `lib/features/trading/data/` — Trading data sources, local/remote trading repositories, trade history data mapping
@@ -27,6 +30,8 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/portfolio/data/` — Portfolio data sources and snapshot persistence repositories
 
 ## Tests Owned
+
+- `test/widget/trading/*` — debug-only trading harness widget tests
 
 - `test/unit/financial_math_test.dart`
 - `test/unit/portfolio/virtual_wallet_initialization_test.dart`
@@ -36,7 +41,7 @@ If a required change belongs to another developer, do not modify that developer'
 ## Notes / Boundaries
 
 ### Explicit Exclusions (Must NOT Own or Directly Modify):
-- Presentation screens and UI widgets (owned by Somya)
+- Presentation screens and UI widgets (owned by Somya), except isolated debug-only trading harnesses under `lib/features/trading/presentation/debug/`
 - Risk Score formula (0-100) or Discipline Score formula (0-100) (owned by Yajat)
 - AI Coach domain logic or OpenRouter integration (owned by Yajat)
 - Binance WebSocket stream or CoinGecko network implementation (owned by Divyanshu)
