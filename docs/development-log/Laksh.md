@@ -21,6 +21,23 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-30] - Deterministic Trade History Engine
+
+- **Completed Functionality**: Added a pure `TradeHistoryEngine.calculate` domain operation that accepts immutable `List<Trade>` input plus an optional evaluation timestamp and returns either an immutable trade-history snapshot or typed `TradingFailure` rejection.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/domain/trade_history_engine.dart`
+  - `lib/features/trading/domain/trade_history_result.dart`
+  - `test/unit/trading/trade_history_engine_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The engine deterministically sorts by execution timestamp and trade id, builds timeline entries, summarizes BUY/SELL volumes, calculates realized profit/loss statistics, maintains running cumulative cash flow, and exposes per-asset analytics.
+- **Statistics**: Snapshot statistics include total trades, BUY/SELL counts, win/loss/break-even rates, largest gain/loss, average gain/loss, profit factor, net realized P&L, trade frequency per day, and trading period.
+- **Replay Support**: Replay output exposes ordered trades and per-step reconstruction fields including cash flow, running realized P&L, position quantity, position cost basis, and average entry after each trade. This is intended for future wallet, holdings, portfolio, and analytics reconstruction without adding persistence.
+- **Precision Strategy**: Reuses `FinancialMath.inrToPaise` / `paiseToInr` at INR output boundaries and uses `Decimal` internally for quantities, volumes, average cost basis, realized P&L, and rate calculations.
+- **Failure Handling**: Reuses `TradingFailure` for invalid trade metadata, duplicate trade ids, non-finite/negative trade financials, future timestamps relative to a supplied evaluation timestamp, and trade-history oversells.
+- **Future Integration Points**: Divyanshu can connect persisted trade streams to this pure engine from repositories/application boundaries. Somya can consume the immutable snapshot for future trade history UI, timeline, filters, and statistics panels without owning calculation logic.
+- **Remaining Work**: Persistence, repository wiring, provider/controller integration, authenticated user scoping, UI rendering, CSV/PDF export, charts, and production snapshot storage remain outside this milestone.
+
 ### [2026-07-29] - Deterministic Portfolio Engine
 
 - **Completed Functionality**: Added a pure `PortfolioEngine.calculate` domain operation that accepts caller-supplied `VirtualWallet`, holdings, market tickers, optional trade history, and an explicit evaluation timestamp. The engine returns an immutable portfolio-domain snapshot or a typed `TradingFailure` rejection.
