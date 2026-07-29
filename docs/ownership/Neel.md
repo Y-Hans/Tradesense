@@ -1,6 +1,6 @@
 # NEEL — FILE OWNERSHIP INVENTORY
 
-**Owner**: Neel (Auth, User Lifecycle, Onboarding, Learning, Missions, XP & Profile)  
+**Owner**: Neel (Auth, User Lifecycle, Onboarding, Learning, Gamification, Missions, XP & Profile)  
 **Last Updated**: 2026-07-29  
 
 ---
@@ -23,7 +23,12 @@
 ### 3. Profile & Learning Features (`lib/features/profile/`, `lib/features/learning/`)
 - `lib/features/profile/domain/educational_disclosures.dart`: Educational disclosures and simulation notice compliance constants.
 - `lib/features/profile/presentation/profile_screen.dart`: User profile, discipline tier badge, settings, disclosures, account deletion flow, and sign-out integration.
+- `lib/features/learning/domain/learning_constants.dart`: Centralized gamification constants for XP rewards, level thresholds, title thresholds, achievement definitions, and motivational messages.
 - `lib/features/learning/domain/learning_event.dart`: Domain model for application events (`onboardingCompleted`, `loginCompleted`, `viewedMarket`, `firstTradeCompleted`, `completedLesson`, `newsDetectiveCompleted`).
+- `lib/features/learning/domain/learning_title.dart`: Learning Title domain model and progression resolver (`Crypto Rookie`, `Market Explorer`, `Risk-Aware Trader`, `Disciplined Trader`, `Crypto Mentor`).
+- `lib/features/learning/domain/achievement.dart`: Achievement domain model, `AchievementRarity` enum, unlock rules, and duplicate unlock prevention.
+- `lib/features/learning/domain/learning_streak.dart`: Learning streak domain model with consecutive day increment, duplicate same-day prevention, and missed day reset logic.
+- `lib/features/learning/domain/player_profile_summary.dart`: Aggregate player profile summary value object for the dashboard.
 - `lib/features/learning/domain/mission.dart`: Domain entity for V1 educational missions.
 - `lib/features/learning/domain/mission_progress.dart`: Value object tracking completion progress and earned XP.
 - `lib/features/learning/domain/level.dart`: Level domain model and deterministic tier calculation (`Rookie`, `Explorer`, `Risk-Aware Trader`, `Disciplined Trader`).
@@ -33,17 +38,23 @@
 - `lib/features/learning/application/xp_engine.dart`: Pure engine for evaluating XP rewards with strict duplicate prevention and educational reward bounds.
 - `lib/features/learning/application/level_engine.dart`: Pure engine for deterministic level evaluation and tier progress calculation.
 - `lib/features/learning/application/mission_engine.dart`: Pure engine for event-driven mission processing and claim execution.
-- `lib/features/learning/application/learning_progression_notifier.dart`: Riverpod `StateNotifier` for managing progression state, event dispatching, reset, and state restoration.
-- `lib/features/learning/presentation/missions_screen.dart`: Educational missions presentation widget reactive to `learningProgressionNotifierProvider`.
+- `lib/features/learning/application/learning_progression_notifier.dart`: Riverpod `StateNotifier` for managing progression state, streak, title, achievements, player profile summary, animation triggers (`showXpGainAnimation`, `showLevelUpAnimation`), reset, and state restoration.
+- `lib/features/learning/presentation/achievement_unlock_card.dart`: Reusable achievement card component receiving data via constructor.
+- `lib/features/learning/presentation/level_up_dialog.dart`: Reusable level-up celebration dialog widget receiving data via constructor.
+- `lib/features/learning/presentation/xp_gain_animated_badge.dart`: Reusable animated XP gain feedback badge widget receiving data via constructor.
+- `lib/features/learning/presentation/player_profile_summary_card.dart`: Reusable Player Profile Summary dashboard card component receiving data via constructor.
+- `lib/features/learning/presentation/missions_screen.dart`: Educational missions screen presentation.
 - `lib/features/learning/presentation/news_detective_screen.dart`: News Detective quiz feature.
 
 ### 4. Unit & Widget Tests (`test/`)
+- `test/unit/achievement_test.dart`: Unit tests for achievement unlock rules, duplicate unlock prevention, and rarity properties.
+- `test/unit/streak_test.dart`: Unit tests for daily learning streak consecutive days, same-day duplicate prevention, and missed day resets.
 - `test/unit/auth_state_test.dart`: Unit tests for `AuthState` immutability and getters.
 - `test/unit/auth_notifier_test.dart`: Unit tests for session restoration, login, registration, duplicate checks, logout, and account deletion.
 - `test/unit/auth_repository_test.dart`: Unit tests for `MockAuthRepository` business validation.
 - `test/unit/user_lifecycle_notifier_test.dart`: Unit tests for idempotent user lifecycle initialization and reset.
 - `test/unit/onboarding_flow_test.dart`: Unit tests for `OnboardingNotifier` completion persistence, session restoration, logout reset, and multi-user isolation.
 - `test/unit/profile_lifecycle_test.dart`: Unit tests for profile data extraction, educational disclosures, logout session cleanup, and account deletion.
-- `test/unit/learning_progression_test.dart`: Unit tests for XP calculation, Level engine thresholds, Mission engine processing, duplicate prevention, event idempotency, and state restoration.
+- `test/unit/learning_progression_test.dart`: Unit tests for XP calculation, Level engine thresholds, Learning Title progression, Player Profile Summary calculations, Mission engine processing, duplicate prevention, event idempotency, animation state flags, and state restoration.
 - `test/widget/auth_screens_test.dart`: Widget tests for `LoginScreen` and `RegisterScreen` form validation and UI feedback.
 - `test/widget/profile_screen_test.dart`: Widget tests for `ProfileScreen` user info, disclosures modal dialog, and account deletion 2-step confirmation flow.

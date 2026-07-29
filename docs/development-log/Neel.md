@@ -1,12 +1,12 @@
 # DEVELOPMENT LOG — NEEL
 
-**Developer**: Neel (Auth, User Lifecycle, Onboarding, Learning, Missions & Profile)  
+**Developer**: Neel (Auth, User Lifecycle, Onboarding, Learning, Gamification & Profile)  
 **Date**: 2026-07-29  
-**Feature Module**: Learning Progression System (V1) Implementation  
+**Feature Module**: Gamification Experience Layer (V1) & Business Logic Engine  
 
 ---
 
-## 1. Learning Progression Architecture
+## 1. Gamification Experience Layer Architecture
 
 ```text
 Application Learning Event (e.g. onboardingCompleted, loginCompleted, viewedMarket, firstTradeCompleted)
@@ -17,63 +17,63 @@ MissionEngine.processEvent() (evaluates mission match & event idempotency)
     ↓
 XpEngine.calculateXpAward() (validates duplicate reward prevention & educational XP bounds)
     ↓
-LevelEngine.evaluateLevel() (deterministic level tier resolution & progress calculation)
+LevelEngine.evaluateLevel() (deterministic level tier resolution & level up detection)
     ↓
-LearningProgressionState Updated (totalXP, currentLevel, progressToNextLevel, missions, completedMissionIds)
+LearningStreak.registerActivity() (consecutive day streak increment & missed day reset)
     ↓
-MissionsScreen UI (ConsumerStatefulWidget re-renders reactively)
+LearningTitle.fromXp() (independent title progression: Crypto Rookie -> Crypto Mentor)
+    ↓
+Achievement.checkUnlocks() (evaluates automatic unlock conditions & duplicate prevention)
+    ↓
+PlayerProfileSummary.calculate() (aggregates total XP, Level, Title, Streak, Ratios, Completion %)
+    ↓
+LearningProgressionState Updated (state fields exposed; UI state flags set for animations)
+    ↓
+Standalone Reusable Presentation Widgets (constructor data passing; composition left for Somya)
 ```
 
 ---
 
 ## 2. Functionality Implemented
 
-- **Event-Driven Learning Progression Domain**:
-  - Created `LearningEvent` domain model for application events: `onboardingCompleted`, `loginCompleted`, `viewedMarket`, `firstTradeCompleted`, `completedLesson`, `newsDetectiveCompleted`.
-  - Built `Mission` entity and `MissionProgress` value object with initial V1 missions (Complete Onboarding +50 XP, First Login +30 XP, View Market +30 XP, First Virtual Trade +50 XP, Read Educational Content +40 XP, Complete News Detective +100 XP).
-  - Built `Level` model and `LevelTier` enum with deterministic tier resolution:
-    - **Rookie**: 0 - 99 XP
-    - **Explorer**: 100 - 249 XP
-    - **Risk-Aware Trader**: 250 - 429 XP
-    - **Disciplined Trader**: 430+ XP
-  - Built `XpState` model to encapsulate total XP, `processedEventIds`, `completedMissionIds`, and reward log history.
+- **Gamification Domain & Business Logic**:
+  - `LearningConstants`: Centralized constants for XP rewards, level thresholds, title thresholds, achievement thresholds, and motivational learning messages.
+  - `LearningTitle`: Independent title progression system (`Crypto Rookie`, `Market Explorer`, `Risk-Aware Trader`, `Disciplined Trader`, `Crypto Mentor`).
+  - `Achievement`: Immutable achievement model with 8 initial achievements, 4 rarity tiers (`common`, `rare`, `epic`, `legendary`), automatic unlock rules, and duplicate unlock prevention.
+  - `LearningStreak`: Daily streak tracker enforcing consecutive calendar day increments, same-day duplicate activity prevention, and missed day resets.
+  - `PlayerProfileSummary`: Aggregate dashboard metric value object storing Total XP, Current Level, Current Title, Current Streak, Achievements ratio, Missions ratio, Completion %, and XP remaining to next level.
 
-- **Pure Business Logic Engines**:
-  - `XpEngine`: Pure calculation engine determining XP awards. Enforces strict duplicate reward prevention and ensures simulated trade profit or financial metrics NEVER dictate XP rewards.
-  - `LevelEngine`: Pure engine executing deterministic level tier evaluation, progress fraction (0.0 to 1.0), and level up detection.
-  - `MissionEngine`: Pure engine mapping incoming events to active missions, marking progress, and calculating XP updates idempotently.
+- **StateNotifier & Animation State Management**:
+  - Extended `LearningProgressionNotifier` state with `currentTitle`, `playerProfileSummary`, `achievements`, `streak`, `showXpGainAnimation`, `recentXpGained`, `showLevelUpAnimation`, and `unlockedAchievements`.
+  - Added state dismissers `dismissXpGainAnimation()` and `dismissLevelUpAnimation()`.
+  - Enforced strict educational reward policies (no financial profit rewards, no gambling mechanics).
 
-- **Application State & Riverpod Notifier**:
-  - Implemented `LearningProgressionNotifier` (`StateNotifier<LearningProgressionState>`) and exported `learningProgressionNotifierProvider`.
-  - Added methods for `processEvent`, `claimMission`, `reset`, and `restoreState`.
-
-- **UI Integration**:
-  - Refactored `MissionsScreen` to a `ConsumerStatefulWidget` reactively observing `learningProgressionNotifierProvider`.
-
-- **Boundary & Privacy Compliance**:
-  - Maintained complete independence from Laksh's trading simulator and Yajat's shared contracts.
-  - Preserved strict educational positioning (no gambling language, no financial advice, no encouragement of excessive trading).
+- **Reusable Component Widgets (Constructor-only Interface)**:
+  - `PlayerProfileSummaryCard`: Dashboard card displaying all 8 key metrics.
+  - `XpGainAnimatedBadge`: Animated +XP floating feedback badge.
+  - `AchievementUnlockCard`: Achievement tile with rarity styling and badge icons.
+  - `LevelUpDialog`: Celebration dialog for level up events.
 
 ---
 
 ## 3. Files Created & Modified
 
 ### Created Files
-- `lib/features/learning/domain/learning_event.dart`
-- `lib/features/learning/domain/mission.dart`
-- `lib/features/learning/domain/mission_progress.dart`
-- `lib/features/learning/domain/level.dart`
-- `lib/features/learning/domain/xp_state.dart`
-- `lib/features/learning/application/xp_engine.dart`
-- `lib/features/learning/application/level_engine.dart`
-- `lib/features/learning/application/mission_engine.dart`
-- `lib/features/learning/application/learning_progression_notifier.dart`
-- `test/unit/learning_progression_test.dart`
+- `lib/features/learning/domain/learning_constants.dart`
+- `lib/features/learning/domain/learning_title.dart`
+- `lib/features/learning/domain/achievement.dart`
+- `lib/features/learning/domain/learning_streak.dart`
+- `lib/features/learning/domain/player_profile_summary.dart`
+- `lib/features/learning/presentation/achievement_unlock_card.dart`
+- `lib/features/learning/presentation/level_up_dialog.dart`
+- `lib/features/learning/presentation/xp_gain_animated_badge.dart`
+- `lib/features/learning/presentation/player_profile_summary_card.dart`
+- `test/unit/achievement_test.dart`
+- `test/unit/streak_test.dart`
 
 ### Modified Files
-- `lib/features/learning/domain/models/mission.dart`
-- `lib/features/learning/domain/models/xp_level.dart`
-- `lib/features/learning/presentation/missions_screen.dart`
+- `lib/features/learning/application/learning_progression_notifier.dart`
+- `test/unit/learning_progression_test.dart`
 - `docs/ownership/Neel.md`
 - `docs/development-log/Neel.md`
 
@@ -81,22 +81,21 @@ MissionsScreen UI (ConsumerStatefulWidget re-renders reactively)
 
 ## 4. Tests Added & Validation Results
 
-Added unit test suite (`test/unit/learning_progression_test.dart`) covering:
-1. **XP Calculation & Privacy**: Verified fixed educational XP rewards for matching events and zero dependency on financial profit metrics.
-2. **Duplicate Reward Prevention**: Verified that claiming an already completed mission or processing a previously processed event ID yields 0 XP.
-3. **Deterministic Level Engine**: Verified exact level tier bounds for Rookie (0-99), Explorer (100-249), Risk-Aware Trader (250-429), and Disciplined Trader (430+), as well as progress percentage and XP to next tier.
-4. **Mission Engine Idempotency**: Verified that processing duplicate events or repeated app launches skips processing idempotently without mutating state.
-5. **State Restoration & Reset**: Verified `restoreState` correctly populates historical XP and completed missions, and `reset` returns state to initial clean state.
-6. **Edge Cases**: Verified repeated logins, repeated onboarding attempts, and sequential mission stacking.
+- Created `test/unit/achievement_test.dart`: Verified initial achievements, automatic event/XP unlocks, duplicate unlock prevention, and rarity properties.
+- Created `test/unit/streak_test.dart`: Verified streak initialization, consecutive day increments, same-day duplicate prevention, missed day resets, and effective streak calculation.
+- Extended `test/unit/learning_progression_test.dart`: Verified Learning Title progression, Player Profile Summary calculations, animation trigger flags and dismissers, and state restoration.
 
 ---
 
 ## 5. Definition of Done Checklist
 
-- [x] Learning progression implemented.
-- [x] XP system complete.
-- [x] Level engine complete.
-- [x] Mission engine complete.
-- [x] Duplicate prevention verified.
-- [x] Full test suite passing.
-- [x] No unrelated refactoring.
+- [x] Gamification business logic & domain layer implemented.
+- [x] Achievement system & unlock rules complete.
+- [x] Daily learning streak system complete.
+- [x] Learning Title system complete.
+- [x] Player Profile Summary calculation complete.
+- [x] `LearningProgressionNotifier` extended with animation state flags & dismissers.
+- [x] Reusable presentation widgets created (data via constructor only, no main screen composition).
+- [x] `missions_screen.dart` left un-redesigned for Somya's screen composition.
+- [x] 0 trading, portfolio, wallet, Supabase, or shared contract files modified.
+- [x] All unit test suites passing.
