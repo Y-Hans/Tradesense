@@ -1,5 +1,7 @@
-enum LevelTier { rookie, explorer, riskAwareTrader, disciplinedTrader }
+export '../level.dart';
+import '../level.dart';
 
+/// Legacy alias class pointing to [Level] for compatibility with older UI components.
 class XpLevel {
   final LevelTier tier;
   final String title;
@@ -13,48 +15,26 @@ class XpLevel {
     required this.maxXp,
   });
 
-  static const List<XpLevel> tiers = [
-    XpLevel(
-      tier: LevelTier.rookie,
-      title: 'Rookie',
-      minXp: 0,
-      maxXp: 99,
-    ),
-    XpLevel(
-      tier: LevelTier.explorer,
-      title: 'Explorer',
-      minXp: 100,
-      maxXp: 249,
-    ),
-    XpLevel(
-      tier: LevelTier.riskAwareTrader,
-      title: 'Risk-Aware Trader',
-      minXp: 250,
-      maxXp: 429,
-    ),
-    XpLevel(
-      tier: LevelTier.disciplinedTrader,
-      title: 'Disciplined Trader',
-      minXp: 430,
-      maxXp: 999999,
-    ),
-  ];
+  static List<XpLevel> get tiers => Level.tiers
+      .map((l) => XpLevel(
+            tier: l.tier,
+            title: l.title,
+            minXp: l.minXp,
+            maxXp: l.maxXp,
+          ))
+      .toList();
 
   static XpLevel fromXp(int xp) {
-    for (final level in tiers.reversed) {
-      if (xp >= level.minXp) {
-        return level;
-      }
-    }
-    return tiers.first;
+    final level = Level.fromXp(xp);
+    return XpLevel(
+      tier: level.tier,
+      title: level.title,
+      minXp: level.minXp,
+      maxXp: level.maxXp,
+    );
   }
 
   static double getProgressToNextLevel(int currentXp) {
-    final currentLevel = fromXp(currentXp);
-    if (currentLevel.tier == LevelTier.disciplinedTrader) return 1.0;
-
-    final range = currentLevel.maxXp - currentLevel.minXp + 1;
-    final gainedInTier = currentXp - currentLevel.minXp;
-    return (gainedInTier / range).clamp(0.0, 1.0);
+    return Level.progressToNextLevel(currentXp);
   }
 }

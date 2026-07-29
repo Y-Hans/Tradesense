@@ -92,5 +92,22 @@ void main() {
       expect(notifier.state.status, equals(AuthStatus.unauthenticated));
       expect(notifier.state.user, isNull);
     });
+
+    test(
+        'deleteAccount calls repository and transitions state to unauthenticated',
+        () async {
+      await notifier.signIn(
+        email: 'trader@cryptoedu.app',
+        password: 'password123',
+      );
+      expect(notifier.state.isAuthenticated, isTrue);
+
+      final success = await notifier.deleteAccount();
+
+      expect(success, isTrue);
+      expect(notifier.state.status, equals(AuthStatus.unauthenticated));
+      expect(notifier.state.user, isNull);
+      expect(await mockRepo.getCurrentUser(), isNull);
+    });
   });
 }

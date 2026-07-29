@@ -2,61 +2,78 @@
 
 **Developer**: Neel (Auth, User Lifecycle, Onboarding, Learning, Missions & Profile)  
 **Date**: 2026-07-29  
-**Feature Module**: Onboarding Business Flow & User Lifecycle Coordination  
+**Feature Module**: Learning Progression System (V1) Implementation  
 
 ---
 
-## 1. Startup Decision Tree & Architecture
+## 1. Learning Progression Architecture
 
 ```text
-App Launch
+Application Learning Event (e.g. onboardingCompleted, loginCompleted, viewedMarket, firstTradeCompleted)
     ↓
-Restore Session (AuthNotifier)
+LearningProgressionNotifier.processEvent(LearningEvent)
     ↓
-Initialize User Lifecycle (UserLifecycleNotifier - Idempotent)
+MissionEngine.processEvent() (evaluates mission match & event idempotency)
     ↓
-Check Onboarding (OnboardingNotifier - Scoped per user ID)
+XpEngine.calculateXpAward() (validates duplicate reward prevention & educational XP bounds)
     ↓
-Navigate (GoRouter Redirect)
+LevelEngine.evaluateLevel() (deterministic level tier resolution & progress calculation)
+    ↓
+LearningProgressionState Updated (totalXP, currentLevel, progressToNextLevel, missions, completedMissionIds)
+    ↓
+MissionsScreen UI (ConsumerStatefulWidget re-renders reactively)
 ```
 
 ---
 
 ## 2. Functionality Implemented
 
-- **Shared Contract Integrity Preserved**:
-  - `UserProfile` (`lib/shared/models/user_profile.dart`) preserved untouched without modifying shared domain models.
-  - `AuthNotifier` (`lib/features/auth/application/auth_notifier.dart`) kept exclusively focused on authentication operations without mixing onboarding logic.
+- **Event-Driven Learning Progression Domain**:
+  - Created `LearningEvent` domain model for application events: `onboardingCompleted`, `loginCompleted`, `viewedMarket`, `firstTradeCompleted`, `completedLesson`, `newsDetectiveCompleted`.
+  - Built `Mission` entity and `MissionProgress` value object with initial V1 missions (Complete Onboarding +50 XP, First Login +30 XP, View Market +30 XP, First Virtual Trade +50 XP, Read Educational Content +40 XP, Complete News Detective +100 XP).
+  - Built `Level` model and `LevelTier` enum with deterministic tier resolution:
+    - **Rookie**: 0 - 99 XP
+    - **Explorer**: 100 - 249 XP
+    - **Risk-Aware Trader**: 250 - 429 XP
+    - **Disciplined Trader**: 430+ XP
+  - Built `XpState` model to encapsulate total XP, `processedEventIds`, `completedMissionIds`, and reward log history.
 
-- **Onboarding State & Business Logic**:
-  - Created `OnboardingNotifier` (`lib/features/onboarding/application/onboarding_notifier.dart`) managing onboarding completion per user ID.
-  - Reused Somya's `OnboardingScreen` presentation UI exactly as delivered, connecting `_finishOnboarding()` to `OnboardingNotifier.completeOnboarding(userId)`.
+- **Pure Business Logic Engines**:
+  - `XpEngine`: Pure calculation engine determining XP awards. Enforces strict duplicate reward prevention and ensures simulated trade profit or financial metrics NEVER dictate XP rewards.
+  - `LevelEngine`: Pure engine executing deterministic level tier evaluation, progress fraction (0.0 to 1.0), and level up detection.
+  - `MissionEngine`: Pure engine mapping incoming events to active missions, marking progress, and calculating XP updates idempotently.
 
-- **Idempotent User Lifecycle Coordination**:
-  - Implemented `UserLifecycleNotifier` (`lib/features/auth/application/user_lifecycle_notifier.dart`) tracking user lifecycle initialization per user ID.
-  - Preserved `TODO(Laksh)` for future financial initialization without creating premature placeholder requests.
+- **Application State & Riverpod Notifier**:
+  - Implemented `LearningProgressionNotifier` (`StateNotifier<LearningProgressionState>`) and exported `learningProgressionNotifierProvider`.
+  - Added methods for `processEvent`, `claimMission`, `reset`, and `restoreState`.
 
-- **Side-Effect-Free Startup Routing Guard**:
-  - Configured GoRouter redirect guard in `lib/app/routing/app_router.dart` and `routerProvider` driven by `AuthState` and `OnboardingNotifier`.
-  - Holds redirection while `authState.isRestoring` to eliminate login/onboarding screen flicker.
-  - Redirects unauthenticated users to `/login`, first-time users to `/onboarding`, and returning users to `/home`.
+- **UI Integration**:
+  - Refactored `MissionsScreen` to a `ConsumerStatefulWidget` reactively observing `learningProgressionNotifierProvider`.
+
+- **Boundary & Privacy Compliance**:
+  - Maintained complete independence from Laksh's trading simulator and Yajat's shared contracts.
+  - Preserved strict educational positioning (no gambling language, no financial advice, no encouragement of excessive trading).
 
 ---
 
 ## 3. Files Created & Modified
 
 ### Created Files
-- `lib/features/onboarding/application/onboarding_notifier.dart`
-- `lib/features/auth/application/user_lifecycle_notifier.dart`
-- `test/unit/user_lifecycle_notifier_test.dart`
-- `test/unit/onboarding_flow_test.dart`
+- `lib/features/learning/domain/learning_event.dart`
+- `lib/features/learning/domain/mission.dart`
+- `lib/features/learning/domain/mission_progress.dart`
+- `lib/features/learning/domain/level.dart`
+- `lib/features/learning/domain/xp_state.dart`
+- `lib/features/learning/application/xp_engine.dart`
+- `lib/features/learning/application/level_engine.dart`
+- `lib/features/learning/application/mission_engine.dart`
+- `lib/features/learning/application/learning_progression_notifier.dart`
+- `test/unit/learning_progression_test.dart`
 
 ### Modified Files
-- `lib/features/auth/application/auth_notifier.dart`
-- `lib/features/onboarding/presentation/onboarding_screen.dart`
-- `lib/core/providers/app_providers.dart`
-- `lib/app/routing/app_router.dart`
-- `lib/app/app.dart`
+- `lib/features/learning/domain/models/mission.dart`
+- `lib/features/learning/domain/models/xp_level.dart`
+- `lib/features/learning/presentation/missions_screen.dart`
 - `docs/ownership/Neel.md`
 - `docs/development-log/Neel.md`
 
@@ -64,39 +81,22 @@ Navigate (GoRouter Redirect)
 
 ## 4. Tests Added & Validation Results
 
-Added unit test suites covering:
-1. **Session restored + onboarding complete**: Profile with completed onboarding status completes session restoration and routes to `/home`.
-2. **Session restored + onboarding incomplete**: Profile with incomplete onboarding status routes to `/onboarding`.
-3. **Onboarding completion persistence**: Calling `completeOnboarding(userId)` updates onboarding state per user ID.
-4. **Logout state reset**: Signing out resets auth state and clears active session context.
-5. **Multi-user isolation**: Multiple accounts maintain independent onboarding completion states.
-6. **Idempotent lifecycle initialization**: `UserLifecycleNotifier.initializeUser()` executes exactly once per user ID and skips redundant calls.
+Added unit test suite (`test/unit/learning_progression_test.dart`) covering:
+1. **XP Calculation & Privacy**: Verified fixed educational XP rewards for matching events and zero dependency on financial profit metrics.
+2. **Duplicate Reward Prevention**: Verified that claiming an already completed mission or processing a previously processed event ID yields 0 XP.
+3. **Deterministic Level Engine**: Verified exact level tier bounds for Rookie (0-99), Explorer (100-249), Risk-Aware Trader (250-429), and Disciplined Trader (430+), as well as progress percentage and XP to next tier.
+4. **Mission Engine Idempotency**: Verified that processing duplicate events or repeated app launches skips processing idempotently without mutating state.
+5. **State Restoration & Reset**: Verified `restoreState` correctly populates historical XP and completed missions, and `reset` returns state to initial clean state.
+6. **Edge Cases**: Verified repeated logins, repeated onboarding attempts, and sequential mission stacking.
 
 ---
 
-## 5. Integration Impact & Boundary Preservation
+## 5. Definition of Done Checklist
 
-- **Yajat (Contracts & Core Architecture)**: Preserved shared `AuthRepository` interface in `lib/core/contracts/repository_contracts.dart` and `UserProfile` shared model without modifications.
-- **Somya (UI / Presentation)**: Preserved `OnboardingScreen` presentation design, slide structure, dots, disclaimers, and animations without redesigning presentation code.
-- **Laksh (Trading Engine & Portfolio)**: Zero wallet creation, ₹100,000 balance assignment, or portfolio mutations. `TODO(Laksh)` marker preserved inside `UserLifecycleNotifier`.
-- **Divyanshu (Infrastructure & Backend)**: Backend Supabase integration deferred to Divyanshu's platform initialization contract.
-
----
-
-## 6. Onboarding Persistence Architecture & Backend Dependencies
-
-- **Mock-Mode Behavior**:
-  - `OnboardingNotifier` maintains application state in memory per active user session (`Map<String, bool>`).
-  - Default mock user `usr_mock_123` defaults to `true` (enabling instant dashboard testing in mock mode).
-  - New user registrations default to `false` (routing first-time users through onboarding once).
-
-- **Production Behavior**:
-  - The application layer (`OnboardingNotifier`) is integration-ready to read backend user metadata returned by `AuthRepository.getCurrentUser()`.
-
-- **Outstanding Backend Dependency (Divyanshu)**:
-  - Cross-app-restart persistence in production depends on Divyanshu including `is_onboarding_completed` in Supabase user metadata / PostgreSQL profile table migrations.
-  - To prevent technical debt, **no temporary device-local storage** (`SharedPreferences` or `FlutterSecureStorage`) or parallel persistence mechanisms were added.
-
-- **Graceful Degradation**:
-  - Unrecorded user IDs default safely to `isCompleted(userId) == false` without throwing exceptions or pretending local disk persistence exists.
-  - Virtual wallet creation and starting balance seeding will be hooked into `UserLifecycleNotifier` when Laksh provides the financial contract.
+- [x] Learning progression implemented.
+- [x] XP system complete.
+- [x] Level engine complete.
+- [x] Mission engine complete.
+- [x] Duplicate prevention verified.
+- [x] Full test suite passing.
+- [x] No unrelated refactoring.
