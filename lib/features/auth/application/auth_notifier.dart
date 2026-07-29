@@ -87,6 +87,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// Deletes active user account via repository, clears session, and updates state.
+  Future<bool> deleteAccount() async {
+    if (state.isAuthenticating) return false;
+    state = AuthState.authenticating();
+    try {
+      await _authRepository.deleteAccount();
+      state = AuthState.unauthenticated();
+      return true;
+    } on AuthException catch (e) {
+      state = AuthState.error(e.message);
+      return false;
+    } catch (e) {
+      state = AuthState.error('Account deletion failed: ${e.toString()}');
+      return false;
+    }
+  }
+
   /// Resets error state if present.
   void clearError() {
     if (state.status == AuthStatus.error) {

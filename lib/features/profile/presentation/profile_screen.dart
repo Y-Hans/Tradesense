@@ -4,9 +4,107 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../domain/educational_disclosures.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
+
+  Future<void> _showDeleteAccountDialog(
+      BuildContext context, WidgetRef ref) async {
+    final firstConfirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Account'),
+        content: const Text(
+          'Are you sure you want to delete your account? This action will clear your session and account profile.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.loss),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (firstConfirm != true || !context.mounted) return;
+
+    final finalConfirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Final Confirmation'),
+        content: const Text(
+          'This is your final confirmation. Proceeding will permanently remove account data and sign you out.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.loss),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Confirm Deletion'),
+          ),
+        ],
+      ),
+    );
+
+    if (finalConfirm != true || !context.mounted) return;
+
+    final success = await ref.read(authStateProvider.notifier).deleteAccount();
+    if (!success && context.mounted) {
+      final authState = ref.read(authStateProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authState.errorMessage ?? 'Account deletion failed.'),
+        ),
+      );
+    }
+  }
+
+  void _showPrivacyDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Privacy & Disclosures'),
+        content: const SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                EducationalDisclosures.simulationNotice,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 8),
+              Text(EducationalDisclosures.noRealCryptoNotice),
+              SizedBox(height: 8),
+              Text(EducationalDisclosures.noGuaranteeNotice),
+              SizedBox(height: 8),
+              Text(EducationalDisclosures.zeroFinancialRiskNotice),
+              SizedBox(height: 8),
+              Text(
+                EducationalDisclosures.regulatoryDisclaimer,
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,6 +120,9 @@ class ProfileScreen extends ConsumerWidget {
           final displayName = user?.displayName ?? 'Discipline Trader';
           final email = user?.email ?? 'trader@cryptoedu.app';
           final balance = user?.virtualBalanceInr ?? 100000.0;
+          final joinedText = user != null
+              ? 'Joined: ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}'
+              : 'Status: Authenticated';
 
           // Level Title
           const String levelTitle = 'Risk-Aware Trader';
@@ -71,6 +172,14 @@ class ProfileScreen extends ConsumerWidget {
                                 email,
                                 style: const TextStyle(
                                   fontSize: 13,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                joinedText,
+                                style: const TextStyle(
+                                  fontSize: 11,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
@@ -196,15 +305,17 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Replay Onboarding
+                // Privacy & Disclaimers
                 Card(
                   child: ListTile(
-                    leading: const Icon(Icons.replay_rounded,
+                    leading: const Icon(Icons.privacy_tip_outlined,
                         color: AppColors.primary),
-                    title: const Text('Replay Onboarding'),
+                    title: const Text('Privacy & Disclaimers'),
+                    subtitle:
+                        const Text('Educational policy & simulation rules'),
                     trailing: const Icon(Icons.arrow_forward_ios,
                         size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/onboarding'),
+                    onTap: () => _showPrivacyDialog(context),
                   ),
                 ),
 
@@ -244,15 +355,7 @@ class ProfileScreen extends ConsumerWidget {
                       'Delete Account & Private Data',
                       style: TextStyle(color: AppColors.loss),
                     ),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Account deletion requires platform infrastructure setup.',
-                          ),
-                        ),
-                      );
-                    },
+                    onTap: () => _showDeleteAccountDialog(context, ref),
                   ),
                 ),
 
@@ -285,7 +388,7 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'This app is an educational trading simulation. No real cryptocurrency is bought or sold.',
+                              '${EducationalDisclosures.simulationNotice} ${EducationalDisclosures.noRealCryptoNotice}',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 12,

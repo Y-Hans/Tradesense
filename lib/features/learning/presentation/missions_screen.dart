@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_theme.dart';
-import '../domain/models/mission.dart';
-import '../domain/models/xp_level.dart';
+import '../application/learning_progression_notifier.dart';
+import '../domain/level.dart';
+import '../domain/mission.dart';
 
-class MissionsScreen extends StatefulWidget {
+class MissionsScreen extends ConsumerStatefulWidget {
   const MissionsScreen({super.key});
 
   @override
-  State<MissionsScreen> createState() => _MissionsScreenState();
+  ConsumerState<MissionsScreen> createState() => _MissionsScreenState();
 }
 
-class _MissionsScreenState extends State<MissionsScreen> {
-  int _userXp = 0;
-  final Set<String> _completedMissionIds = {};
-
+class _MissionsScreenState extends ConsumerState<MissionsScreen> {
   void _claimMission(Mission mission) {
-    if (_completedMissionIds.contains(mission.id)) {
+    final result = ref
+        .read(learningProgressionNotifierProvider.notifier)
+        .claimMission(mission.id);
+
+    if (result.isDuplicate || !result.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Reward already claimed for this mission.'),
@@ -24,11 +27,6 @@ class _MissionsScreenState extends State<MissionsScreen> {
       );
       return;
     }
-
-    setState(() {
-      _completedMissionIds.add(mission.id);
-      _userXp += mission.xpReward;
-    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -41,9 +39,12 @@ class _MissionsScreenState extends State<MissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentLevel = XpLevel.fromXp(_userXp);
-    final progressToNext = XpLevel.getProgressToNextLevel(_userXp);
-    const missions = Mission.coreMissions;
+    final progressionState = ref.watch(learningProgressionNotifierProvider);
+    final userXp = progressionState.totalXp;
+    final currentLevel = progressionState.currentLevel;
+    final progressToNext = progressionState.progressToNextLevel;
+    final missions = progressionState.missions;
+    final completedMissionIds = progressionState.completedMissionIds;
 
     return Scaffold(
       appBar: AppBar(
@@ -102,7 +103,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
                           borderRadius: BorderRadius.circular(20.0),
                         ),
                         child: Text(
-                          '$_userXp XP',
+                          '$userXp XP',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -157,7 +158,8 @@ class _MissionsScreenState extends State<MissionsScreen> {
               separatorBuilder: (_, __) => const SizedBox(height: 12.0),
               itemBuilder: (context, index) {
                 final mission = missions[index];
-                final isCompleted = _completedMissionIds.contains(mission.id);
+                final isCompleted = mission.isCompleted ||
+                    completedMissionIds.contains(mission.id);
 
                 return Container(
                   padding: const EdgeInsets.all(16.0),
