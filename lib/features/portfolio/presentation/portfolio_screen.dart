@@ -4,12 +4,17 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../shared/constants/app_strings.dart';
+import '../../../shared/widgets/offline_state_widget.dart';
 
 class PortfolioScreen extends ConsumerWidget {
   const PortfolioScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isOffline = ref.watch(
+      connectivityProvider.select((status) => status == ConnectivityStatus.offline),
+    );
     final portfolioAsync = ref.watch(portfolioProvider);
 
     return Scaffold(
@@ -28,6 +33,38 @@ class PortfolioScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (isOffline)
+                OfflineStateWidget(
+                  message: AppStrings.portfolioOfflineNotice,
+                  compact: true,
+                  footer: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.outline, width: 1),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.history_outlined,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          '${AppStrings.portfolioOfflineNotice} • ${AppStrings.portfolioOfflineLastUpdatedPrefix} just now',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               Card(
                 color: AppColors.card,
                 child: Padding(

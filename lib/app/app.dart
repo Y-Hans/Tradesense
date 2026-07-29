@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'routing/app_router.dart';
+import 'shell/app_shell.dart';
 import 'theme/app_theme.dart';
 
 class CryptoEduApp extends StatelessWidget {
@@ -12,6 +13,8 @@ class CryptoEduApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: appRouter,
+      builder: (context, child) => AppShell(child: child),
     );
   }
 }
+

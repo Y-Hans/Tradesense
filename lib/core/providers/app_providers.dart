@@ -11,6 +11,11 @@ import '../../shared/models/market_ticker.dart';
 import '../../shared/models/subscription_status.dart';
 import '../../shared/models/feature_flags.dart';
 
+export '../services/connectivity/connectivity_provider.dart';
+export '../services/connectivity/connectivity_service.dart';
+export '../services/connectivity/connectivity_status.dart';
+
+
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
 
