@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/trade_card.dart';
 
 class NewsQuestion {
   final String id;
@@ -180,50 +181,46 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Card(
-                    color: AppColors.surface,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                              'Source: ${_questions[_currentIndex].sourceMetadata}',
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 12)),
-                          const SizedBox(height: 12),
-                          Text(
-                            _questions[_currentIndex].headline,
+                  TradeCard(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                            'Source: ${_questions[_currentIndex].sourceMetadata}',
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text('Clues & Red Flags:',
-                              style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
-                          const SizedBox(height: 8),
-                          ..._questions[_currentIndex]
-                              .clues
-                              .map((clue) => Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: Row(
-                                      children: [
-                                        const Icon(Icons.search,
-                                            size: 14,
-                                            color: AppColors.textSecondary),
-                                        const SizedBox(width: 6),
-                                        Expanded(
-                                            child: Text(clue,
-                                                style: const TextStyle(
-                                                    fontSize: 13))),
-                                      ],
-                                    ),
-                                  )),
-                        ],
-                      ),
+                                color: AppColors.textSecondary, fontSize: 12)),
+                        const SizedBox(height: 12),
+                        Text(
+                          _questions[_currentIndex].headline,
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Clues & Red Flags:',
+                            style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13)),
+                        const SizedBox(height: 8),
+                        ..._questions[_currentIndex]
+                            .clues
+                            .map((clue) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 4.0),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.search,
+                                          size: 14,
+                                          color: AppColors.textSecondary),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                          child: Text(clue,
+                                              style: const TextStyle(
+                                                  fontSize: 13))),
+                                    ],
+                                  ),
+                                )),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 20),

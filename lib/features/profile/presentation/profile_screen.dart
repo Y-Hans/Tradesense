@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../core/widgets/disclaimer_card.dart';
+import '../../../core/widgets/trade_card.dart';
 import '../domain/educational_disclosures.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -49,7 +51,7 @@ class ProfileScreen extends ConsumerWidget {
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.loss),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Confirm Deletion'),
+            child: const Text('Confirm Delete'),
           ),
         ],
       ),
@@ -58,11 +60,18 @@ class ProfileScreen extends ConsumerWidget {
     if (finalConfirm != true || !context.mounted) return;
 
     final success = await ref.read(authStateProvider.notifier).deleteAccount();
-    if (!success && context.mounted) {
-      final authState = ref.read(authStateProvider);
+    if (success && context.mounted) {
+      ref.read(userLifecycleProvider.notifier).reset();
+      try {
+        context.go('/login');
+      } catch (_) {}
+    } else if (context.mounted) {
+      final errorMessage = ref.read(authStateProvider).errorMessage ??
+          'Account deletion failed.';
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authState.errorMessage ?? 'Account deletion failed.'),
+          content: Text(errorMessage),
+          backgroundColor: AppColors.loss,
         ),
       );
     }
@@ -72,28 +81,13 @@ class ProfileScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Privacy & Disclosures'),
+        title: const Text('Privacy & Educational Policy'),
         content: const SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                EducationalDisclosures.simulationNotice,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(EducationalDisclosures.noRealCryptoNotice),
-              SizedBox(height: 8),
-              Text(EducationalDisclosures.noGuaranteeNotice),
-              SizedBox(height: 8),
-              Text(EducationalDisclosures.zeroFinancialRiskNotice),
-              SizedBox(height: 8),
-              Text(
-                EducationalDisclosures.regulatoryDisclaimer,
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-              ),
-            ],
+          child: Text(
+            '${EducationalDisclosures.simulationNotice}\n\n'
+            '${EducationalDisclosures.noRealCryptoNotice}\n\n'
+            '${EducationalDisclosures.noGuaranteeNotice}\n\n'
+            'TradeSense is strictly designed to build trading discipline and risk awareness.',
           ),
         ),
         actions: [
@@ -112,151 +106,150 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Account & Profile'),
-        elevation: 0,
+        title: const Text('Profile & Settings'),
       ),
       body: userAsync.when(
         data: (user) {
-          final displayName = user?.displayName ?? 'Discipline Trader';
+          final displayName = user?.displayName ?? 'Trader';
           final email = user?.email ?? 'trader@cryptoedu.app';
           final balance = user?.virtualBalanceInr ?? 100000.0;
           final joinedText = user != null
-              ? 'Joined: ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}'
-              : 'Status: Authenticated';
-
-          // Level Title
-          const String levelTitle = 'Risk-Aware Trader';
-          const int xp = 250;
+              ? 'Joined ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}'
+              : 'Active Session';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // User Profile Header Card
-                Card(
-                  color: AppColors.surface,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: AppColors.primary,
-                          child: Text(
-                            displayName.isNotEmpty
-                                ? displayName[0].toUpperCase()
-                                : 'T',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
+                // User Header Card (Somya Glassmorphic TradeCard styling)
+                TradeCard(
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.2),
+                        child: Text(
+                          displayName.isNotEmpty
+                              ? displayName[0].toUpperCase()
+                              : 'T',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
                           ),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                displayName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                email,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                joinedText,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Starting Balance: ${FinancialMath.formatInr(balance)} SIMULATED',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.profit,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Discipline Tier & XP Badge Card
-                Card(
-                  color: AppColors.card,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Column(
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'DISCIPLINE TIER',
-                              style: TextStyle(
-                                color: AppColors.discipline,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              levelTitle,
-                              style: TextStyle(
-                                fontSize: 16,
+                              displayName,
+                              style: const TextStyle(
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.textPrimary,
                               ),
                             ),
+                            const SizedBox(height: 4),
+                            Text(
+                              email,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              joinedText,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Starting Balance: ${FinancialMath.formatInr(balance)} SIMULATED',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.profit,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            '$xp XP',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
+
+                // Discipline Tier Badge
+                TradeCard(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'DISCIPLINE TIER',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textSecondary,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Disciplined Trader',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.discipline,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: AppColors.discipline.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color:
+                                  AppColors.discipline.withValues(alpha: 0.3)),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.shield,
+                                size: 16, color: AppColors.discipline),
+                            SizedBox(width: 4),
+                            Text(
+                              '85 / 100',
+                              style: TextStyle(
+                                color: AppColors.discipline,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
 
                 const Text(
-                  'Learning Features',
+                  'Learning & Features',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -266,30 +259,40 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // Missions Tile
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
-                    leading: const Icon(Icons.military_tech,
-                        color: AppColors.discipline),
+                    leading: const Icon(Icons.stars, color: AppColors.accent),
                     title: const Text('Missions & Rewards'),
-                    subtitle:
-                        const Text('Earn XP and boost your Discipline Tier'),
+                    subtitle: const Text('Earn XP and level up discipline'),
                     trailing: const Icon(Icons.arrow_forward_ios,
                         size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/missions'),
+                    onTap: () {
+                      try {
+                        context.push('/missions');
+                      } catch (_) {}
+                    },
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // News Detective Tile
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
-                    leading: const Icon(Icons.search_rounded,
+                    leading: const Icon(Icons.manage_search,
                         color: AppColors.primary),
-                    title: const Text('News Detective 🕵️‍♂️'),
+                    title: const Text('News Detective Quiz'),
                     subtitle: const Text(
                         'Train source verification & spot clickbait'),
                     trailing: const Icon(Icons.arrow_forward_ios,
                         size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/news-detective'),
+                    onTap: () {
+                      try {
+                        context.push('/news-detective');
+                      } catch (_) {}
+                    },
                   ),
                 ),
 
@@ -306,7 +309,8 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
 
                 // Privacy & Disclaimers
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.privacy_tip_outlined,
                         color: AppColors.primary),
@@ -319,8 +323,11 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Subscription Status
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.star, color: AppColors.discipline),
@@ -329,25 +336,39 @@ class ProfileScreen extends ConsumerWidget {
                       user?.isPremium == true ? 'PREMIUM' : 'FREE',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    onTap: () => context.push('/paywall'),
+                    onTap: () {
+                      try {
+                        context.push('/paywall');
+                      } catch (_) {}
+                    },
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Sign Out
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.logout, color: AppColors.textPrimary),
                     title: const Text('Sign Out'),
                     onTap: () async {
                       await ref.read(authStateProvider.notifier).signOut();
-                      if (context.mounted) context.go('/login');
+                      if (context.mounted) {
+                        try {
+                          context.go('/login');
+                        } catch (_) {}
+                      }
                     },
                   ),
                 ),
 
+                const SizedBox(height: 12),
+
                 // Delete Account
-                Card(
+                TradeCard(
+                  padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
                         const Icon(Icons.delete_forever, color: AppColors.loss),
@@ -362,44 +383,7 @@ class ProfileScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
 
                 // Educational Disclaimer Card
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.3)),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppColors.primary),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Educational Simulation Notice',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              '${EducationalDisclosures.simulationNotice} ${EducationalDisclosures.noRealCryptoNotice}',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                const DisclaimerCard(compact: false),
               ],
             ),
           );

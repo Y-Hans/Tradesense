@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/widgets/disclaimer_card.dart';
+import '../../../core/widgets/trade_card.dart';
 
 class OnboardingStep {
   final String title;
@@ -39,7 +40,14 @@ class OnboardingStep {
 }
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
+  final VoidCallback? onGetStarted;
+  final bool isLoading;
+
+  const OnboardingScreen({
+    super.key,
+    this.onGetStarted,
+    this.isLoading = false,
+  });
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -64,12 +72,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   bool get _isLastStep => _currentIndex == OnboardingStep.steps.length - 1;
 
   void _finishOnboarding() {
-    final userId = ref.read(authStateProvider).user?.id;
-    if (userId != null) {
-      ref.read(onboardingNotifierProvider.notifier).completeOnboarding(userId);
-    }
-    if (context.mounted) {
-      context.go('/home');
+    if (widget.isLoading) return;
+
+    if (widget.onGetStarted != null) {
+      widget.onGetStarted!();
+    } else {
+      final userId = ref.read(authStateProvider).user?.id;
+      if (userId != null) {
+        ref
+            .read(onboardingNotifierProvider.notifier)
+            .completeOnboarding(userId);
+      }
+      if (context.mounted) {
+        context.go('/home');
+      }
     }
   }
 
@@ -97,7 +113,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       letterSpacing: 1.5,
                     ),
                   ),
-                  if (!_isLastStep)
+                  if (!_isLastStep && !widget.isLoading)
                     TextButton(
                       onPressed: _finishOnboarding,
                       child: const Text(
@@ -121,45 +137,55 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   final step = steps[index];
                   return Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(24.0),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.4),
-                              width: 2.0,
-                            ),
-                          ),
-                          child: Icon(
-                            step.icon,
-                            size: 64.0,
-                            color: AppColors.primary,
+                    child: Center(
+                      child: TradeCard(
+                        padding: const EdgeInsets.all(32.0),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(24.0),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.15),
+                                  border: Border.all(
+                                    color: AppColors.primary
+                                        .withValues(alpha: 0.4),
+                                    width: 2.0,
+                                  ),
+                                ),
+                                child: Icon(
+                                  step.icon,
+                                  size: 64.0,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 32.0),
+                              Text(
+                                step.title,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  fontSize: 22.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16.0),
+                              Text(
+                                step.description,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 15.0,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 32.0),
-                        Text(
-                          step.title,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 22.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16.0),
-                        Text(
-                          step.description,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 15.0,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   );
                 },
@@ -176,9 +202,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   height: 8.0,
                   decoration: BoxDecoration(
                     color: _currentIndex == index
-                        ? AppColors.primary
+                        ? const Color(0xFF00E5FF) // neon-cyan
                         : AppColors.card,
                     borderRadius: BorderRadius.circular(4.0),
+                    boxShadow: _currentIndex == index
+                        ? [
+                            const BoxShadow(
+                              color: Color(0x6600E5FF),
+                              blurRadius: 8.0,
+                              spreadRadius: 1.0,
+                            )
+                          ]
+                        : [],
                   ),
                 ),
               ),
@@ -202,24 +237,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
-                  onPressed: () {
-                    if (_isLastStep) {
-                      _finishOnboarding();
-                    } else {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    }
-                  },
-                  child: Text(
-                    _isLastStep ? 'Get Started' : 'Next',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  onPressed: widget.isLoading
+                      ? null
+                      : () {
+                          if (_isLastStep) {
+                            _finishOnboarding();
+                          } else {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        },
+                  child: widget.isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          _isLastStep ? 'Get Started' : 'Next',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ),

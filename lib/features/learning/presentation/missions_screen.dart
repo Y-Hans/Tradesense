@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/trade_card.dart';
+import '../../../core/widgets/visual_gauge.dart';
 import '../application/learning_progression_notifier.dart';
 import '../domain/level.dart';
 import '../domain/mission.dart';
@@ -55,17 +57,9 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Level & XP Header Card
-            Container(
+            // Level & XP Header Card (Somya VisualGauge & TradeCard styling)
+            TradeCard(
               padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.accent],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16.0),
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -93,43 +87,22 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          const SizedBox(height: 16.0),
+                          Text(
+                            currentLevel.tier == LevelTier.disciplinedTrader
+                                ? 'Maximum level reached!'
+                                : 'Next Level Tier at ${currentLevel.maxXp + 1} XP',
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12.0),
+                          ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12.0, vertical: 6.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        child: Text(
-                          '$userXp XP',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      VisualGauge(
+                        progress: progressToNext,
+                        activeColor: AppColors.discipline,
+                        label: '$userXp XP',
                       ),
                     ],
-                  ),
-                  const SizedBox(height: 16.0),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: LinearProgressIndicator(
-                      value: progressToNext,
-                      minHeight: 8.0,
-                      backgroundColor: Colors.white.withValues(alpha: 0.2),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.discipline),
-                    ),
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    currentLevel.tier == LevelTier.disciplinedTrader
-                        ? 'Maximum level reached!'
-                        : 'Next Level Tier at ${currentLevel.maxXp + 1} XP',
-                    style:
-                        const TextStyle(color: Colors.white70, fontSize: 12.0),
                   ),
                 ],
               ),
@@ -161,17 +134,8 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                 final isCompleted = mission.isCompleted ||
                     completedMissionIds.contains(mission.id);
 
-                return Container(
+                return TradeCard(
                   padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(
-                      color: isCompleted
-                          ? AppColors.profit.withValues(alpha: 0.5)
-                          : AppColors.card,
-                    ),
-                  ),
                   child: Row(
                     children: [
                       Container(

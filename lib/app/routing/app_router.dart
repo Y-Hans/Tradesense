@@ -38,9 +38,9 @@ class RouterListenable extends ChangeNotifier {
       return null;
     }
 
-    final loc = state.matchedLocation;
-    final isAuthRoute = loc == '/login' || loc == '/register';
-    final isOnboardingRoute = loc == '/onboarding';
+    final isAuthRoute = state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register';
+    final isOnboardingRoute = state.matchedLocation == '/onboarding';
 
     // 2. Unauthenticated state
     if (!authState.isAuthenticated && !authState.isAuthenticating) {
@@ -151,8 +151,3 @@ final List<RouteBase> _appRoutes = [
     builder: (context, state) => const NewsDetectiveScreen(),
   ),
 ];
-
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/home',
-  routes: _appRoutes,
-);

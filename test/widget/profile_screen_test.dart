@@ -31,10 +31,11 @@ void main() {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
-      expect(find.text('Account & Profile'), findsOneWidget);
+      expect(find.text('Profile & Settings'), findsOneWidget);
       expect(find.text('DisciplineTrader'), findsOneWidget);
       expect(find.text('trader@cryptoedu.app'), findsOneWidget);
       expect(find.textContaining('Starting Balance:'), findsOneWidget);
+      expect(find.textContaining('Disciplined Trader'), findsOneWidget);
       expect(
           find.textContaining('Educational Simulation Notice'), findsOneWidget);
     });
@@ -53,7 +54,7 @@ void main() {
       await tester.tap(privacyTile);
       await tester.pumpAndSettle();
 
-      expect(find.text('Privacy & Disclosures'), findsOneWidget);
+      expect(find.text('Privacy & Educational Policy'), findsOneWidget);
       expect(find.textContaining('This is an educational trading simulation.'),
           findsWidgets);
 
@@ -61,7 +62,7 @@ void main() {
       await tester.tap(closeButton);
       await tester.pumpAndSettle();
 
-      expect(find.text('Privacy & Disclosures'), findsNothing);
+      expect(find.text('Privacy & Educational Policy'), findsNothing);
     });
 
     testWidgets('delete account flow opens confirmation step 1 and step 2',
@@ -94,7 +95,7 @@ void main() {
           findsOneWidget);
 
       final finalConfirmButton =
-          find.widgetWithText(ElevatedButton, 'Confirm Deletion');
+          find.widgetWithText(ElevatedButton, 'Confirm Delete');
       await tester.tap(finalConfirmButton);
       await tester.pumpAndSettle();
 
