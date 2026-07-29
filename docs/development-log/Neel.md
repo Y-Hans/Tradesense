@@ -1,74 +1,102 @@
 # DEVELOPMENT LOG — NEEL
 
 **Developer**: Neel (Auth, User Lifecycle, Onboarding, Learning, Missions & Profile)  
-**Date**: 2026-07-28  
-**Feature Module**: Authentication & Session Lifecycle  
+**Date**: 2026-07-29  
+**Feature Module**: Onboarding Business Flow & User Lifecycle Coordination  
 
 ---
 
-## 1. Functionality Implemented
+## 1. Startup Decision Tree & Architecture
 
-- **Authentication State Management**:
-  - Implemented `AuthState` with explicit `restoringSession`, `unauthenticated`, `authenticating`, `authenticated`, and `error` states.
-  - Implemented `AuthNotifier` (`StateNotifier<AuthState>`) to handle sign-in, registration, sign-out, session restoration, and error clearing.
-  - Added dedicated `restoringSession` state on startup to prevent login screen flashing during session checks.
-- **Data & Repositories**:
-  - Enhanced existing `MockAuthRepository` in `lib/core/providers/mocks/mock_repositories.dart` to enforce business validation (credential checking, duplicate registration handling, session clearing).
-  - Created `SupabaseAuthRepository` wrapping `SupabaseClient` for live Supabase integration, mapping Supabase errors to domain `AuthException`s.
-- **Provider Graph Integration**:
-  - Updated `authRepositoryProvider` in `lib/core/providers/app_providers.dart` to toggle between `MockAuthRepository` and `SupabaseAuthRepository` based on `mockModeProvider`.
-  - Added `authStateProvider` and re-wired `currentUserProvider` as a reactive `Provider<AsyncValue<UserProfile?>>` derived from `AuthState`, maintaining backwards compatibility across the presentation layer.
-- **Separated Form Validation & Error Handling**:
-  - Added UI-level form validation in `LoginScreen` and `RegisterScreen` for empty fields, email format regex, and password min length (6+ chars).
-  - Handled business errors (invalid credentials, duplicate accounts, network failures) in domain/repository layer with user-visible `SnackBar` alerts.
-- **Profile & Lifecycle Handoff**:
-  - Added Sign Out option to `ProfileScreen`.
-  - Ensured profile initialization coordinates session lifecycle without touching Laksh's trading engine or performing wallet/financial mutations.
+```text
+App Launch
+    ↓
+Restore Session (AuthNotifier)
+    ↓
+Initialize User Lifecycle (UserLifecycleNotifier - Idempotent)
+    ↓
+Check Onboarding (OnboardingNotifier - Scoped per user ID)
+    ↓
+Navigate (GoRouter Redirect)
+```
 
 ---
 
-## 2. Files Modified & Created
+## 2. Functionality Implemented
+
+- **Shared Contract Integrity Preserved**:
+  - `UserProfile` (`lib/shared/models/user_profile.dart`) preserved untouched without modifying shared domain models.
+  - `AuthNotifier` (`lib/features/auth/application/auth_notifier.dart`) kept exclusively focused on authentication operations without mixing onboarding logic.
+
+- **Onboarding State & Business Logic**:
+  - Created `OnboardingNotifier` (`lib/features/onboarding/application/onboarding_notifier.dart`) managing onboarding completion per user ID.
+  - Reused Somya's `OnboardingScreen` presentation UI exactly as delivered, connecting `_finishOnboarding()` to `OnboardingNotifier.completeOnboarding(userId)`.
+
+- **Idempotent User Lifecycle Coordination**:
+  - Implemented `UserLifecycleNotifier` (`lib/features/auth/application/user_lifecycle_notifier.dart`) tracking user lifecycle initialization per user ID.
+  - Preserved `TODO(Laksh)` for future financial initialization without creating premature placeholder requests.
+
+- **Side-Effect-Free Startup Routing Guard**:
+  - Configured GoRouter redirect guard in `lib/app/routing/app_router.dart` and `routerProvider` driven by `AuthState` and `OnboardingNotifier`.
+  - Holds redirection while `authState.isRestoring` to eliminate login/onboarding screen flicker.
+  - Redirects unauthenticated users to `/login`, first-time users to `/onboarding`, and returning users to `/home`.
+
+---
+
+## 3. Files Created & Modified
 
 ### Created Files
-- `lib/features/auth/domain/auth_state.dart`
-- `lib/features/auth/domain/auth_exception.dart`
-- `lib/features/auth/data/supabase_auth_repository.dart`
+- `lib/features/onboarding/application/onboarding_notifier.dart`
+- `lib/features/auth/application/user_lifecycle_notifier.dart`
+- `test/unit/user_lifecycle_notifier_test.dart`
+- `test/unit/onboarding_flow_test.dart`
+
+### Modified Files
 - `lib/features/auth/application/auth_notifier.dart`
-- `test/unit/auth_state_test.dart`
-- `test/unit/auth_notifier_test.dart`
-- `test/unit/auth_repository_test.dart`
-- `test/widget/auth_screens_test.dart`
+- `lib/features/onboarding/presentation/onboarding_screen.dart`
+- `lib/core/providers/app_providers.dart`
+- `lib/app/routing/app_router.dart`
+- `lib/app/app.dart`
 - `docs/ownership/Neel.md`
 - `docs/development-log/Neel.md`
 
-### Modified Files
-- `lib/core/providers/mocks/mock_repositories.dart`
-- `lib/core/providers/app_providers.dart`
-- `lib/features/auth/presentation/login_screen.dart`
-- `lib/features/auth/presentation/register_screen.dart`
-- `lib/features/profile/presentation/profile_screen.dart`
+---
+
+## 4. Tests Added & Validation Results
+
+Added unit test suites covering:
+1. **Session restored + onboarding complete**: Profile with completed onboarding status completes session restoration and routes to `/home`.
+2. **Session restored + onboarding incomplete**: Profile with incomplete onboarding status routes to `/onboarding`.
+3. **Onboarding completion persistence**: Calling `completeOnboarding(userId)` updates onboarding state per user ID.
+4. **Logout state reset**: Signing out resets auth state and clears active session context.
+5. **Multi-user isolation**: Multiple accounts maintain independent onboarding completion states.
+6. **Idempotent lifecycle initialization**: `UserLifecycleNotifier.initializeUser()` executes exactly once per user ID and skips redundant calls.
 
 ---
 
-## 3. Tests Added & Results
+## 5. Integration Impact & Boundary Preservation
 
-Added 4 dedicated test files containing 14 unit and widget test cases:
-1. `test/unit/auth_state_test.dart`: Validates `AuthState` constructors, immutability, getters, and `copyWith`.
-2. `test/unit/auth_notifier_test.dart`: Validates session restoration, sign in, duplicate sign up error, invalid credential error, and sign out state transitions.
-3. `test/unit/auth_repository_test.dart`: Validates credential checks and duplicate email checks in `MockAuthRepository`.
-4. `test/widget/auth_screens_test.dart`: Validates UI form rendering, empty field validation, email regex validation, and password length checks.
-
----
-
-## 4. Integration Impact & Boundaries Preserved
-
-- **Yajat (Contracts & Core Architecture)**: Preserved `AuthRepository` interface in `lib/core/contracts/repository_contracts.dart` without modification.
-- **Somya (UI / Presentation)**: Preserved existing screen layouts while enhancing input validation, loading states, and error handling.
-- **Laksh (Trading Engine & Portfolio)**: Auth lifecycle remains completely decoupled from wallet creation and trade execution logic.
-- **Divyanshu (Infrastructure & Platform)**: `deleteAccount()` deferred to platform infrastructure availability.
+- **Yajat (Contracts & Core Architecture)**: Preserved shared `AuthRepository` interface in `lib/core/contracts/repository_contracts.dart` and `UserProfile` shared model without modifications.
+- **Somya (UI / Presentation)**: Preserved `OnboardingScreen` presentation design, slide structure, dots, disclaimers, and animations without redesigning presentation code.
+- **Laksh (Trading Engine & Portfolio)**: Zero wallet creation, ₹100,000 balance assignment, or portfolio mutations. `TODO(Laksh)` marker preserved inside `UserLifecycleNotifier`.
+- **Divyanshu (Infrastructure & Backend)**: Backend Supabase integration deferred to Divyanshu's platform initialization contract.
 
 ---
 
-## 5. Known Limitations & Pending Dependencies
+## 6. Onboarding Persistence Architecture & Backend Dependencies
 
-- Live Supabase session restoration depends on Divyanshu's backend configuration (`Supabase.initialize`). Mock mode works offline out-of-the-box.
+- **Mock-Mode Behavior**:
+  - `OnboardingNotifier` maintains application state in memory per active user session (`Map<String, bool>`).
+  - Default mock user `usr_mock_123` defaults to `true` (enabling instant dashboard testing in mock mode).
+  - New user registrations default to `false` (routing first-time users through onboarding once).
+
+- **Production Behavior**:
+  - The application layer (`OnboardingNotifier`) is integration-ready to read backend user metadata returned by `AuthRepository.getCurrentUser()`.
+
+- **Outstanding Backend Dependency (Divyanshu)**:
+  - Cross-app-restart persistence in production depends on Divyanshu including `is_onboarding_completed` in Supabase user metadata / PostgreSQL profile table migrations.
+  - To prevent technical debt, **no temporary device-local storage** (`SharedPreferences` or `FlutterSecureStorage`) or parallel persistence mechanisms were added.
+
+- **Graceful Degradation**:
+  - Unrecorded user IDs default safely to `isCompleted(userId) == false` without throwing exceptions or pretending local disk persistence exists.
+  - Virtual wallet creation and starting balance seeding will be hooked into `UserLifecycleNotifier` when Laksh provides the financial contract.
