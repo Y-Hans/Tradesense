@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/widgets/trade_card.dart';
 
 class NewsQuestion {
   final String id;
@@ -180,13 +181,11 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Card(
-                    color: AppColors.surface,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                  TradeCard(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                           Text(
                               'Source: ${_questions[_currentIndex].sourceMetadata}',
                               style: const TextStyle(
@@ -224,7 +223,6 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                                   )),
                         ],
                       ),
-                    ),
                   ),
                   const SizedBox(height: 20),
                   if (!_showExplanation) ...[
