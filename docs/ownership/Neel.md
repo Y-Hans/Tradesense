@@ -1,43 +1,28 @@
-# Neel — File Ownership
+# NEEL — FILE OWNERSHIP INVENTORY
 
-Role:
-Authentication, Onboarding & Learning Lead
+**Owner**: Neel (Auth, User Lifecycle, Onboarding, Learning, Missions, XP & Profile)  
+**Last Updated**: 2026-07-28  
 
-## Ownership Rules
+---
 
-This developer may modify files explicitly assigned here.
+## Owned Files & Directories
 
-New files created inside clearly owned feature areas should be added to this document.
+### 1. Authentication Domain & Application (`lib/features/auth/`)
+- `lib/features/auth/domain/auth_state.dart`: Authentication state model (`restoringSession`, `unauthenticated`, `authenticating`, `authenticated`, `error`).
+- `lib/features/auth/domain/auth_exception.dart`: Domain authentication exceptions and user-friendly error translations.
+- `lib/features/auth/data/supabase_auth_repository.dart`: Supabase backend implementation of `AuthRepository`.
+- `lib/features/auth/application/auth_notifier.dart`: Riverpod `StateNotifier` managing authentication operations and session lifecycle restoration.
+- `lib/features/auth/presentation/login_screen.dart`: Login form presentation with UI validation, loading indicators, and error feedback.
+- `lib/features/auth/presentation/register_screen.dart`: Registration form presentation with UI validation, loading indicators, and error feedback.
 
-If a required change belongs to another developer, do not modify that developer's files. Use the cross-developer request process.
+### 2. Profile & Learning Features (`lib/features/profile/`, `lib/features/onboarding/`, `lib/features/learning/`)
+- `lib/features/profile/presentation/profile_screen.dart`: User profile, discipline tier badge, settings, and sign-out integration.
+- `lib/features/onboarding/presentation/onboarding_screen.dart`: Onboarding flow and simulation disclaimers.
+- `lib/features/learning/presentation/missions_screen.dart`: Educational missions and rewards.
+- `lib/features/learning/presentation/news_detective_screen.dart`: News Detective quiz feature.
 
-## Owned Files
-
-### Feature Domain & Data Implementations
-- `lib/features/auth/domain/` & `data/` — User authentication domain logic, AuthRepository client interfaces, secure token storage
-- `lib/features/onboarding/domain/` & `data/` — User onboarding progression, initial profile setup state
-- `lib/features/profile/domain/` & `data/` — Profile lifecycle management, account deletion domain orchestration
-- `lib/features/learning/domain/` & `data/` — Beginner missions, XP rewards, leveling progression, educational content logic
-
-## Owned Areas
-
-- `lib/features/auth/` (domain & data layers)
-- `lib/features/onboarding/` (domain & data layers)
-- `lib/features/profile/` (domain & data layers)
-- `lib/features/learning/` (domain & data layers)
-- Future stretch modules: Missions, XP, Levels, News Detective / Real-or-Fake News Quiz domain logic
-
-## Tests Owned
-
-- `test/unit/auth/*` — User authentication and session unit tests
-- `test/unit/onboarding/*` — Onboarding flow state unit tests
-- `test/unit/profile/*` — User profile lifecycle and account deletion unit tests
-- `test/unit/learning/*` — Educational missions and XP leveling unit tests
-
-## Notes / Boundaries
-
-### Explicit Exclusions (Must NOT Own or Directly Modify):
-- Presentation UI screens, widgets, and themes (owned by Somya)
-- Virtual wallet calculations, trading engine, portfolio P&L (owned by Laksh)
-- Risk Score, Discipline Score, AI Coach logic (owned by Yajat)
-- Supabase SQL schema migrations, Deno Edge Functions, Binance market streams, RevenueCat SDK, Android Gradle (owned by Divyanshu)
+### 3. Unit & Widget Tests (`test/`)
+- `test/unit/auth_state_test.dart`: Unit tests for `AuthState` immutability and getters.
+- `test/unit/auth_notifier_test.dart`: Unit tests for session restoration, login, registration, duplicate checks, and logout.
+- `test/unit/auth_repository_test.dart`: Unit tests for `MockAuthRepository` business validation.
+- `test/widget/auth_screens_test.dart`: Widget tests for `LoginScreen` and `RegisterScreen` form validation and UI feedback.

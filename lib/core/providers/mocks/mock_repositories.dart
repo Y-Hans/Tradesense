@@ -13,6 +13,7 @@ import '../../../shared/models/subscription_status.dart';
 import '../../../shared/models/feature_flags.dart';
 import '../../utils/risk_calculator.dart';
 import '../../utils/discipline_calculator.dart';
+import '../../../features/auth/domain/auth_exception.dart';
 
 class MockTradingRepository implements TradingRepository {
   VirtualWallet _wallet = VirtualWallet.initial();
@@ -243,10 +244,19 @@ class MockIntelligenceRepository implements IntelligenceRepository {
 }
 
 class MockAuthRepository implements AuthRepository {
+  final Map<String, String> _userCredentials = {
+    'trader@cryptoedu.app': 'password123',
+  };
+
   UserProfile? _currentUser = UserProfile.initial(
       id: 'usr_mock_123',
       email: 'trader@cryptoedu.app',
       displayName: 'DisciplineTrader');
+
+  /// Helper for testing to set or clear active user session directly
+  void setCurrentUser(UserProfile? user) {
+    _currentUser = user;
+  }
 
   @override
   Future<UserProfile?> getCurrentUser() async => _currentUser;
@@ -256,9 +266,14 @@ class MockAuthRepository implements AuthRepository {
       {required String email,
       required String password,
       String? displayName}) async {
+    final lowerEmail = email.trim().toLowerCase();
+    if (_userCredentials.containsKey(lowerEmail)) {
+      throw AuthException.userAlreadyExists();
+    }
+    _userCredentials[lowerEmail] = password;
     _currentUser = UserProfile.initial(
         id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
-        email: email,
+        email: lowerEmail,
         displayName: displayName);
     return _currentUser!;
   }
@@ -266,15 +281,28 @@ class MockAuthRepository implements AuthRepository {
   @override
   Future<UserProfile> signIn(
       {required String email, required String password}) async {
-    _currentUser = UserProfile.initial(id: 'usr_mock_123', email: email);
+    final lowerEmail = email.trim().toLowerCase();
+    if (!_userCredentials.containsKey(lowerEmail) ||
+        _userCredentials[lowerEmail] != password) {
+      throw AuthException.invalidCredentials();
+    }
+    _currentUser = UserProfile.initial(
+      id: 'usr_mock_123',
+      email: lowerEmail,
+      displayName: lowerEmail.split('@').first,
+    );
     return _currentUser!;
   }
 
   @override
-  Future<void> signOut() async => _currentUser = null;
+  Future<void> signOut() async {
+    _currentUser = null;
+  }
 
   @override
-  Future<void> deleteAccount() async => _currentUser = null;
+  Future<void> deleteAccount() async {
+    _currentUser = null;
+  }
 }
 
 class MockSubscriptionRepository implements SubscriptionProvider {
