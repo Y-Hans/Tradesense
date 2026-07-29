@@ -7,6 +7,7 @@ import '../../../shared/models/market_ticker.dart';
 import '../../../shared/models/trade.dart';
 import '../../../shared/models/virtual_wallet.dart';
 import 'buy_trade_result.dart';
+import 'sell_trade_result.dart';
 import 'trading_failure.dart';
 
 class TradingDomainService {
@@ -150,6 +151,144 @@ class TradingDomainService {
     );
   }
 
+  SellTradeResult calculateSell({
+    required VirtualWallet wallet,
+    required String walletUserId,
+    required Holding? existingHolding,
+    required MarketTicker ticker,
+    required double sellQuantity,
+    required DateTime executedAt,
+    required DateTime evaluatedAt,
+    required String tradeId,
+    required String userId,
+    required int disciplineScoreAtTrade,
+    required int riskScoreAtTrade,
+  }) {
+    final sellerId = userId.trim();
+    final holding = existingHolding;
+    if (holding == null) {
+      return const SellTradeRejected(
+        TradingFailure(
+          code: TradingFailureCode.missingHolding,
+          message: 'A holding is required before an asset can be sold.',
+        ),
+      );
+    }
+
+    final assetSymbol = _normalizeSymbol(holding.symbol);
+    final metadataFailure = _validateTradeMetadata(
+      tradeId: tradeId,
+      userId: sellerId,
+      holdingId: holding.id,
+    );
+    if (metadataFailure != null) return SellTradeRejected(metadataFailure);
+
+    final walletOwnershipFailure = _validateWalletOwnership(
+      userId: sellerId,
+      walletUserId: walletUserId,
+    );
+    if (walletOwnershipFailure != null) {
+      return SellTradeRejected(walletOwnershipFailure);
+    }
+
+    final walletFailure = _validateWallet(wallet);
+    if (walletFailure != null) return SellTradeRejected(walletFailure);
+
+    final holdingFailure = _validateSellHolding(
+      holding: holding,
+      assetSymbol: assetSymbol,
+      userId: sellerId,
+    );
+    if (holdingFailure != null) return SellTradeRejected(holdingFailure);
+
+    final quantityFailure = _validateSellQuantity(sellQuantity);
+    if (quantityFailure != null) return SellTradeRejected(quantityFailure);
+
+    final tickerFailure = _validateTicker(
+      ticker: ticker,
+      assetSymbol: assetSymbol,
+      evaluatedAt: evaluatedAt,
+    );
+    if (tickerFailure != null) return SellTradeRejected(tickerFailure);
+
+    final previousQuantity = _decimalFromDouble(holding.quantity);
+    final quantityToSell = _decimalFromDouble(sellQuantity);
+    if (quantityToSell > previousQuantity) {
+      return const SellTradeRejected(
+        TradingFailure(
+          code: TradingFailureCode.insufficientHoldings,
+          message: 'Sell quantity exceeds the owned asset quantity.',
+        ),
+      );
+    }
+
+    final previousAverageEntry =
+        _decimalFromDouble(holding.averageEntryPriceInr);
+    final previousCostBasis = previousQuantity * previousAverageEntry;
+    final removedCostBasis = _divide(
+      previousCostBasis * quantityToSell,
+      previousQuantity,
+      scale: cryptoQuantityScale,
+    );
+    final remainingQuantity = previousQuantity - quantityToSell;
+    final remainingCostBasis = remainingQuantity == Decimal.zero
+        ? Decimal.zero
+        : previousCostBasis - removedCostBasis;
+    final newAverageEntry =
+        remainingQuantity == Decimal.zero ? Decimal.zero : previousAverageEntry;
+
+    final executionPrice = _decimalFromDouble(ticker.priceInr);
+    final saleProceedsRaw = quantityToSell * executionPrice;
+    final saleProceedsPaise = FinancialMath.inrToPaise(
+      saleProceedsRaw.toDouble(),
+    );
+    final saleProceeds = _inrFromPaise(saleProceedsPaise);
+    final realizedProfitLoss = saleProceeds - removedCostBasis;
+
+    final balancePaise = FinancialMath.inrToPaise(wallet.balanceInr);
+    final newBalancePaise = balancePaise + saleProceedsPaise;
+    final updatedWallet = wallet.copyWith(
+      balanceInr: FinancialMath.paiseToInr(newBalancePaise),
+    );
+    final updatedHolding = holding.copyWith(
+      quantity: remainingQuantity.toDouble(),
+      averageEntryPriceInr: newAverageEntry.toDouble(),
+      currentPriceInr: ticker.priceInr,
+    );
+    final trade = Trade(
+      id: tradeId,
+      userId: sellerId,
+      symbol: assetSymbol,
+      side: TradeSide.sell,
+      type: OrderType.market,
+      quantity: quantityToSell.toDouble(),
+      executionPriceInr: ticker.priceInr,
+      totalAmountInr: saleProceeds.toDouble(),
+      timestamp: executedAt,
+      disciplineScoreAtTrade: disciplineScoreAtTrade,
+      riskScoreAtTrade: riskScoreAtTrade,
+    );
+
+    return SellTradeSuccess(
+      updatedWallet: updatedWallet,
+      updatedHolding: updatedHolding,
+      trade: trade,
+      saleProceedsInr: saleProceeds.toDouble(),
+      soldQuantity: quantityToSell.toDouble(),
+      executionPriceInr: executionPrice.toDouble(),
+      realizedProfitLossInr: realizedProfitLoss.toDouble(),
+      previousWalletBalanceInr: wallet.balanceInr,
+      newWalletBalanceInr: updatedWallet.balanceInr,
+      previousHoldingQuantity: previousQuantity.toDouble(),
+      newHoldingQuantity: remainingQuantity.toDouble(),
+      previousCostBasisInr: previousCostBasis.toDouble(),
+      removedCostBasisInr: removedCostBasis.toDouble(),
+      remainingCostBasisInr: remainingCostBasis.toDouble(),
+      previousAverageEntryPriceInr: previousAverageEntry.toDouble(),
+      newAverageEntryPriceInr: newAverageEntry.toDouble(),
+    );
+  }
+
   TradingFailure? _validateAsset(CryptoAsset asset, String assetSymbol) {
     if (assetSymbol.isEmpty) {
       return const TradingFailure(
@@ -206,6 +345,16 @@ class TradingDomainService {
     return null;
   }
 
+  TradingFailure? _validateSellQuantity(double sellQuantity) {
+    if (!sellQuantity.isFinite || sellQuantity <= 0) {
+      return const TradingFailure(
+        code: TradingFailureCode.invalidSellQuantity,
+        message: 'Sell quantity must be a positive finite asset quantity.',
+      );
+    }
+    return null;
+  }
+
   TradingFailure? _validateWallet(VirtualWallet wallet) {
     if (!wallet.balanceInr.isFinite ||
         !wallet.lockedInr.isFinite ||
@@ -218,6 +367,19 @@ class TradingDomainService {
       return const TradingFailure(
         code: TradingFailureCode.invalidWallet,
         message: 'Wallet cash state is invalid.',
+      );
+    }
+    return null;
+  }
+
+  TradingFailure? _validateWalletOwnership({
+    required String userId,
+    required String walletUserId,
+  }) {
+    if (walletUserId.trim().isEmpty || walletUserId.trim() != userId) {
+      return const TradingFailure(
+        code: TradingFailureCode.walletOwnershipMismatch,
+        message: 'Wallet does not belong to the selling user.',
       );
     }
     return null;
@@ -283,6 +445,20 @@ class TradingDomainService {
       );
     }
     return null;
+  }
+
+  TradingFailure? _validateSellHolding({
+    required Holding holding,
+    required String assetSymbol,
+    required String userId,
+  }) {
+    if (holding.userId.trim() != userId) {
+      return const TradingFailure(
+        code: TradingFailureCode.holdingOwnershipMismatch,
+        message: 'Holding does not belong to the selling user.',
+      );
+    }
+    return _validateExistingHolding(holding, assetSymbol);
   }
 
   String _normalizeSymbol(String symbol) => symbol.trim().toUpperCase();
