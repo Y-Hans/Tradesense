@@ -14,6 +14,8 @@ import '../../shared/models/feature_flags.dart';
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/application/auth_notifier.dart';
+import '../../features/auth/application/user_lifecycle_notifier.dart';
+import '../../features/onboarding/application/onboarding_notifier.dart';
 
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
@@ -102,6 +104,30 @@ final subscriptionStatusProvider =
     FutureProvider<SubscriptionStatus>((ref) async {
   final subProvider = ref.watch(subscriptionProvider);
   return subProvider.getStatus();
+});
+
+/// User Lifecycle State Provider (tracks idempotent user initialization)
+final userLifecycleProvider =
+    StateNotifierProvider<UserLifecycleNotifier, UserLifecycleState>((ref) {
+  final notifier = UserLifecycleNotifier();
+  ref.listen<AuthState>(authStateProvider, (previous, next) {
+    if (next.isAuthenticated && next.user != null) {
+      notifier.initializeUser(next.user!);
+    } else if (next.status == AuthStatus.unauthenticated) {
+      notifier.reset();
+    }
+  });
+  final currentAuth = ref.read(authStateProvider);
+  if (currentAuth.isAuthenticated && currentAuth.user != null) {
+    notifier.initializeUser(currentAuth.user!);
+  }
+  return notifier;
+});
+
+/// Onboarding State Provider (manages onboarding completion per user)
+final onboardingNotifierProvider =
+    StateNotifierProvider<OnboardingNotifier, Map<String, bool>>((ref) {
+  return OnboardingNotifier();
 });
 
 /// Feature Flags Provider

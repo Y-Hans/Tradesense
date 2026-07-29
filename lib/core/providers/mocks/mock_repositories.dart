@@ -248,14 +248,26 @@ class MockAuthRepository implements AuthRepository {
     'trader@cryptoedu.app': 'password123',
   };
 
-  UserProfile? _currentUser = UserProfile.initial(
+  final Map<String, UserProfile> _userProfiles = {
+    'trader@cryptoedu.app': UserProfile.initial(
       id: 'usr_mock_123',
       email: 'trader@cryptoedu.app',
-      displayName: 'DisciplineTrader');
+      displayName: 'DisciplineTrader',
+    ),
+  };
+
+  UserProfile? _currentUser;
+
+  MockAuthRepository() {
+    _currentUser = _userProfiles['trader@cryptoedu.app'];
+  }
 
   /// Helper for testing to set or clear active user session directly
   void setCurrentUser(UserProfile? user) {
     _currentUser = user;
+    if (user != null) {
+      _userProfiles[user.email.toLowerCase()] = user;
+    }
   }
 
   @override
@@ -271,10 +283,12 @@ class MockAuthRepository implements AuthRepository {
       throw AuthException.userAlreadyExists();
     }
     _userCredentials[lowerEmail] = password;
-    _currentUser = UserProfile.initial(
+    final profile = UserProfile.initial(
         id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
         email: lowerEmail,
         displayName: displayName);
+    _userProfiles[lowerEmail] = profile;
+    _currentUser = profile;
     return _currentUser!;
   }
 
@@ -286,11 +300,14 @@ class MockAuthRepository implements AuthRepository {
         _userCredentials[lowerEmail] != password) {
       throw AuthException.invalidCredentials();
     }
-    _currentUser = UserProfile.initial(
-      id: 'usr_mock_123',
-      email: lowerEmail,
-      displayName: lowerEmail.split('@').first,
-    );
+    final profile = _userProfiles[lowerEmail] ??
+        UserProfile.initial(
+          id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+          email: lowerEmail,
+          displayName: lowerEmail.split('@').first,
+        );
+    _userProfiles[lowerEmail] = profile;
+    _currentUser = profile;
     return _currentUser!;
   }
 
@@ -301,6 +318,10 @@ class MockAuthRepository implements AuthRepository {
 
   @override
   Future<void> deleteAccount() async {
+    if (_currentUser != null) {
+      _userProfiles.remove(_currentUser!.email.toLowerCase());
+      _userCredentials.remove(_currentUser!.email.toLowerCase());
+    }
     _currentUser = null;
   }
 }

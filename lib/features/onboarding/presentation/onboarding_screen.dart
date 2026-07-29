@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/widgets/disclaimer_card.dart';
 
 class OnboardingStep {
@@ -36,14 +38,14 @@ class OnboardingStep {
   ];
 }
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   late final PageController _pageController;
   int _currentIndex = 0;
 
@@ -62,6 +64,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool get _isLastStep => _currentIndex == OnboardingStep.steps.length - 1;
 
   void _finishOnboarding() {
+    final userId = ref.read(authStateProvider).user?.id;
+    if (userId != null) {
+      ref.read(onboardingNotifierProvider.notifier).completeOnboarding(userId);
+    }
     if (context.mounted) {
       context.go('/home');
     }
