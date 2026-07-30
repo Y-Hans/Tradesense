@@ -190,6 +190,7 @@ class LearningProgressionNotifier
       totalXp: newXp,
       processedEventTypes: processedTypes,
       timestamp: event.timestamp,
+      streakDays: updatedStreak.currentStreak,
     );
 
     final updatedTitle = LearningTitle.fromXp(newXp);
@@ -312,6 +313,7 @@ class LearningProgressionNotifier
       currentAchievements: Achievement.initialAchievements,
       totalXp: totalXp,
       processedEventTypes: processedTypes,
+      streakDays: restoredStreak.currentStreak,
     );
 
     final restoredSummary = PlayerProfileSummary.calculate(

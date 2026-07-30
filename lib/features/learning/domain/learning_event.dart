@@ -5,6 +5,9 @@ enum LearningEventType {
   firstTradeCompleted,
   completedLesson,
   newsDetectiveCompleted,
+  riskEvaluationCompleted,
+  disciplineEvaluationCompleted,
+  coachSessionCompleted,
 }
 
 class LearningEvent {
@@ -95,6 +98,45 @@ class LearningEvent {
   }) {
     return LearningEvent(
       type: LearningEventType.newsDetectiveCompleted,
+      eventId: eventId,
+      timestamp: timestamp,
+      metadata: metadata,
+    );
+  }
+
+  factory LearningEvent.riskEvaluationCompleted({
+    String? eventId,
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
+  }) {
+    return LearningEvent(
+      type: LearningEventType.riskEvaluationCompleted,
+      eventId: eventId,
+      timestamp: timestamp,
+      metadata: metadata,
+    );
+  }
+
+  factory LearningEvent.disciplineEvaluationCompleted({
+    String? eventId,
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
+  }) {
+    return LearningEvent(
+      type: LearningEventType.disciplineEvaluationCompleted,
+      eventId: eventId,
+      timestamp: timestamp,
+      metadata: metadata,
+    );
+  }
+
+  factory LearningEvent.coachSessionCompleted({
+    String? eventId,
+    DateTime? timestamp,
+    Map<String, dynamic>? metadata,
+  }) {
+    return LearningEvent(
+      type: LearningEventType.coachSessionCompleted,
       eventId: eventId,
       timestamp: timestamp,
       metadata: metadata,

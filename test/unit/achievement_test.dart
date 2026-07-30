@@ -6,7 +6,7 @@ void main() {
   group('Achievement System Unit Tests', () {
     test('initialAchievements contains standard initial achievements', () {
       const initial = Achievement.initialAchievements;
-      expect(initial.length, equals(8));
+      expect(initial.length, equals(11));
       expect(initial.any((a) => a.id == 'first_steps'), isTrue);
       expect(initial.any((a) => a.id == 'market_explorer'), isTrue);
       expect(initial.any((a) => a.id == 'level_5'), isTrue);
