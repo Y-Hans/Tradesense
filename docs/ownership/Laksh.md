@@ -15,6 +15,9 @@ If a required change belongs to another developer, do not modify that developer'
 
 ### Core Financial Math & Trading Utilities
 - `lib/core/utils/financial_math.dart`
+- `lib/features/portfolio/application/execute_portfolio_contracts.dart`
+- `lib/features/portfolio/application/execute_portfolio_result.dart`
+- `lib/features/portfolio/application/execute_portfolio_use_case.dart`
 - `lib/features/portfolio/domain/portfolio_engine.dart`
 - `lib/features/portfolio/domain/portfolio_engine_result.dart`
 - `lib/features/trading/application/execute_buy_contracts.dart`
@@ -41,6 +44,7 @@ If a required change belongs to another developer, do not modify that developer'
 ## Tests Owned
 
 - `test/unit/financial_math_test.dart`
+- `test/unit/portfolio/fakes/*` - Portfolio application/use-case test fakes
 - `test/unit/portfolio/virtual_wallet_initialization_test.dart`
 - `test/unit/portfolio/portfolio_engine_test.dart`
 - `test/unit/trading/fakes/*` - Trading application/use-case test fakes
