@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
-import '../../../core/contracts/provider_contracts.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/constants/app_strings.dart';
-import '../../../shared/models/coach_request.dart';
 import '../../../shared/models/trade.dart';
 import '../../../shared/widgets/offline_state_widget.dart';
 import '../../../shared/widgets/trade_card.dart';
 import '../../intelligence/domain/discipline_reason_code_evaluator.dart';
 import '../../intelligence/domain/risk_reason_code_evaluator.dart';
 import '../domain/coach_context_builder.dart';
-import '../domain/coach_orchestrator.dart';
 import '../domain/coach_result.dart';
+import '../providers/coach_cache_providers.dart';
 
-/// Provider for overriding the AIProvider in test or custom environments.
-final aiProviderOverrideProvider = Provider<AIProvider?>((ref) => null);
+export '../providers/coach_cache_providers.dart' show aiProviderOverrideProvider;
 
 /// Family provider driving the Coach pipeline flow:
 /// Trade -> CoachContextBuilder -> CoachOrchestrator -> CoachResult
@@ -77,11 +74,7 @@ final coachResultProvider =
     disciplineReasonCodes: disciplineResult.reasonCodes,
   );
 
-  final customAiProvider = ref.watch(aiProviderOverrideProvider);
-  final orchestrator = CoachOrchestrator(
-    aiProvider: customAiProvider ?? const _NoOpAIProvider(),
-    aiEnabled: customAiProvider != null,
-  );
+  final orchestrator = ref.watch(coachOrchestratorProvider);
 
   final feedback = await orchestrator.getCoachResponse(
     coachContext,
@@ -95,15 +88,6 @@ final coachResultProvider =
     coachFeedback: feedback,
   );
 });
-
-class _NoOpAIProvider implements AIProvider {
-  const _NoOpAIProvider();
-
-  @override
-  Future<CoachResponse> generateCoachFeedback(CoachRequest request) {
-    throw UnimplementedError();
-  }
-}
 
 class CoachResultScreen extends ConsumerWidget {
   final String tradeId;
