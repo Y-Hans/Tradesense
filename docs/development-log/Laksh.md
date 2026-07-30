@@ -21,6 +21,28 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-30] - ExecuteSellUseCase Application Orchestration
+
+- **Completed Functionality**: Added `ExecuteSellUseCase` as the application-layer orchestration boundary for manual SELL and stop-loss-generated SELL execution requests.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/application/execute_sell_contracts.dart`
+  - `lib/features/trading/application/execute_sell_result.dart`
+  - `lib/features/trading/application/execute_sell_use_case.dart`
+  - `lib/features/trading/application/execute_buy_contracts.dart`
+  - `test/unit/trading/execute_sell_use_case_test.dart`
+  - `test/unit/trading/fakes/execute_buy_fakes.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/DEV_2_TRADING.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The use case validates the caller context, loads wallet/holding/ticker state, delegates deterministic SELL calculations to `TradingDomainService.calculateSell`, persists the resulting wallet, holding, and trade through `TradingTransactionRepository.commitSell`, and returns immutable typed success/failure results.
+- **Repository Orchestration**: Reuses existing wallet lookup, holding lookup, market ticker provider, and trading transaction repository abstractions. No concrete Supabase, Firebase, SQLite, REST, HTTP, mock storage, provider, or UI production code was added.
+- **Manual SELL Flow**: Manual requests pass caller-supplied user id, asset symbol, quantity, trade score snapshots, optional deterministic timestamp, and optional trade id through the same execution path.
+- **Stop-Loss SELL Flow**: Stop-loss requests use the existing immutable `SellExecutionRequest` emitted by `StopLossEngine`; the use case preserves the reason and source stop-loss order id while still delegating all financial math to the SELL domain engine.
+- **Failure Handling**: Application failures cover invalid user context, invalid request symbol, missing wallet, wallet ownership mismatch, repository load failures, missing/foreign holding, ticker unavailable, market repository failure, id generation failure, transaction persistence failure, and concurrency conflict. Domain rejections preserve the original `TradingFailure`.
+- **Transaction Strategy**: SELL persistence is treated as one logical transaction through `TradingTransactionRepository.commitSell`, with expected previous wallet balance, expected previous holding quantity, and optional wallet version supplied for infrastructure-level optimistic concurrency.
+- **Tests**: Added deterministic coverage for successful manual SELL, successful stop-loss SELL, missing wallet, missing holding, missing ticker, repository failure, domain rejection, persistence failure, concurrency conflict, update ordering, wallet/holding/trade persistence, input immutability, and determinism.
+- **Remaining Work**: Divyanshu must provide concrete transaction-backed repository implementations and stop-loss order status persistence. Somya must wire UI/controller flows after infrastructure bindings exist.
+
 ### [2026-07-30] - Deterministic Stop-Loss Engine
 
 - **Completed Functionality**: Added pure `StopLossEngine.evaluate` domain logic that evaluates active stop-loss orders against caller-supplied holdings and market tickers, returning an immutable evaluation aggregate.

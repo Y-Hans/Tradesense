@@ -20,6 +20,9 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/trading/application/execute_buy_contracts.dart`
 - `lib/features/trading/application/execute_buy_result.dart`
 - `lib/features/trading/application/execute_buy_use_case.dart`
+- `lib/features/trading/application/execute_sell_contracts.dart`
+- `lib/features/trading/application/execute_sell_result.dart`
+- `lib/features/trading/application/execute_sell_use_case.dart`
 - `lib/features/trading/domain/trade_history_engine.dart`
 - `lib/features/trading/domain/trade_history_result.dart`
 - `lib/features/trading/domain/stop_loss_engine.dart`

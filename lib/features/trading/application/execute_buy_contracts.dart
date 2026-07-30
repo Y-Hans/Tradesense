@@ -23,6 +23,19 @@ abstract interface class TradingTransactionRepository {
     String? expectedWalletVersion,
     required DateTime executedAt,
   });
+
+  Future<SellTransactionCommitResult> commitSell({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    required double expectedPreviousHoldingQuantity,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+    required String sellReason,
+    String? sourceStopLossOrderId,
+  });
 }
 
 abstract interface class ExecuteBuyClock {
@@ -88,6 +101,41 @@ class BuyTransactionFailure {
   final String message;
 
   const BuyTransactionFailure({
+    required this.code,
+    required this.message,
+  });
+}
+
+sealed class SellTransactionCommitResult {
+  const SellTransactionCommitResult();
+}
+
+class SellTransactionCommitSuccess extends SellTransactionCommitResult {
+  final String? confirmationId;
+  final DateTime committedAt;
+
+  const SellTransactionCommitSuccess({
+    this.confirmationId,
+    required this.committedAt,
+  });
+}
+
+class SellTransactionCommitFailure extends SellTransactionCommitResult {
+  final SellTransactionFailure failure;
+
+  const SellTransactionCommitFailure(this.failure);
+}
+
+enum SellTransactionFailureCode {
+  persistenceFailure,
+  concurrencyConflict,
+}
+
+class SellTransactionFailure {
+  final SellTransactionFailureCode code;
+  final String message;
+
+  const SellTransactionFailure({
     required this.code,
     required this.message,
   });
