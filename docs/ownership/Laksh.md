@@ -22,6 +22,8 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/trading/application/execute_buy_use_case.dart`
 - `lib/features/trading/domain/trade_history_engine.dart`
 - `lib/features/trading/domain/trade_history_result.dart`
+- `lib/features/trading/domain/stop_loss_engine.dart`
+- `lib/features/trading/domain/stop_loss_evaluation_result.dart`
 - `lib/features/trading/domain/trading_domain_service.dart`
 - `lib/features/trading/domain/buy_trade_result.dart`
 - `lib/features/trading/domain/trading_failure.dart`
