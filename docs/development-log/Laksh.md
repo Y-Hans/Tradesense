@@ -21,6 +21,28 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-30] - ExecutePortfolioUseCase Application Orchestration
+
+- **Completed Functionality**: Added `ExecutePortfolioUseCase` as the application-layer orchestration boundary for read-only portfolio valuation.
+- **Important Files Created / Modified**:
+  - `lib/features/portfolio/application/execute_portfolio_contracts.dart`
+  - `lib/features/portfolio/application/execute_portfolio_result.dart`
+  - `lib/features/portfolio/application/execute_portfolio_use_case.dart`
+  - `test/unit/portfolio/fakes/execute_portfolio_fakes.dart`
+  - `test/unit/portfolio/execute_portfolio_use_case_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/DEV_2_TRADING.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The use case trims and validates user context, loads wallet, holdings, and trade history through read-side repository contracts, loads current market tickers for unique normalized holding symbols, validates wallet/holding/trade ownership, and delegates all valuation math to `PortfolioEngine.calculate`.
+- **Repository / Provider Flow**: The orchestration order is wallet, holdings, trades, then per-symbol market ticker lookups. Empty holdings and empty trades are valid repository responses, and cash-only portfolios skip ticker calls.
+- **Portfolio Engine Delegation**: The application layer does not calculate market value, cost basis, allocations, realized P&L, unrealized P&L, returns, totals, or performance highlights. Domain rejections preserve the original `TradingFailure`.
+- **Typed Failures**: Application failures cover invalid user context, missing wallet, wallet ownership mismatch, wallet/holdings/trades repository failures, holding/trade ownership mismatch, missing ticker, and market provider failure.
+- **Determinism**: The use case copies repository collections before sorting holdings and trades, derives unique ticker symbols deterministically, forwards caller-supplied `evaluatedAt`, and isolates clock usage to the request fallback path.
+- **PortfolioViewed Hook**: A future application event publisher can be inserted after successful calculation. XP, achievements, badges, missions, and gamification remain outside this milestone.
+- **Tests**: Added deterministic coverage for success, loading and ordering, ticker selection, duplicate symbols, cash-only success, repository/provider failures, missing ticker, ownership mismatches, Portfolio Engine rejection preservation, exact snapshot propagation, no persistence calls, repeated execution determinism, request immutability, collection immutability, and evaluatedAt forwarding.
+- **Integration Impact**: Divyanshu must provide concrete read-side repository implementations and wire them with the existing market provider. Somya must call the use case from portfolio UI state/controller flows. Neel can later attach PortfolioViewed handling through a reusable event publisher.
+- **Remaining Work**: Concrete infrastructure reads, authenticated user binding, production portfolio UI state wiring, trade history orchestration, stop-loss orchestration, and event publisher integration remain outside this milestone.
+
 ### [2026-07-30] - ExecuteSellUseCase Application Orchestration
 
 - **Completed Functionality**: Added `ExecuteSellUseCase` as the application-layer orchestration boundary for manual SELL and stop-loss-generated SELL execution requests.
