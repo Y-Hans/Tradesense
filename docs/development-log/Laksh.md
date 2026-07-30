@@ -21,6 +21,26 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-30] - Deterministic Stop-Loss Engine
+
+- **Completed Functionality**: Added pure `StopLossEngine.evaluate` domain logic that evaluates active stop-loss orders against caller-supplied holdings and market tickers, returning an immutable evaluation aggregate.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/domain/stop_loss_engine.dart`
+  - `lib/features/trading/domain/stop_loss_evaluation_result.dart`
+  - `lib/shared/models/stop_loss_order.dart`
+  - `test/unit/trading/stop_loss_engine_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/DEV_2_TRADING.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The engine validates orders, matches holdings, matches tickers, applies expiry rules, evaluates trigger conditions, and separates triggered, pending, expired, rejected, and generated SELL request outputs.
+- **Trigger Rule**: Long-only stop-loss orders trigger when current market price is less than or equal to the configured stop price. Prices above the stop remain pending.
+- **Generated SELL Requests**: Triggered orders produce immutable `SellExecutionRequest` values containing order id, asset symbol, quantity, market price, trigger price, estimated proceeds, evaluation timestamp, and reason `STOP_LOSS`. No SELL execution is performed.
+- **Precision Strategy**: Reuses `FinancialMath.inrToPaise` / `paiseToInr` at INR output boundaries and uses `Decimal` internally for quantity, trigger comparisons, market price comparisons, and estimated proceeds.
+- **Failure Handling**: Reuses `TradingFailure` for invalid metadata, invalid symbols, invalid stop prices, invalid quantities, duplicate active order ids, missing tickers, stale tickers, missing holdings, invalid holdings, and oversized stop-loss quantities.
+- **Determinism**: Outputs are sorted by normalized asset symbol and order id. The optional evaluation timestamp resolves deterministically from input timestamps when omitted.
+- **Future Integration Points**: Divyanshu can provide active order, holding, and ticker retrieval plus status/request persistence at the repository/application boundary. Somya can consume the aggregate through future state management for status displays without owning trigger logic.
+- **Remaining Work**: ExecuteSellUseCase, persistence transactions, active ticker evaluation loop, repository implementations, UI wiring, notifications, and production order status updates remain outside this milestone.
+
 ### [2026-07-30] - Deterministic Trade History Engine
 
 - **Completed Functionality**: Added a pure `TradeHistoryEngine.calculate` domain operation that accepts immutable `List<Trade>` input plus an optional evaluation timestamp and returns either an immutable trade-history snapshot or typed `TradingFailure` rejection.
