@@ -6,28 +6,47 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 import '../../../shared/models/crypto_asset.dart';
 import '../../../shared/widgets/trade_card.dart';
+import '../../../shared/constants/app_strings.dart';
+import '../../../shared/widgets/offline_state_widget.dart';
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isOffline = ref.watch(
+      connectivityProvider
+          .select((status) => status == ConnectivityStatus.offline),
+    );
     final assetsAsync = ref.watch(supportedAssetsProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Live Crypto Markets')),
-      body: assetsAsync.when(
-        data: (assets) => ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: assets.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) => _LiveMarketTile(
-            asset: assets[index],
-          ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Text('Error: $err'),
-      ),
+      body: isOffline
+          ? const Center(
+              child: OfflineStateWidget(
+                title: 'Live Markets Offline',
+                message: AppStrings.marketsOfflineMessage,
+              ),
+            )
+          : assetsAsync.when(
+              data: (assets) => ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: assets.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) => _LiveMarketTile(
+                  asset: assets[index],
+                ),
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, stack) => const Center(
+                child: OfflineStateWidget(
+                  title: 'Live Markets Offline',
+                  message: AppStrings.marketsOfflineMessage,
+                ),
+              ),
+            ),
     );
   }
 }

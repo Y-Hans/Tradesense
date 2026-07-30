@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../contracts/market_provider.dart';
 import '../contracts/provider_contracts.dart';
 import '../contracts/repository_contracts.dart';
-import 'mocks/mock_market_repository.dart';
 import 'mocks/mock_repositories.dart';
 import '../../shared/models/user_profile.dart';
 import '../../shared/models/portfolio.dart';
@@ -11,6 +10,13 @@ import '../../shared/models/market_ticker.dart';
 import '../../shared/models/subscription_status.dart';
 import '../../shared/models/feature_flags.dart';
 
+export '../services/connectivity/connectivity_provider.dart';
+export '../services/connectivity/connectivity_service.dart';
+export '../services/connectivity/connectivity_status.dart';
+export '../events/domain_event_providers.dart';
+
+import '../events/domain_event_providers.dart';
+import '../../features/market/providers/market_cache_providers.dart';
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/application/auth_notifier.dart';
@@ -22,12 +28,17 @@ final mockModeProvider = StateProvider<bool>((ref) => true);
 
 /// Market Provider
 final marketRepositoryProvider = Provider<MarketProvider>((ref) {
-  return MockMarketRepository();
+  return ref.watch(cachedMarketRepositoryProvider);
 });
 
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
   final marketRepo = ref.watch(marketRepositoryProvider);
-  final repo = MockTradingRepository(marketRepo, initialBalance: 100000.0);
+  final eventPublisher = ref.watch(domainEventPublisherProvider);
+  final repo = MockTradingRepository(
+    marketRepo,
+    initialBalance: 100000.0,
+    eventPublisher: eventPublisher,
+  );
   ref.onDispose(() {
     repo.dispose();
   });
@@ -43,7 +54,8 @@ final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
 
 /// Intelligence Repository Provider
 final intelligenceRepositoryProvider = Provider<IntelligenceRepository>((ref) {
-  return MockIntelligenceRepository();
+  final eventPublisher = ref.watch(domainEventPublisherProvider);
+  return MockIntelligenceRepository(eventPublisher);
 });
 
 /// Auth Repository Provider

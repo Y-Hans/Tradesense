@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'routing/app_router.dart';
+import 'shell/app_shell.dart';
 import 'theme/app_theme.dart';
 
 class CryptoEduApp extends ConsumerWidget {
@@ -14,6 +15,7 @@ class CryptoEduApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       routerConfig: router,
+      builder: (context, child) => AppShell(child: child),
     );
   }
 }
