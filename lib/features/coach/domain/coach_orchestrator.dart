@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import '../../../core/contracts/provider_contracts.dart';
+import '../../../core/events/domain_event_publisher.dart';
+import '../../../core/events/domain_events.dart';
 import '../../../shared/models/coach_request.dart';
 import 'coach_context.dart';
 import 'fallback_coach.dart';
@@ -19,6 +21,7 @@ import 'fallback_coach.dart';
 class CoachOrchestrator {
   final AIProvider _aiProvider;
   final bool aiEnabled;
+  final DomainEventPublisher? _eventPublisher;
 
   /// Creates a [CoachOrchestrator] with the given abstract [AIProvider].
   ///
@@ -28,7 +31,9 @@ class CoachOrchestrator {
   const CoachOrchestrator({
     required AIProvider aiProvider,
     this.aiEnabled = true,
-  }) : _aiProvider = aiProvider;
+    DomainEventPublisher? eventPublisher,
+  })  : _aiProvider = aiProvider,
+        _eventPublisher = eventPublisher;
 
   /// Produces educational coaching for the given [CoachContext].
   ///
@@ -38,25 +43,44 @@ class CoachOrchestrator {
     CoachContext context, {
     required String userId,
   }) async {
+    CoachResponse response;
+    bool isFallback = false;
+
     // Feature-disabled: skip provider entirely, return deterministic fallback.
     if (!aiEnabled) {
-      return FallbackCoach.analyze(context);
-    }
+      response = FallbackCoach.analyze(context);
+      isFallback = true;
+    } else {
+      try {
+        final request = _buildRequest(context, userId);
+        final rawResponse = await _aiProvider.generateCoachFeedback(request);
 
-    try {
-      final request = _buildRequest(context, userId);
-      final response = await _aiProvider.generateCoachFeedback(request);
-
-      // Validate structural invariants established by the CoachResponse contract.
-      if (_isResponseMalformed(response)) {
-        return FallbackCoach.analyze(context);
+        // Validate structural invariants established by the CoachResponse contract.
+        if (_isResponseMalformed(rawResponse)) {
+          response = FallbackCoach.analyze(context);
+          isFallback = true;
+        } else {
+          response = rawResponse;
+        }
+      } on Exception {
+        // Expected provider/runtime failure (network, timeout, server error) -> return fallback.
+        response = FallbackCoach.analyze(context);
+        isFallback = true;
       }
-
-      return response;
-    } on Exception {
-      // Expected provider/runtime failure (network, timeout, server error) -> return fallback.
-      return FallbackCoach.analyze(context);
     }
+
+    _eventPublisher?.publish(
+      CoachSessionCompleted(
+        tradeId: context.tradeContext.tradeId ?? '',
+        userId: userId,
+        riskScore: context.riskScore.score,
+        disciplineScore: context.disciplineScore.score,
+        isFallback: isFallback,
+        providerName: response.aiProvider,
+      ),
+    );
+
+    return response;
   }
 
   /// Maps [CoachContext] to [CoachRequest] using structured data.

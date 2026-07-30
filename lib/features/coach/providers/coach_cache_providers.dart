@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/events/domain_event_providers.dart';
+
 import '../../../core/cache/domain/models/cache_policy.dart';
 import '../../../core/cache/providers/cache_providers.dart';
 import '../../../core/contracts/provider_contracts.dart';
@@ -41,10 +43,12 @@ final coachOrchestratorProvider = Provider<CoachOrchestrator>((ref) {
   final customAiProvider = ref.watch(aiProviderOverrideProvider);
   final config = ref.watch(openRouterConfigProvider);
   final aiProvider = ref.watch(cachedAIProvider);
+  final eventPublisher = ref.watch(domainEventPublisherProvider);
 
   return CoachOrchestrator(
     aiProvider: aiProvider,
     aiEnabled: customAiProvider != null || config.apiKey.isNotEmpty,
+    eventPublisher: eventPublisher,
   );
 });
 

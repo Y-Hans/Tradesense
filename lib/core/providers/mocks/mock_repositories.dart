@@ -13,11 +13,16 @@ import '../../../shared/models/subscription_status.dart';
 import '../../../shared/models/feature_flags.dart';
 import '../../utils/risk_calculator.dart';
 import '../../utils/discipline_calculator.dart';
+import '../../events/domain_event_publisher.dart';
+import '../../events/domain_events.dart';
 
 class MockTradingRepository implements TradingRepository {
   VirtualWallet _wallet = VirtualWallet.initial();
   final List<Holding> _holdings = [];
   final List<Trade> _trades = [];
+  final DomainEventPublisher? _eventPublisher;
+
+  MockTradingRepository([this._eventPublisher]);
 
   VirtualWallet get wallet => _wallet;
   List<Holding> get holdings => List.unmodifiable(_holdings);
@@ -76,6 +81,20 @@ class MockTradingRepository implements TradingRepository {
     );
 
     _trades.add(trade);
+    _eventPublisher?.publish(
+      TradeExecuted(
+        tradeId: trade.id,
+        userId: trade.userId,
+        symbol: trade.symbol,
+        side: 'buy',
+        quantity: trade.quantity,
+        executionPriceInr: trade.executionPriceInr,
+        totalAmountInr: trade.totalAmountInr,
+        hasStopLoss: trade.stopLossPriceInr != null,
+        stopLossPriceInr: trade.stopLossPriceInr,
+        occurredAt: trade.timestamp,
+      ),
+    );
     return trade;
   }
 
@@ -116,6 +135,19 @@ class MockTradingRepository implements TradingRepository {
     );
 
     _trades.add(trade);
+    _eventPublisher?.publish(
+      TradeExecuted(
+        tradeId: trade.id,
+        userId: trade.userId,
+        symbol: trade.symbol,
+        side: 'sell',
+        quantity: trade.quantity,
+        executionPriceInr: trade.executionPriceInr,
+        totalAmountInr: trade.totalAmountInr,
+        hasStopLoss: false,
+        occurredAt: trade.timestamp,
+      ),
+    );
     return trade;
   }
 
@@ -166,6 +198,10 @@ class MockPortfolioRepository implements PortfolioRepository {
 }
 
 class MockIntelligenceRepository implements IntelligenceRepository {
+  final DomainEventPublisher? _eventPublisher;
+
+  MockIntelligenceRepository([this._eventPublisher]);
+
   @override
   RiskScore calculateRiskScore({
     required Portfolio portfolio,
@@ -173,12 +209,24 @@ class MockIntelligenceRepository implements IntelligenceRepository {
     required bool hasStopLoss,
     required double assetVolatility,
   }) {
-    return RiskCalculator.compute(
+    final score = RiskCalculator.compute(
       portfolio: portfolio,
       proposedTradeSizeInr: proposedTradeSizeInr,
       hasStopLoss: hasStopLoss,
       assetVolatility: assetVolatility,
     );
+
+    _eventPublisher?.publish(
+      RiskEvaluationCompleted(
+        riskScore: score.score,
+        riskLevel: score.level.name,
+        reasonCodes: score.explanations,
+        proposedTradeSizeInr: proposedTradeSizeInr,
+        hasStopLoss: hasStopLoss,
+      ),
+    );
+
+    return score;
   }
 
   @override
@@ -189,13 +237,24 @@ class MockIntelligenceRepository implements IntelligenceRepository {
     required double portfolioConcentration,
     required int tradeFrequency24h,
   }) {
-    return DisciplineCalculator.compute(
+    final score = DisciplineCalculator.compute(
       currentRiskScore: currentRiskScore,
       positionSizePercentage: positionSizePercentage,
       usedStopLoss: usedStopLoss,
       portfolioConcentration: portfolioConcentration,
       tradeFrequency24h: tradeFrequency24h,
     );
+
+    _eventPublisher?.publish(
+      DisciplineEvaluationCompleted(
+        disciplineScore: score.score,
+        reasonCodes: score.breakdownNotes,
+        positionSizePercentage: positionSizePercentage,
+        usedStopLoss: usedStopLoss,
+      ),
+    );
+
+    return score;
   }
 
   @override

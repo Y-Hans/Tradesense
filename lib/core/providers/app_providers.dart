@@ -13,8 +13,9 @@ import '../../shared/models/feature_flags.dart';
 export '../services/connectivity/connectivity_provider.dart';
 export '../services/connectivity/connectivity_service.dart';
 export '../services/connectivity/connectivity_status.dart';
+export '../events/domain_event_providers.dart';
 
-
+import '../events/domain_event_providers.dart';
 import '../../features/market/providers/market_cache_providers.dart';
 
 /// Flag to toggle between Mock repository mode and Live backend mode
@@ -27,7 +28,8 @@ final marketRepositoryProvider = Provider<MarketProvider>((ref) {
 
 /// Trading Repository Provider
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
-  return MockTradingRepository();
+  final eventPublisher = ref.watch(domainEventPublisherProvider);
+  return MockTradingRepository(eventPublisher);
 });
 
 /// Portfolio Repository Provider
@@ -39,7 +41,8 @@ final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
 
 /// Intelligence Repository Provider
 final intelligenceRepositoryProvider = Provider<IntelligenceRepository>((ref) {
-  return MockIntelligenceRepository();
+  final eventPublisher = ref.watch(domainEventPublisherProvider);
+  return MockIntelligenceRepository(eventPublisher);
 });
 
 /// Auth Repository Provider
