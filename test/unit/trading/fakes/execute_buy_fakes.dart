@@ -150,6 +150,9 @@ class FakeTradingTransactionRepository implements TradingTransactionRepository {
   final FakeExecuteBuyWalletRepository walletRepository;
   final FakeExecuteBuyHoldingRepository holdingRepository;
   final List<Trade> trades = [];
+  final List<String> commitSteps = [];
+  String? lastSellReason;
+  String? lastSourceStopLossOrderId;
   FakeCommitMode mode = FakeCommitMode.success;
   void Function()? beforeValidation;
   int commitAttempts = 0;
@@ -224,9 +227,88 @@ class FakeTradingTransactionRepository implements TradingTransactionRepository {
     );
   }
 
+  @override
+  Future<SellTransactionCommitResult> commitSell({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    required double expectedPreviousHoldingQuantity,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+    required String sellReason,
+    String? sourceStopLossOrderId,
+  }) async {
+    commitAttempts += 1;
+    beforeValidation?.call();
+
+    if (mode == FakeCommitMode.persistenceFailure) {
+      return const SellTransactionCommitFailure(
+        SellTransactionFailure(
+          code: SellTransactionFailureCode.persistenceFailure,
+          message: 'Atomic SELL persistence failed.',
+        ),
+      );
+    }
+    if (mode == FakeCommitMode.concurrencyConflict) {
+      return const SellTransactionCommitFailure(
+        SellTransactionFailure(
+          code: SellTransactionFailureCode.concurrencyConflict,
+          message: 'Wallet or holding changed before SELL commit.',
+        ),
+      );
+    }
+
+    final currentWallet = walletRepository.wallets[userId];
+    final expectedPaise =
+        FinancialMath.inrToPaise(expectedPreviousWalletBalanceInr);
+    final currentPaise = currentWallet == null
+        ? null
+        : FinancialMath.inrToPaise(currentWallet.wallet.balanceInr);
+    final versionMatches = currentWallet?.version == expectedWalletVersion;
+    final currentHolding = holdingRepository
+        .holdings[_key(updatedHolding.userId, updatedHolding.symbol)];
+    if (currentWallet == null ||
+        currentHolding == null ||
+        currentPaise != expectedPaise ||
+        currentHolding.quantity != expectedPreviousHoldingQuantity ||
+        !versionMatches) {
+      return const SellTransactionCommitFailure(
+        SellTransactionFailure(
+          code: SellTransactionFailureCode.concurrencyConflict,
+          message: 'Wallet or holding changed before SELL commit.',
+        ),
+      );
+    }
+
+    walletRepository.wallets[userId] = PersistedVirtualWallet(
+      userId: userId,
+      wallet: updatedWallet,
+      version: _nextVersion(currentWallet.version),
+      updatedAt: executedAt,
+    );
+    commitSteps.add('wallet');
+    holdingRepository.put(updatedHolding);
+    commitSteps.add('holding');
+    trades.add(trade);
+    commitSteps.add('trade');
+    lastSellReason = sellReason;
+    lastSourceStopLossOrderId = sourceStopLossOrderId;
+    successfulCommits += 1;
+
+    return SellTransactionCommitSuccess(
+      confirmationId: 'commit_$successfulCommits',
+      committedAt: executedAt,
+    );
+  }
+
   String _nextVersion(String? version) {
     final value = version ?? 'v0';
     final parsed = int.tryParse(value.replaceFirst('v', '')) ?? 0;
     return 'v${parsed + 1}';
   }
+
+  String _key(String userId, String symbol) =>
+      '$userId:${symbol.trim().toUpperCase()}';
 }
