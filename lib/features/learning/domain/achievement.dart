@@ -116,7 +116,31 @@ class Achievement {
       description: 'Completed risk assessment module',
       icon: Icons.shield_rounded,
       rarity: AchievementRarity.rare,
-      unlockCondition: 'completedLesson',
+      unlockCondition: 'riskEvaluationCompleted',
+    ),
+    Achievement(
+      id: 'disciplined_trader',
+      title: 'Disciplined Trader',
+      description: 'Completed discipline evaluation',
+      icon: Icons.verified_user_rounded,
+      rarity: AchievementRarity.rare,
+      unlockCondition: 'disciplineEvaluationCompleted',
+    ),
+    Achievement(
+      id: 'coach_reflection',
+      title: 'Coach Reflection',
+      description: 'Completed AI Coach reflection session',
+      icon: Icons.auto_awesome_rounded,
+      rarity: AchievementRarity.epic,
+      unlockCondition: 'coachSessionCompleted',
+    ),
+    Achievement(
+      id: 'learning_streak',
+      title: 'Learning Streak',
+      description: 'Maintained active daily learning streak',
+      icon: Icons.local_fire_department_rounded,
+      rarity: AchievementRarity.rare,
+      unlockCondition: 'streakDays >= 1',
     ),
     Achievement(
       id: 'news_detective',
@@ -155,6 +179,7 @@ class Achievement {
     required int totalXp,
     required Set<LearningEventType> processedEventTypes,
     DateTime? timestamp,
+    int streakDays = 0,
   }) {
     final now = timestamp ?? DateTime.now();
     final updatedList = <Achievement>[];
@@ -182,7 +207,20 @@ class Achievement {
           processedEventTypes.contains(LearningEventType.firstTradeCompleted)) {
         shouldUnlock = true;
       } else if (achievement.id == 'risk_aware' &&
-          processedEventTypes.contains(LearningEventType.completedLesson)) {
+          (processedEventTypes
+                  .contains(LearningEventType.riskEvaluationCompleted) ||
+              processedEventTypes
+                  .contains(LearningEventType.completedLesson))) {
+        shouldUnlock = true;
+      } else if (achievement.id == 'disciplined_trader' &&
+          processedEventTypes
+              .contains(LearningEventType.disciplineEvaluationCompleted)) {
+        shouldUnlock = true;
+      } else if (achievement.id == 'coach_reflection' &&
+          processedEventTypes
+              .contains(LearningEventType.coachSessionCompleted)) {
+        shouldUnlock = true;
+      } else if (achievement.id == 'learning_streak' && streakDays > 0) {
         shouldUnlock = true;
       } else if (achievement.id == 'news_detective' &&
           processedEventTypes

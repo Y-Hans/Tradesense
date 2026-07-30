@@ -1,3 +1,7 @@
+import 'package:cryptoedu/core/events/domain_event.dart';
+import 'package:cryptoedu/core/events/domain_events.dart';
+import 'package:cryptoedu/core/events/in_memory_domain_event_publisher.dart';
+import 'package:cryptoedu/features/learning/application/domain_event_learning_adapter.dart';
 import 'package:cryptoedu/features/learning/application/learning_progression_notifier.dart';
 import 'package:cryptoedu/features/learning/application/level_engine.dart';
 import 'package:cryptoedu/features/learning/application/mission_engine.dart';
@@ -8,6 +12,10 @@ import 'package:cryptoedu/features/learning/domain/level.dart';
 import 'package:cryptoedu/features/learning/domain/mission.dart';
 import 'package:cryptoedu/features/learning/domain/xp_state.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+class UnknownTestDomainEvent extends DomainEvent {
+  UnknownTestDomainEvent() : super(eventType: 'UnknownTestDomainEvent');
+}
 
 void main() {
   group('XP Engine & Duplicate Prevention Tests', () {
@@ -219,10 +227,10 @@ void main() {
       expect(state.currentLevel.tier, equals(LevelTier.rookie));
       expect(state.currentTitle.title, equals('Crypto Rookie'));
       expect(state.streak.currentStreak, equals(0));
-      expect(state.achievements.length, equals(8));
+      expect(state.achievements.length, equals(11));
       expect(state.playerProfileSummary.totalXp, equals(0));
-      expect(state.playerProfileSummary.achievementsUnlocked, equals('0 / 8'));
-      expect(state.playerProfileSummary.missionsCompleted, equals('0 / 6'));
+      expect(state.playerProfileSummary.achievementsUnlocked, equals('0 / 11'));
+      expect(state.playerProfileSummary.missionsCompleted, equals('0 / 9'));
       expect(state.showXpGainAnimation, isFalse);
       expect(state.showLevelUpAnimation, isFalse);
     });
@@ -242,8 +250,9 @@ void main() {
       expect(
           state.achievements.any((a) => a.id == 'first_steps' && a.isUnlocked),
           isTrue);
-      expect(state.playerProfileSummary.achievementsUnlocked, equals('1 / 8'));
-      expect(state.playerProfileSummary.missionsCompleted, equals('1 / 6'));
+      expect(state.playerProfileSummary.achievementsUnlocked,
+          equals('2 / 11')); // first_steps & learning_streak (streak=1)
+      expect(state.playerProfileSummary.missionsCompleted, equals('1 / 9'));
     });
 
     test('dismissXpGainAnimation resets showXpGainAnimation and recentXpGained',
@@ -301,7 +310,7 @@ void main() {
       expect(notifier.state.currentTitle.title, equals('Risk-Aware Trader'));
       expect(notifier.state.completedMissionIds.length, equals(3));
       expect(notifier.state.playerProfileSummary.missionsCompleted,
-          equals('3 / 6'));
+          equals('3 / 9'));
     });
 
     test('reset clears learning progression back to initial state', () {
@@ -314,6 +323,312 @@ void main() {
       expect(notifier.state.currentLevel.tier, equals(LevelTier.rookie));
       expect(notifier.state.completedMissionIds, isEmpty);
       expect(notifier.state.processedEventIds, isEmpty);
+    });
+  });
+
+  group('DomainEventLearningAdapter & Business Event Integration Tests', () {
+    late InMemoryDomainEventPublisher publisher;
+    late LearningProgressionNotifier notifier;
+    late DomainEventLearningAdapter adapter;
+
+    setUp(() {
+      publisher = InMemoryDomainEventPublisher();
+      notifier = LearningProgressionNotifier();
+      adapter = DomainEventLearningAdapter(
+        publisher: publisher,
+        notifier: notifier,
+      );
+    });
+
+    tearDown(() {
+      adapter.dispose();
+      notifier.dispose();
+      publisher.dispose();
+    });
+
+    test('1. TradeExecuted completes existing First Virtual Trade progression',
+        () {
+      final tradeEvent = TradeExecuted(
+        tradeId: 'tr_100',
+        userId: 'u_1',
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        quantity: 0.1,
+        executionPriceInr: 5000000.0,
+        totalAmountInr: 500000.0,
+        hasStopLoss: true,
+      );
+
+      publisher.publish(tradeEvent);
+
+      expect(notifier.state.completedMissionIds, contains('m4_first_trade'));
+      expect(notifier.state.totalXp, equals(50));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'first_trade' && a.isUnlocked),
+          isTrue);
+    });
+
+    test('2. Repeated TradeExecuted does not duplicate the reward', () {
+      final tradeEvent = TradeExecuted(
+        tradeId: 'tr_101',
+        userId: 'u_1',
+        symbol: 'ETHUSDT',
+        side: 'BUY',
+        quantity: 1.0,
+        executionPriceInr: 300000.0,
+        totalAmountInr: 300000.0,
+        hasStopLoss: true,
+      );
+
+      publisher.publish(tradeEvent);
+      expect(notifier.state.totalXp, equals(50));
+
+      // Publish exact duplicate TradeExecuted
+      publisher.publish(tradeEvent);
+      expect(notifier.state.totalXp, equals(50));
+      expect(notifier.state.lastResult?.isDuplicate, isTrue);
+
+      // Publish second TradeExecuted with different trade ID
+      final secondTrade = TradeExecuted(
+        tradeId: 'tr_102',
+        userId: 'u_1',
+        symbol: 'SOLUSDT',
+        side: 'BUY',
+        quantity: 5.0,
+        executionPriceInr: 15000.0,
+        totalAmountInr: 75000.0,
+        hasStopLoss: false,
+      );
+      publisher.publish(secondTrade);
+      // Mission m4_first_trade already completed -> 0 additional XP
+      expect(notifier.state.totalXp, equals(50));
+    });
+
+    test(
+        '3. RiskEvaluationCompleted triggers intended risk-learning progression',
+        () {
+      final riskEvent = RiskEvaluationCompleted(
+        riskScore: 85,
+        riskLevel: 'LOW',
+        reasonCodes: const ['STOP_LOSS_PRESENT'],
+        proposedTradeSizeInr: 10000.0,
+        hasStopLoss: true,
+        occurredAt: DateTime(2026, 7, 30, 10, 0),
+      );
+
+      publisher.publish(riskEvent);
+
+      expect(
+          notifier.state.completedMissionIds, contains('m7_risk_evaluation'));
+      expect(notifier.state.totalXp, equals(40));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'risk_aware' && a.isUnlocked),
+          isTrue);
+    });
+
+    test('4. Duplicate risk events do not award duplicate XP', () {
+      final riskEvent = RiskEvaluationCompleted(
+        riskScore: 85,
+        riskLevel: 'LOW',
+        reasonCodes: const ['STOP_LOSS_PRESENT'],
+        proposedTradeSizeInr: 10000.0,
+        hasStopLoss: true,
+        occurredAt: DateTime(2026, 7, 30, 10, 0),
+      );
+
+      publisher.publish(riskEvent);
+      expect(notifier.state.totalXp, equals(40));
+
+      // Publish same risk event again
+      publisher.publish(riskEvent);
+      expect(notifier.state.totalXp, equals(40));
+      expect(notifier.state.lastResult?.isDuplicate, isTrue);
+    });
+
+    test('5. DisciplineEvaluationCompleted triggers discipline progression',
+        () {
+      final disciplineEvent = DisciplineEvaluationCompleted(
+        disciplineScore: 92,
+        reasonCodes: const ['PROPER_POSITION_SIZE'],
+        positionSizePercentage: 3.5,
+        usedStopLoss: true,
+        occurredAt: DateTime(2026, 7, 30, 11, 0),
+      );
+
+      publisher.publish(disciplineEvent);
+
+      expect(notifier.state.completedMissionIds,
+          contains('m8_discipline_evaluation'));
+      expect(notifier.state.totalXp, equals(40));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'disciplined_trader' && a.isUnlocked),
+          isTrue);
+    });
+
+    test('6. Duplicate discipline events do not award duplicate XP', () {
+      final disciplineEvent = DisciplineEvaluationCompleted(
+        disciplineScore: 92,
+        reasonCodes: const ['PROPER_POSITION_SIZE'],
+        positionSizePercentage: 3.5,
+        usedStopLoss: true,
+        occurredAt: DateTime(2026, 7, 30, 11, 0),
+      );
+
+      publisher.publish(disciplineEvent);
+      expect(notifier.state.totalXp, equals(40));
+
+      publisher.publish(disciplineEvent);
+      expect(notifier.state.totalXp, equals(40));
+      expect(notifier.state.lastResult?.isDuplicate, isTrue);
+    });
+
+    test('7. CoachSessionCompleted triggers coaching/reflection progression',
+        () {
+      final coachEvent = CoachSessionCompleted(
+        tradeId: 'tr_200',
+        userId: 'u_1',
+        riskScore: 85,
+        disciplineScore: 92,
+        isFallback: false,
+        providerName: 'gemini',
+        occurredAt: DateTime(2026, 7, 30, 12, 0),
+      );
+
+      publisher.publish(coachEvent);
+
+      expect(notifier.state.completedMissionIds, contains('m9_coach_session'));
+      expect(notifier.state.totalXp, equals(50));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'coach_reflection' && a.isUnlocked),
+          isTrue);
+    });
+
+    test('8. Duplicate coach events do not award duplicate XP', () {
+      final coachEvent = CoachSessionCompleted(
+        tradeId: 'tr_200',
+        userId: 'u_1',
+        riskScore: 85,
+        disciplineScore: 92,
+        isFallback: false,
+        providerName: 'gemini',
+        occurredAt: DateTime(2026, 7, 30, 12, 0),
+      );
+
+      publisher.publish(coachEvent);
+      expect(notifier.state.totalXp, equals(50));
+
+      publisher.publish(coachEvent);
+      expect(notifier.state.totalXp, equals(50));
+      expect(notifier.state.lastResult?.isDuplicate, isTrue);
+    });
+
+    test('9. Unknown DomainEvent types are ignored safely', () {
+      final unknownEvent = UnknownTestDomainEvent();
+
+      publisher.publish(unknownEvent);
+
+      expect(notifier.state.totalXp, equals(0));
+      expect(notifier.state.completedMissionIds, isEmpty);
+    });
+
+    test('10. Existing V1 missions m1-m6 continue to work', () {
+      const missions = Mission.initialMissions;
+      expect(missions.length, equals(9));
+      expect(
+          missions.take(6).map((m) => m.id),
+          equals([
+            'm1_onboarding',
+            'm2_login',
+            'm3_view_market',
+            'm4_first_trade',
+            'm5_read_education',
+            'm6_news_detective',
+          ]));
+
+      // Verify processing each V1 event
+      notifier
+          .processEvent(LearningEvent.onboardingCompleted(eventId: 'v1_onb'));
+      notifier.processEvent(LearningEvent.loginCompleted(eventId: 'v1_log'));
+      notifier.processEvent(LearningEvent.viewedMarket(eventId: 'v1_mkt'));
+      notifier.processEvent(LearningEvent.completedLesson(eventId: 'v1_les'));
+      notifier.processEvent(
+          LearningEvent.newsDetectiveCompleted(eventId: 'v1_news'));
+
+      expect(notifier.state.completedMissionIds.length, equals(5));
+      expect(notifier.state.totalXp, equals(250)); // 50+30+30+40+100
+    });
+
+    test('11. Existing XP and level thresholds remain unchanged', () {
+      expect(Level.fromXp(0).tier, equals(LevelTier.rookie));
+      expect(Level.fromXp(100).tier, equals(LevelTier.explorer));
+      expect(Level.fromXp(250).tier, equals(LevelTier.riskAwareTrader));
+      expect(Level.fromXp(430).tier, equals(LevelTier.disciplinedTrader));
+    });
+
+    test('12. Existing achievement behavior remains unchanged', () {
+      notifier
+          .processEvent(LearningEvent.onboardingCompleted(eventId: 'ach_1'));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'first_steps' && a.isUnlocked),
+          isTrue);
+
+      notifier.processEvent(LearningEvent.viewedMarket(eventId: 'ach_2'));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'market_explorer' && a.isUnlocked),
+          isTrue);
+
+      notifier.processEvent(LearningEvent.completedLesson(eventId: 'ach_3'));
+      expect(
+          notifier.state.achievements
+              .any((a) => a.id == 'curious_learner' && a.isUnlocked),
+          isTrue);
+    });
+
+    test('13. reset() still clears runtime progression correctly', () {
+      publisher.publish(TradeExecuted(
+        tradeId: 'tr_300',
+        userId: 'u_1',
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        quantity: 1.0,
+        executionPriceInr: 1000.0,
+        totalAmountInr: 1000.0,
+        hasStopLoss: true,
+      ));
+
+      expect(notifier.state.totalXp, equals(50));
+
+      notifier.reset();
+
+      expect(notifier.state.totalXp, equals(0));
+      expect(notifier.state.completedMissionIds, isEmpty);
+      expect(notifier.state.processedEventIds, isEmpty);
+    });
+
+    test(
+        '14. Learning module does not depend on concrete Risk, Discipline, Trading, or Coach classes',
+        () {
+      // DomainEventLearningAdapter only consumes generic DomainEvent & DomainEventPublisher
+      final translated = adapter.translateEvent(TradeExecuted(
+        tradeId: 'tr_400',
+        userId: 'u_1',
+        symbol: 'BTCUSDT',
+        side: 'BUY',
+        quantity: 1.0,
+        executionPriceInr: 1000.0,
+        totalAmountInr: 1000.0,
+        hasStopLoss: true,
+      ));
+
+      expect(translated, isNotNull);
+      expect(translated!.type, equals(LearningEventType.firstTradeCompleted));
+      expect(translated.eventId, equals('domain_trade_tr_400'));
     });
   });
 }

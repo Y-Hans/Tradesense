@@ -82,6 +82,29 @@ class Mission {
       xpReward: 100,
       eventType: LearningEventType.newsDetectiveCompleted,
     ),
+    Mission(
+      id: 'm7_risk_evaluation',
+      title: 'Risk Evaluation',
+      description:
+          'Complete a portfolio risk assessment before placing an order.',
+      xpReward: 40,
+      eventType: LearningEventType.riskEvaluationCompleted,
+    ),
+    Mission(
+      id: 'm8_discipline_evaluation',
+      title: 'Disciplined Trader',
+      description:
+          'Complete a trading discipline evaluation with proper risk controls.',
+      xpReward: 40,
+      eventType: LearningEventType.disciplineEvaluationCompleted,
+    ),
+    Mission(
+      id: 'm9_coach_session',
+      title: 'Coach Reflection',
+      description: 'Complete an AI Coach reflection session after trading.',
+      xpReward: 50,
+      eventType: LearningEventType.coachSessionCompleted,
+    ),
   ];
 
   @override
