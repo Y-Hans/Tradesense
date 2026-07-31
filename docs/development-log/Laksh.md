@@ -21,6 +21,29 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-31] - ExecuteStopLossUseCase Application Orchestration
+
+- **Completed Functionality**: Added `ExecuteStopLossUseCase` as the application-layer orchestration boundary for active stop-loss evaluation and automatic SELL delegation.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/application/execute_stop_loss_contracts.dart`
+  - `lib/features/trading/application/execute_stop_loss_result.dart`
+  - `lib/features/trading/application/execute_stop_loss_use_case.dart`
+  - `test/unit/trading/fakes/execute_stop_loss_fakes.dart`
+  - `test/unit/trading/execute_stop_loss_use_case_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/DEV_2_TRADING.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The use case trims and validates user context, loads wallet, holdings, active stop-loss orders, and required market tickers, validates ownership/application repository state, delegates stop-loss decisions to `StopLossEngine.evaluate`, and delegates each generated `SellExecutionRequest` to `ExecuteSellUseCase.execute`.
+- **StopLossEngine Delegation**: The application layer does not calculate triggers, quantities, expiry, duplicate detection, ticker freshness, validity, or rejected-order `TradingFailure`s.
+- **ExecuteSell Delegation**: Triggered orders are converted through `ExecuteSellRequest.fromStopLoss`, preserving `STOP_LOSS` reason, source order id, score snapshots, and deterministic evaluation timestamp while reusing the existing SELL workflow.
+- **Typed Results**: `ExecuteStopLossSuccess` exposes exact evaluated, triggered, executed, skipped, pending, expired, and rejected counts plus immutable executed sell summaries. Application failures distinguish invalid user context, missing/foreign wallet, repository/provider failures, malformed active-order repository data, ownership mismatches, and delegated sell failures.
+- **Empty Cases**: No active orders, no holdings, and no triggered orders all succeed gracefully. Per-order domain rejections remain in the immutable evaluation aggregate.
+- **Determinism**: Repository collections are copied before sorting, ticker symbols are derived from normalized holdings/orders in stable order, caller-supplied `evaluatedAt` is forwarded, and fallback time comes from an injected clock exactly once.
+- **Future Event Hook**: A future event publisher can be inserted after successful orchestration for `StopLossTriggered` and `AutomaticSellExecuted`. Gamification remains outside this milestone.
+- **Tests**: Added deterministic coverage for success, empty cases, one and multiple triggered sells, one sell call per trigger, delegated sell failure preservation, wallet/repository/market failures, malformed repository data, ownership mismatch, `TradingFailure` preservation, deterministic execution, immutable results, no persistence calls, exact counts, and evaluatedAt forwarding.
+- **Integration Impact**: Divyanshu must provide concrete stop-loss read repositories and production order status/transaction integration outside this use case. Somya can consume counts and typed results from UI/controller flows after bindings exist. Neel can later consume application events through a dedicated event publisher.
+- **Remaining Work**: Concrete infrastructure bindings, production stop-loss status persistence, authenticated scheduler/live ticker invocation, UI state wiring, event publisher integration, and trade history application orchestration remain outside this milestone.
+
 ### [2026-07-30] - ExecutePortfolioUseCase Application Orchestration
 
 - **Completed Functionality**: Added `ExecutePortfolioUseCase` as the application-layer orchestration boundary for read-only portfolio valuation.
