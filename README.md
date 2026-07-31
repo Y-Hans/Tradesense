@@ -6,6 +6,8 @@
 
 A production-grade, pragmatic Clean Architecture Flutter application designed for a **Shipathon/Hackathon** and publication on Google Play.
 
+---
+
 ## 🎯 Product Vision & Core Philosophy
 
 **"Profit does not necessarily mean you made a good decision."**
@@ -18,9 +20,21 @@ The app evaluates trading behavior through two core metrics before invoking the 
 
 ---
 
-## 👥 5-Developer Ownership Matrix
+## 🚀 Current Status: Prototype Merged & Verified
 
-To enable 5 developer agents to branch concurrently from the exact same commit without merge conflicts:
+Neel's prototype features have been integrated and verified in this local repository:
+- **Authentication & User Lifecycle**: Login, Register, Session restoration.
+- **Idempotent Wallet Initialization**: ₹100,000 VIRTUAL starting balance.
+- **Educational Onboarding**: 3-step slide walkthrough with completion state persistence.
+- **Missions & Rewards**: 5 educational missions (+50 to +150 XP) with duplicate reward prevention.
+- **Deterministic Level Progression**: Rookie ➔ Explorer ➔ Risk-Aware Trader ➔ Disciplined Trader.
+- **News Detective Quiz**: 15 curated questions teaching source verification and clickbait detection.
+- **Educational Disclaimers**: Non-real trading disclaimers integrated across UI screens.
+- **Code Quality**: Passes `flutter analyze` with 0 issues.
+
+---
+
+## 👥 5-Developer Ownership Matrix
 
 | Developer Role | Area Owned | Directory Boundaries |
 | :--- | :--- | :--- |
@@ -29,8 +43,6 @@ To enable 5 developer agents to branch concurrently from the exact same commit w
 | **DEV 3 — Intelligence & AI** | Risk meter, Discipline meter, AI Coach | `lib/features/intelligence/`, `lib/features/coach/` |
 | **DEV 4 — Lifecycle & Learning** | Auth, onboarding, profile, missions | `lib/features/auth/`, `lib/features/onboarding/`, `lib/features/profile/`, `lib/features/learning/` |
 | **DEV 5 — Platform & Backend** | Market APIs, Supabase, RevenueCat, Android, CI | `lib/core/networking/`, `supabase/`, `android/`, `.github/` |
-
-> See [FILE_OWNERSHIP.md](docs/FILE_OWNERSHIP.md) for strict rules and [INTEGRATION_REQUESTS.md](docs/INTEGRATION_REQUESTS.md) for contract modification logs.
 
 ---
 
@@ -41,11 +53,9 @@ To enable 5 developer agents to branch concurrently from the exact same commit w
 flutter pub get
 flutter run
 ```
-The app defaults to `mockModeProvider = true` allowing complete testing of the entire user journey with zero backend API dependencies.
 
 ### 2. Verify Code Quality & Test Suite
 ```bash
-flutter format --set-exit-if-changed .
 flutter analyze
 flutter test
 ```
@@ -54,24 +64,10 @@ flutter test
 
 ## 📚 Documentation Sitemap
 
-- [PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md)
+- [CURRENT_STATE.md](docs/CURRENT_STATE.md)
+- [DECISIONS.md](docs/DECISIONS.md)
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [V1_SCOPE.md](docs/V1_SCOPE.md)
-- [FILE_OWNERSHIP.md](docs/FILE_OWNERSHIP.md)
-- [DEV_1_UI.md](docs/DEV_1_UI.md)
-- [DEV_2_TRADING.md](docs/DEV_2_TRADING.md)
-- [DEV_3_INTELLIGENCE.md](docs/DEV_3_INTELLIGENCE.md)
-- [DEV_4_ACCOUNT_LEARNING.md](docs/DEV_4_ACCOUNT_LEARNING.md)
-- [DEV_5_PLATFORM.md](docs/DEV_5_PLATFORM.md)
 - [SHARED_CONTRACTS.md](docs/SHARED_CONTRACTS.md)
-- [DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md)
-- [AI_ARCHITECTURE.md](docs/AI_ARCHITECTURE.md)
-- [SUBSCRIPTIONS.md](docs/SUBSCRIPTIONS.md)
-- [INTEGRATION_GUIDE.md](docs/INTEGRATION_GUIDE.md)
-- [INTEGRATION_REQUESTS.md](docs/INTEGRATION_REQUESTS.md)
-- [ENVIRONMENT_SETUP_WINDOWS.md](docs/ENVIRONMENT_SETUP_WINDOWS.md)
-- [ANDROID_DEVELOPMENT.md](docs/ANDROID_DEVELOPMENT.md)
-- [GOOGLE_PLAY_RELEASE.md](docs/GOOGLE_PLAY_RELEASE.md)
-- [SECURITY.md](docs/SECURITY.md)
-- [PRIVACY.md](docs/PRIVACY.md)
-- [TESTING.md](docs/TESTING.md)
+- [OWNERSHIP.md](docs/ownership/OWNERSHIP.md)
+- [LOG.md](docs/development-log/LOG.md)
+- [INTEGRATION.md](docs/integration-requests/INTEGRATION.md)
