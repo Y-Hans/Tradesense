@@ -12,10 +12,9 @@ Primary Owner: **Laksh**
 
 ## Immediate Tasks
 1. Implement production Supabase trading repository (`SupabaseTradingRepository`) executing market orders via RPC / transaction queries.
-2. Wire `ExecuteBuyUseCase`, `ExecuteSellUseCase`, `ExecutePortfolioUseCase`, and `ExecuteStopLossUseCase` to concrete infrastructure repositories and authenticated user context.
+2. Wire `ExecuteBuyUseCase`, `ExecuteSellUseCase`, `ExecutePortfolioUseCase`, `ExecuteStopLossUseCase`, and `ExecuteTradeHistoryUseCase` to concrete infrastructure repositories and authenticated user context.
 3. Wire active stop-loss order trigger evaluation to live ticker updates at the application/infrastructure boundary.
-4. Add trade history application orchestration around the existing deterministic engine.
-5. Keep all financial calculations decimal-exact using `FinancialMath.inrToPaise`.
+4. Keep all financial calculations decimal-exact using `FinancialMath.inrToPaise`.
 
 ## Completed Domain Milestones
 - `ExecutePortfolioUseCase` is implemented as the application orchestration boundary for read-only portfolio valuation.
@@ -36,6 +35,13 @@ Primary Owner: **Laksh**
 - Application failures cover invalid user context, missing/foreign wallet, wallet/holdings/stop-loss repository failures, holding/order ownership mismatch, malformed active-order repository data, missing/provider-failed market tickers, and delegated `ExecuteSellUseCase` failure.
 - Deterministic execution is maintained by copying repository collections, sorting holdings and orders, deriving unique ticker symbols in stable order, and forwarding caller-supplied `evaluatedAt` or a single injected clock value.
 - Future `StopLossTriggered` and `AutomaticSellExecuted` event publishing can be inserted after successful orchestration. XP, achievements, badges, missions, and gamification remain outside Laksh's milestone.
+- `ExecuteTradeHistoryUseCase` is implemented as the application orchestration boundary for read-only trade-history retrieval.
+- The use case validates user context, loads the persisted wallet, loads complete trade history, verifies wallet and trade ownership, copies and sorts trades by timestamp and id, then delegates to `TradeHistoryEngine.calculate`.
+- The application layer does not calculate running balance, realized P&L, average cost, replay steps, statistics, timeline entries, asset analytics, or cost-basis state. Domain rejections preserve the original `TradingFailure`.
+- Empty trade history is valid and returns the successful empty `TradeHistorySnapshot` produced by `TradeHistoryEngine`.
+- Typed application failures cover invalid user context, missing/foreign wallet, wallet/trade repository failures, malformed repository ownership data, and trade ownership mismatch.
+- Deterministic execution is maintained by copying repository trades before sorting, never relying on repository ordering, forwarding caller-supplied `evaluatedAt`, and using a single injected clock value only as fallback.
+- Future `TradeHistoryViewed` event publishing can be inserted after successful orchestration. XP, achievements, badges, missions, and gamification remain outside Laksh's milestone.
 
 ## Portfolio Integration Notes
 - Divyanshu: provide concrete read-side implementations for `ExecutePortfolioWalletRepository`, `ExecutePortfolioHoldingRepository`, and `ExecutePortfolioTradeRepository`; bind them to the existing `MarketProvider`; keep reads scoped to the authenticated user and do not persist snapshots from this use case.
@@ -46,3 +52,8 @@ Primary Owner: **Laksh**
 - Divyanshu: provide concrete implementations for `ExecuteStopLossWalletRepository`, `ExecuteStopLossHoldingRepository`, and `ExecuteStopLossOrderRepository`, bind them to the existing `MarketProvider`, and handle any production stop-loss status persistence/transactions outside this use case.
 - Somya: wire dashboard/trading state flows to invoke `ExecuteStopLossUseCase.execute` after authenticated user context and infrastructure bindings exist; render success counts, skipped/rejected details, and delegated sell failures without duplicating trigger logic.
 - Neel: consume future `StopLossTriggered` / `AutomaticSellExecuted` application events once an event publisher exists; do not add XP, achievements, badges, or missions to the stop-loss application use case.
+
+## Trade History Integration Notes
+- Divyanshu: provide concrete implementations for `ExecuteTradeHistoryWalletRepository` and `ExecuteTradeHistoryTradeRepository`; scope reads to the authenticated user; return complete trade history; do not persist snapshots from this use case.
+- Somya: wire the trade history screen/controller/state-management to call `ExecuteTradeHistoryUseCase.execute` with authenticated `userId` and optional deterministic `evaluatedAt`; consume `ExecuteTradeHistorySuccess.snapshot` plus typed failure/domain rejection states without duplicating history calculations.
+- Neel: consume future `TradeHistoryViewed` events once a reusable event publisher exists; do not add XP, achievements, badges, or missions to the trade-history application use case.
