@@ -21,6 +21,28 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-07-31] - ExecuteTradeHistoryUseCase Application Orchestration
+
+- **Completed Functionality**: Added `ExecuteTradeHistoryUseCase` as the application-layer orchestration boundary for read-only trade-history retrieval.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/application/execute_trade_history_contracts.dart`
+  - `lib/features/trading/application/execute_trade_history_result.dart`
+  - `lib/features/trading/application/execute_trade_history_use_case.dart`
+  - `test/unit/trading/fakes/execute_trade_history_fakes.dart`
+  - `test/unit/trading/execute_trade_history_use_case_test.dart`
+  - `docs/ownership/Laksh.md`
+  - `docs/DEV_2_TRADING.md`
+  - `docs/development-log/Laksh.md`
+- **Responsibilities**: The use case trims and validates user context, loads the wallet and complete trade history, validates wallet/trade ownership, copies and deterministically sorts trades, and delegates history calculation to `TradeHistoryEngine.calculate`.
+- **TradeHistoryEngine Delegation**: The application layer does not calculate replay, running cash flow, running realized P&L, average cost, statistics, timeline entries, asset analytics, or cost-basis state.
+- **Typed Results**: `ExecuteTradeHistorySuccess` exposes the exact `TradeHistorySnapshot` plus the application evaluation timestamp. Domain rejections preserve `TradingFailure`; application failures distinguish invalid user context, missing/foreign wallet, repository failures, malformed repository ownership data, and trade ownership mismatch.
+- **Empty Cases**: Wallets with no trades and empty histories succeed through the empty snapshot produced by `TradeHistoryEngine`.
+- **Determinism**: Repository trade collections are copied before sorting by timestamp and id, caller-supplied `evaluatedAt` is forwarded, and fallback time comes from an injected clock exactly once.
+- **Future Event Hook**: A future event publisher can be inserted after successful orchestration for `TradeHistoryViewed`. Gamification remains outside this milestone.
+- **Tests**: Added deterministic coverage for successful retrieval, empty history, missing wallet, invalid user, wallet/trade repository failures, malformed trade ownership data, ownership mismatch, exact snapshot propagation, repeated execution determinism, immutable snapshot collections, copied trade list, evaluatedAt forwarding, no persistence calls, repository ordering, and preserved `TradingFailure`.
+- **Integration Impact**: Divyanshu must provide concrete wallet/trade-history read repositories scoped to the authenticated user. Somya can consume the snapshot and typed states from the trade history UI/controller flow. Neel can later consume `TradeHistoryViewed` through a dedicated event publisher.
+- **Remaining Work**: Concrete infrastructure reads, authenticated user binding, trade-history UI state wiring, event publisher integration, and production monitoring remain outside this milestone.
+
 ### [2026-07-31] - ExecuteStopLossUseCase Application Orchestration
 
 - **Completed Functionality**: Added `ExecuteStopLossUseCase` as the application-layer orchestration boundary for active stop-loss evaluation and automatic SELL delegation.
