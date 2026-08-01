@@ -1,11 +1,14 @@
 import 'package:cryptoedu/features/trading/application/execute_buy_contracts.dart';
 import 'package:cryptoedu/features/trading/application/execute_buy_result.dart';
 import 'package:cryptoedu/features/trading/application/execute_buy_use_case.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
+import 'package:cryptoedu/features/trading/application/trading_events.dart';
 import 'package:cryptoedu/features/trading/domain/trading_domain_service.dart';
 import 'package:cryptoedu/features/trading/domain/trading_failure.dart';
 import 'package:cryptoedu/shared/models/crypto_asset.dart';
 import 'package:cryptoedu/shared/models/holding.dart';
 import 'package:cryptoedu/shared/models/market_ticker.dart';
+import 'package:cryptoedu/shared/models/trade.dart';
 import 'package:cryptoedu/shared/models/virtual_wallet.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -49,6 +52,14 @@ void main() {
       );
       expect(harness.transactionRepository.trades.single.toJson(),
           success.trade.toJson());
+      expect(harness.events, hasLength(1));
+      expect(harness.events.single, isA<FirstTradeCompleted>());
+      final event = harness.events.single as FirstTradeCompleted;
+      expect(event.userId, 'user_1');
+      expect(event.tradeId, 'trade_1');
+      expect(event.assetSymbol, 'BTC');
+      expect(event.side, TradeSide.buy);
+      expect(event.totalAmountInr, 100000.0);
     });
 
     test('successful repeated BUY delegates weighted average calculation',
@@ -301,6 +312,8 @@ class _Harness {
   late final FakeTradingTransactionRepository transactionRepository;
   final FakeExecuteBuyClock clock;
   final FakeExecuteBuyIdGenerator idGenerator;
+  final InMemoryTradingEventPublisher eventPublisher;
+  final List<TradingEvent> events = [];
   late final ExecuteBuyUseCase useCase;
 
   _Harness(
@@ -315,7 +328,9 @@ class _Harness {
         holdingRepository = FakeExecuteBuyHoldingRepository(),
         marketProvider = FakeMarketProvider(),
         clock = FakeExecuteBuyClock(evaluatedAt),
-        idGenerator = FakeExecuteBuyIdGenerator() {
+        idGenerator = FakeExecuteBuyIdGenerator(),
+        eventPublisher = InMemoryTradingEventPublisher() {
+    eventPublisher.subscribe(events.add);
     if (addWallet) {
       walletRepository.put(userId: 'user_1', wallet: wallet);
     }
@@ -334,6 +349,7 @@ class _Harness {
       tradingDomainService: const TradingDomainService(),
       clock: clock,
       idGenerator: idGenerator,
+      eventPublisher: eventPublisher,
     );
   }
 

@@ -1,5 +1,7 @@
 import 'package:cryptoedu/features/trading/application/execute_sell_result.dart';
 import 'package:cryptoedu/features/trading/application/execute_sell_use_case.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
+import 'package:cryptoedu/features/trading/application/trading_events.dart';
 import 'package:cryptoedu/features/trading/domain/stop_loss_evaluation_result.dart';
 import 'package:cryptoedu/features/trading/domain/trading_domain_service.dart';
 import 'package:cryptoedu/features/trading/domain/trading_failure.dart';
@@ -54,6 +56,26 @@ void main() {
         harness.transactionRepository.trades.single.toJson(),
         success.trade.toJson(),
       );
+      expect(harness.events, hasLength(1));
+      expect(harness.events.single, isA<FirstProfitableTradeCompleted>());
+      final event = harness.events.single as FirstProfitableTradeCompleted;
+      expect(event.userId, 'user_1');
+      expect(event.tradeId, 'trade_1');
+      expect(event.assetSymbol, 'BTC');
+      expect(event.realizedProfitLossInr, 500000.0);
+    });
+
+    test('successful losing SELL publishes losing trade event', () async {
+      final harness = _Harness(evaluatedAt, tickerPriceInr: 3000000.0);
+
+      final result = await harness.execute();
+
+      expect(result, isA<ExecuteSellSuccess>());
+      expect(harness.events, hasLength(1));
+      expect(harness.events.single, isA<FirstLosingTradeCompleted>());
+      final event = harness.events.single as FirstLosingTradeCompleted;
+      expect(event.tradeId, 'trade_1');
+      expect(event.realizedProfitLossInr, -500000.0);
     });
 
     test('successful stop-loss SELL uses generated execution request metadata',
@@ -75,6 +97,32 @@ void main() {
       expect(harness.transactionRepository.lastSourceStopLossOrderId, 'sl_1');
       expect(
           harness.transactionRepository.trades.single.timestamp, evaluatedAt);
+    });
+
+    test('successful fifth SELL publishes five trades milestone', () async {
+      final harness = _Harness(evaluatedAt);
+      harness.seedCommittedTradeCount(4);
+
+      final result = await harness.execute();
+
+      expect(result, isA<ExecuteSellSuccess>());
+      expect(harness.events.map((event) => event.runtimeType), [
+        FirstProfitableTradeCompleted,
+        FiveTradesCompleted,
+      ]);
+    });
+
+    test('successful tenth SELL publishes ten trades milestone', () async {
+      final harness = _Harness(evaluatedAt);
+      harness.seedCommittedTradeCount(9);
+
+      final result = await harness.execute();
+
+      expect(result, isA<ExecuteSellSuccess>());
+      expect(harness.events.map((event) => event.runtimeType), [
+        FirstProfitableTradeCompleted,
+        TenTradesCompleted,
+      ]);
     });
 
     test('wallet not found returns typed failure and short-circuits', () async {
@@ -284,6 +332,8 @@ class _Harness {
   late final FakeTradingTransactionRepository transactionRepository;
   final FakeExecuteBuyClock clock;
   final FakeExecuteBuyIdGenerator idGenerator;
+  final InMemoryTradingEventPublisher eventPublisher;
+  final List<TradingEvent> events = [];
   late final ExecuteSellUseCase useCase;
 
   _Harness(
@@ -300,7 +350,9 @@ class _Harness {
         holdingRepository = FakeExecuteBuyHoldingRepository(),
         marketProvider = FakeMarketProvider(),
         clock = FakeExecuteBuyClock(evaluatedAt),
-        idGenerator = FakeExecuteBuyIdGenerator() {
+        idGenerator = FakeExecuteBuyIdGenerator(),
+        eventPublisher = InMemoryTradingEventPublisher() {
+    eventPublisher.subscribe(events.add);
     if (addWallet) {
       walletRepository.put(userId: 'user_1', wallet: wallet);
     }
@@ -322,7 +374,19 @@ class _Harness {
       tradingDomainService: const TradingDomainService(),
       clock: clock,
       idGenerator: idGenerator,
+      eventPublisher: eventPublisher,
     );
+  }
+
+  void seedCommittedTradeCount(int count) {
+    for (var index = 0; index < count; index += 1) {
+      transactionRepository.trades.add(
+        _trade(
+          id: 'seed_trade_$index',
+          timestamp: clock.fixedNow.subtract(Duration(days: count - index)),
+        ),
+      );
+    }
   }
 
   Future<ExecuteSellResult> execute({
@@ -352,6 +416,25 @@ class _Harness {
       ),
     );
   }
+}
+
+Trade _trade({
+  required String id,
+  required DateTime timestamp,
+}) {
+  return Trade(
+    id: id,
+    userId: 'user_1',
+    symbol: 'BTC',
+    side: TradeSide.buy,
+    type: OrderType.market,
+    quantity: 0.1,
+    executionPriceInr: 100.0,
+    totalAmountInr: 10.0,
+    timestamp: timestamp,
+    disciplineScoreAtTrade: 80,
+    riskScoreAtTrade: 25,
+  );
 }
 
 ExecuteSellFailureCode _applicationCode(ExecuteSellResult result) {

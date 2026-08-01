@@ -21,6 +21,27 @@ For meaningful completed work, record:
 
 ## Completed Log Entries
 
+### [2026-08-01] - Trading Event System
+
+- **Completed Functionality**: Added a lightweight application-layer `TradingEventPublisher` abstraction and immutable trading event models for successful trading, portfolio, trade-history, and stop-loss milestones.
+- **Important Files Created / Modified**:
+  - `lib/features/trading/application/trading_events.dart`
+  - `lib/features/trading/application/trading_event_publisher.dart`
+  - `lib/features/trading/application/execute_buy_use_case.dart`
+  - `lib/features/trading/application/execute_sell_use_case.dart`
+  - `lib/features/trading/application/execute_stop_loss_use_case.dart`
+  - `lib/features/trading/application/execute_trade_history_use_case.dart`
+  - `lib/features/portfolio/application/execute_portfolio_use_case.dart`
+  - `test/unit/trading/trading_event_publisher_test.dart`
+  - Existing use-case tests for BUY, SELL, portfolio, trade history, and stop loss.
+- **Architecture**: Use cases publish events only after successful execution. The trading application layer does not know or own consumers. `InMemoryTradingEventPublisher` supports deterministic listener registration, removal, ordered fan-out, duplicate-listener protection, and listener exception isolation. `NoOpTradingEventPublisher` preserves existing constructor behavior when no consumer is wired.
+- **Supported Events**: `FirstTradeCompleted`, `FirstProfitableTradeCompleted`, `FirstLosingTradeCompleted`, `PortfolioViewed`, `TradeHistoryViewed`, `FiveTradesCompleted`, `TenTradesCompleted`, `StopLossTriggered`, and `AutomaticSellExecuted`.
+- **Integration Points**: BUY publishes first-trade completion, SELL publishes profit/loss and count milestones, portfolio publishes view completion, trade history publishes view completion, and stop-loss publishes trigger plus automatic sell execution events.
+- **Extension Strategy**: Add a new immutable `TradingEvent` subclass with scalar payload fields, then emit it from the relevant successful application use-case path. Consumers subscribe through `TradingEventPublisher`; no XP, achievements, badges, missions, UI, analytics, notifications, repositories, HTTP, Firebase, or Supabase code belongs in this layer.
+- **Neel Integration**: Neel can subscribe to the shared publisher and handle XP, badges, achievements, missions, or learning progression externally without modifying Laksh-owned trading logic.
+- **Tests**: Added deterministic coverage for listener registration/removal, single and multiple listeners, delivery ordering, payload correctness, duplicate listener prevention, listener exception isolation, deterministic repeated publishing, and successful event emission from BUY, SELL, portfolio, trade-history, and stop-loss use cases.
+- **Validation**: `flutter analyze` passed. `flutter test` passed.
+
 ### [2026-07-31] - ExecuteTradeHistoryUseCase Application Orchestration
 
 - **Completed Functionality**: Added `ExecuteTradeHistoryUseCase` as the application-layer orchestration boundary for read-only trade-history retrieval.

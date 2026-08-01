@@ -1,6 +1,8 @@
 import 'package:cryptoedu/features/trading/application/execute_trade_history_result.dart';
 import 'package:cryptoedu/features/trading/application/execute_trade_history_use_case.dart';
 import 'package:cryptoedu/features/trading/application/execute_buy_contracts.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
+import 'package:cryptoedu/features/trading/application/trading_events.dart';
 import 'package:cryptoedu/features/trading/domain/trade_history_engine.dart';
 import 'package:cryptoedu/features/trading/domain/trade_history_result.dart';
 import 'package:cryptoedu/features/trading/domain/trading_failure.dart';
@@ -31,6 +33,13 @@ void main() {
       ]);
       expect(success.evaluatedAt, evaluatedAt);
       expect(harness.callLog, ['wallet:user_1', 'trades:user_1']);
+      expect(harness.events, hasLength(1));
+      expect(harness.events.single, isA<TradeHistoryViewed>());
+      final event = harness.events.single as TradeHistoryViewed;
+      expect(event.userId, 'user_1');
+      expect(event.totalTrades, 2);
+      expect(event.profitableTrades, 0);
+      expect(event.losingTrades, 0);
     });
 
     test('empty history returns a successful empty engine snapshot', () async {
@@ -298,6 +307,8 @@ class _Harness {
   late final FakeExecuteTradeHistoryWalletRepository walletRepository;
   late final FakeExecuteTradeHistoryTradeRepository tradeRepository;
   late final FakeExecuteTradeHistoryClock clock;
+  late final InMemoryTradingEventPublisher eventPublisher;
+  final List<TradingEvent> events = [];
   late final ExecuteTradeHistoryUseCase useCase;
 
   _Harness(
@@ -314,11 +325,14 @@ class _Harness {
       callLog: callLog,
     );
     clock = FakeExecuteTradeHistoryClock(evaluatedAt);
+    eventPublisher = InMemoryTradingEventPublisher();
+    eventPublisher.subscribe(events.add);
     useCase = ExecuteTradeHistoryUseCase(
       walletRepository: walletRepository,
       tradeRepository: tradeRepository,
       tradeHistoryEngine: tradeHistoryEngine ?? const TradeHistoryEngine(),
       clock: clock,
+      eventPublisher: eventPublisher,
     );
 
     if (addWallet) {

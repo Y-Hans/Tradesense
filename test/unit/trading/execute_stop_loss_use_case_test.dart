@@ -2,6 +2,8 @@ import 'package:cryptoedu/features/trading/application/execute_sell_result.dart'
 import 'package:cryptoedu/features/trading/application/execute_sell_use_case.dart';
 import 'package:cryptoedu/features/trading/application/execute_stop_loss_result.dart';
 import 'package:cryptoedu/features/trading/application/execute_stop_loss_use_case.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
+import 'package:cryptoedu/features/trading/application/trading_events.dart';
 import 'package:cryptoedu/features/trading/domain/stop_loss_engine.dart';
 import 'package:cryptoedu/features/trading/domain/stop_loss_evaluation_result.dart';
 import 'package:cryptoedu/features/trading/domain/trading_domain_service.dart';
@@ -47,6 +49,21 @@ void main() {
           SellExecutionRequest.stopLossReason);
       expect(success.executedSells.single.sellResult.sourceStopLossOrderId,
           'sl_1');
+      expect(harness.events.map((event) => event.runtimeType), [
+        StopLossTriggered,
+        AutomaticSellExecuted,
+      ]);
+      final triggered = harness.events.first as StopLossTriggered;
+      expect(triggered.stopLossOrderId, 'sl_1');
+      expect(triggered.assetSymbol, 'BTC');
+      expect(triggered.quantity, 0.5);
+      expect(triggered.marketPriceInr, 5000000.0);
+      expect(triggered.triggerPriceInr, 5100000.0);
+      final automaticSell = harness.events.last as AutomaticSellExecuted;
+      expect(automaticSell.stopLossOrderId, 'sl_1');
+      expect(automaticSell.tradeId, 'trade_1');
+      expect(automaticSell.assetSymbol, 'BTC');
+      expect(automaticSell.realizedProfitLossInr, 500000.0);
     });
 
     test('no stop-loss orders succeeds without market or sell execution',
@@ -420,6 +437,8 @@ class _Harness {
   late final FakeTradingTransactionRepository transactionRepository;
   late final FakeExecuteStopLossClock clock;
   late final FakeExecuteBuyIdGenerator idGenerator;
+  late final InMemoryTradingEventPublisher eventPublisher;
+  final List<TradingEvent> events = [];
   late final ExecuteStopLossUseCase useCase;
 
   _Harness(
@@ -437,6 +456,8 @@ class _Harness {
     marketProvider = FakeExecuteStopLossMarketProvider(callLog: callLog);
     clock = FakeExecuteStopLossClock(evaluatedAt);
     idGenerator = FakeExecuteBuyIdGenerator(tradeIds: tradeIds);
+    eventPublisher = InMemoryTradingEventPublisher();
+    eventPublisher.subscribe(events.add);
 
     if (addWallet) {
       walletRepository.put(
@@ -468,6 +489,7 @@ class _Harness {
       stopLossEngine: const StopLossEngine(),
       executeSellUseCase: executeSellUseCase,
       clock: clock,
+      eventPublisher: eventPublisher,
     );
   }
 

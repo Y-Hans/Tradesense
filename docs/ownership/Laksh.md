@@ -32,6 +32,8 @@ If a required change belongs to another developer, do not modify that developer'
 - `lib/features/trading/application/execute_trade_history_contracts.dart`
 - `lib/features/trading/application/execute_trade_history_result.dart`
 - `lib/features/trading/application/execute_trade_history_use_case.dart`
+- `lib/features/trading/application/trading_event_publisher.dart`
+- `lib/features/trading/application/trading_events.dart`
 - `lib/features/trading/domain/trade_history_engine.dart`
 - `lib/features/trading/domain/trade_history_result.dart`
 - `lib/features/trading/domain/stop_loss_engine.dart`

@@ -8,6 +8,8 @@ import 'execute_sell_result.dart';
 import 'execute_sell_use_case.dart';
 import 'execute_stop_loss_contracts.dart';
 import 'execute_stop_loss_result.dart';
+import 'trading_event_publisher.dart';
+import 'trading_events.dart';
 
 class ExecuteStopLossRequest {
   final String userId;
@@ -31,6 +33,7 @@ class ExecuteStopLossUseCase {
   final StopLossEngine stopLossEngine;
   final ExecuteSellUseCase executeSellUseCase;
   final ExecuteStopLossClock clock;
+  final TradingEventPublisher eventPublisher;
 
   const ExecuteStopLossUseCase({
     required this.walletRepository,
@@ -40,6 +43,7 @@ class ExecuteStopLossUseCase {
     required this.stopLossEngine,
     required this.executeSellUseCase,
     required this.clock,
+    this.eventPublisher = const NoOpTradingEventPublisher(),
   });
 
   Future<ExecuteStopLossResult> execute(
@@ -151,11 +155,12 @@ class ExecuteStopLossUseCase {
       );
     }
 
-    // Future StopLossTriggered / AutomaticSellExecuted events can be emitted here.
-    return ExecuteStopLossSuccess(
+    final success = ExecuteStopLossSuccess(
       evaluation: evaluation,
       executedSells: executedSells,
     );
+    _publishStopLossEvents(userId: userId, success: success);
+    return success;
   }
 
   Future<Object> _loadWallet(String userId) async {
@@ -265,6 +270,39 @@ class ExecuteStopLossUseCase {
         _normalizeSymbol(left.symbol).compareTo(_normalizeSymbol(right.symbol));
     if (symbolComparison != 0) return symbolComparison;
     return left.id.trim().compareTo(right.id.trim());
+  }
+
+  void _publishStopLossEvents({
+    required String userId,
+    required ExecuteStopLossSuccess success,
+  }) {
+    for (final executedSell in success.executedSells) {
+      final sellRequest = executedSell.sellRequest;
+      final sellResult = executedSell.sellResult;
+      eventPublisher.publish(
+        StopLossTriggered(
+          userId: userId,
+          occurredAt: success.evaluation.evaluatedAt,
+          stopLossOrderId: sellRequest.orderId,
+          assetSymbol: sellRequest.assetSymbol,
+          quantity: sellRequest.quantity,
+          marketPriceInr: sellRequest.marketPriceInr,
+          triggerPriceInr: sellRequest.triggerPriceInr,
+        ),
+      );
+      eventPublisher.publish(
+        AutomaticSellExecuted(
+          userId: userId,
+          occurredAt: sellResult.trade.timestamp,
+          stopLossOrderId: sellRequest.orderId,
+          tradeId: sellResult.trade.id,
+          assetSymbol: sellRequest.assetSymbol,
+          quantity: sellRequest.quantity,
+          proceedsInr: sellResult.domainDetails.saleProceedsInr,
+          realizedProfitLossInr: sellResult.domainDetails.realizedProfitLossInr,
+        ),
+      );
+    }
   }
 
   String _normalizeSymbol(String symbol) => symbol.trim().toUpperCase();

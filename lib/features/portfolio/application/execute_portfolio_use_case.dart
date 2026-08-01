@@ -3,6 +3,8 @@ import '../../../shared/models/holding.dart';
 import '../../../shared/models/market_ticker.dart';
 import '../../../shared/models/trade.dart';
 import '../../trading/application/execute_buy_contracts.dart';
+import '../../trading/application/trading_event_publisher.dart';
+import '../../trading/application/trading_events.dart';
 import '../domain/portfolio_engine.dart';
 import '../domain/portfolio_engine_result.dart';
 import 'execute_portfolio_contracts.dart';
@@ -25,6 +27,7 @@ class ExecutePortfolioUseCase {
   final MarketProvider marketProvider;
   final PortfolioEngine portfolioEngine;
   final ExecutePortfolioClock clock;
+  final TradingEventPublisher eventPublisher;
 
   const ExecutePortfolioUseCase({
     required this.walletRepository,
@@ -33,6 +36,7 @@ class ExecutePortfolioUseCase {
     required this.marketProvider,
     required this.portfolioEngine,
     required this.clock,
+    this.eventPublisher = const NoOpTradingEventPublisher(),
   });
 
   Future<ExecutePortfolioResult> execute(
@@ -109,7 +113,15 @@ class ExecutePortfolioUseCase {
     }
 
     final success = portfolioResult as PortfolioEngineSuccess;
-    // Future PortfolioViewed event publishing belongs here after success.
+    eventPublisher.publish(
+      PortfolioViewed(
+        userId: userId,
+        occurredAt: success.snapshot.evaluatedAt,
+        portfolioValueInr: success.snapshot.totals.portfolioValueInr,
+        numberOfAssets: success.snapshot.totals.numberOfAssets,
+        numberOfOpenHoldings: success.snapshot.totals.numberOfOpenHoldings,
+      ),
+    );
     return ExecutePortfolioSuccess(snapshot: success.snapshot);
   }
 

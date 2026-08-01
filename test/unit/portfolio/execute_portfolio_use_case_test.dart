@@ -3,6 +3,8 @@ import 'package:cryptoedu/features/portfolio/application/execute_portfolio_use_c
 import 'package:cryptoedu/features/portfolio/domain/portfolio_engine.dart';
 import 'package:cryptoedu/features/portfolio/domain/portfolio_engine_result.dart';
 import 'package:cryptoedu/features/trading/application/execute_buy_contracts.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
+import 'package:cryptoedu/features/trading/application/trading_events.dart';
 import 'package:cryptoedu/features/trading/domain/trading_failure.dart';
 import 'package:cryptoedu/shared/models/holding.dart';
 import 'package:cryptoedu/shared/models/market_ticker.dart';
@@ -33,6 +35,13 @@ void main() {
       expect(success.snapshot.totals.portfolioValueInr, 1350.0);
       expect(success.snapshot.assetSummaries.map((asset) => asset.assetSymbol),
           ['BTC', 'ETH']);
+      expect(harness.events, hasLength(1));
+      expect(harness.events.single, isA<PortfolioViewed>());
+      final event = harness.events.single as PortfolioViewed;
+      expect(event.userId, 'user_1');
+      expect(event.portfolioValueInr, 1350.0);
+      expect(event.numberOfAssets, 2);
+      expect(event.numberOfOpenHoldings, 2);
     });
 
     test('repository and provider calls happen in the expected order',
@@ -354,6 +363,8 @@ class _Harness {
   late final FakeExecutePortfolioTradeRepository tradeRepository;
   late final FakeExecutePortfolioMarketProvider marketProvider;
   late final FakeExecutePortfolioClock clock;
+  late final InMemoryTradingEventPublisher eventPublisher;
+  final List<TradingEvent> events = [];
   late final ExecutePortfolioUseCase useCase;
 
   _Harness(
@@ -373,6 +384,8 @@ class _Harness {
     tradeRepository = FakeExecutePortfolioTradeRepository(callLog: callLog);
     marketProvider = FakeExecutePortfolioMarketProvider(callLog: callLog);
     clock = FakeExecutePortfolioClock(evaluatedAt);
+    eventPublisher = InMemoryTradingEventPublisher();
+    eventPublisher.subscribe(events.add);
     useCase = ExecutePortfolioUseCase(
       walletRepository: walletRepository,
       holdingRepository: holdingRepository,
@@ -380,6 +393,7 @@ class _Harness {
       marketProvider: marketProvider,
       portfolioEngine: portfolioEngine ?? const PortfolioEngine(),
       clock: clock,
+      eventPublisher: eventPublisher,
     );
 
     if (addWallet) {
