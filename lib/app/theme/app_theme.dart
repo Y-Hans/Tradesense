@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
-  static const Color background = Color(0xFF000000);
-  static const Color surface = Color(0xFF0B0E14);
-  static const Color card = Color(0xFF121620);
-  static const Color primary = Color(0xFF2979FF);
+  static const Color background = Color(0xFF03170E); // Deep Stock Green
+  static const Color surface = Color(0xFF0A2318); // Obsidian Emerald
+  static const Color card = Color(0xFF102A1F); // Slightly lighter for cards
+  static const Color primary = Color(0xFF00E5FF); // Neon Cyan
   static const Color accent = Color(0xFF5E5CE6);
-  static const Color outline = Color(0xFF262D3D);
+  static const Color outline = Color(0xFF1E3A2F);
 
-  static const Color profit = Color(0xFF00E676);
+  static const Color profit = Color(0xFF00FF66); // Brighter neon green
   static const Color buy = profit;
-  static const Color loss = Color(0xFFFF3B30);
+  static const Color loss = Color(0xFFFF3366); // Brighter neon red
   static const Color sell = loss;
-  static const Color discipline = Color(0xFFFFD60A);
+  static const Color discipline = Color(0xFFFFD700); // Neon Gold
   static const Color riskLow = profit;
   static const Color riskModerate = Color(0xFFFF9F0A);
   static const Color riskHigh = Color(0xFFFF453A);
