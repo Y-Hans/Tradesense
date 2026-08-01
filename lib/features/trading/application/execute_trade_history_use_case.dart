@@ -4,6 +4,8 @@ import '../domain/trade_history_result.dart';
 import 'execute_buy_contracts.dart';
 import 'execute_trade_history_contracts.dart';
 import 'execute_trade_history_result.dart';
+import 'trading_event_publisher.dart';
+import 'trading_events.dart';
 
 class ExecuteTradeHistoryRequest {
   final String userId;
@@ -20,12 +22,14 @@ class ExecuteTradeHistoryUseCase {
   final ExecuteTradeHistoryTradeRepository tradeRepository;
   final TradeHistoryEngine tradeHistoryEngine;
   final ExecuteTradeHistoryClock clock;
+  final TradingEventPublisher eventPublisher;
 
   const ExecuteTradeHistoryUseCase({
     required this.walletRepository,
     required this.tradeRepository,
     required this.tradeHistoryEngine,
     required this.clock,
+    this.eventPublisher = const NoOpTradingEventPublisher(),
   });
 
   Future<ExecuteTradeHistoryResult> execute(
@@ -89,7 +93,15 @@ class ExecuteTradeHistoryUseCase {
     }
 
     final success = historyResult as TradeHistorySuccess;
-    // Future TradeHistoryViewed event publishing belongs here after success.
+    eventPublisher.publish(
+      TradeHistoryViewed(
+        userId: userId,
+        occurredAt: success.snapshot.evaluatedAt,
+        totalTrades: success.snapshot.summary.totalTrades,
+        profitableTrades: success.snapshot.summary.profitableTrades,
+        losingTrades: success.snapshot.summary.losingTrades,
+      ),
+    );
     return ExecuteTradeHistorySuccess(
       snapshot: success.snapshot,
       evaluatedAt: evaluatedAt,

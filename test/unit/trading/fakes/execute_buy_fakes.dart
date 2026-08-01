@@ -1,6 +1,7 @@
 import 'package:cryptoedu/core/contracts/market_provider.dart';
 import 'package:cryptoedu/core/utils/financial_math.dart';
 import 'package:cryptoedu/features/trading/application/execute_buy_contracts.dart';
+import 'package:cryptoedu/features/trading/application/trading_event_publisher.dart';
 import 'package:cryptoedu/shared/models/crypto_asset.dart';
 import 'package:cryptoedu/shared/models/holding.dart';
 import 'package:cryptoedu/shared/models/market_ticker.dart';
@@ -146,7 +147,10 @@ enum FakeCommitMode {
   concurrencyConflict,
 }
 
-class FakeTradingTransactionRepository implements TradingTransactionRepository {
+class FakeTradingTransactionRepository
+    implements
+        TradingTransactionRepository,
+        TradingCompletedTradeCountProvider {
   final FakeExecuteBuyWalletRepository walletRepository;
   final FakeExecuteBuyHoldingRepository holdingRepository;
   final List<Trade> trades = [];
@@ -301,6 +305,11 @@ class FakeTradingTransactionRepository implements TradingTransactionRepository {
       confirmationId: 'commit_$successfulCommits',
       committedAt: executedAt,
     );
+  }
+
+  @override
+  int completedTradeCountForUser(String userId) {
+    return trades.where((trade) => trade.userId == userId).length;
   }
 
   String _nextVersion(String? version) {

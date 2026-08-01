@@ -6,6 +6,8 @@ import '../domain/buy_trade_result.dart';
 import '../domain/trading_domain_service.dart';
 import 'execute_buy_contracts.dart';
 import 'execute_buy_result.dart';
+import 'trading_event_publisher.dart';
+import 'trading_events.dart';
 
 class ExecuteBuyRequest {
   final String userId;
@@ -39,6 +41,8 @@ class ExecuteBuyUseCase {
   final TradingDomainService tradingDomainService;
   final ExecuteBuyClock clock;
   final ExecuteBuyIdGenerator idGenerator;
+  final TradingEventPublisher eventPublisher;
+  final TradingCompletedTradeCountProvider? completedTradeCountProvider;
 
   const ExecuteBuyUseCase({
     required this.walletRepository,
@@ -48,6 +52,8 @@ class ExecuteBuyUseCase {
     required this.tradingDomainService,
     required this.clock,
     required this.idGenerator,
+    this.eventPublisher = const NoOpTradingEventPublisher(),
+    this.completedTradeCountProvider,
   });
 
   Future<ExecuteBuyResult> execute(ExecuteBuyRequest request) async {
@@ -148,13 +154,21 @@ class ExecuteBuyUseCase {
       );
     }
 
+    final confirmation = commitResult as BuyTransactionCommitSuccess;
+    _publishBuyEvents(
+      userId: userId,
+      previousHolding: existingHolding,
+      success: success,
+      commitConfirmation: confirmation,
+    );
+
     return ExecuteBuySuccess(
       updatedWallet: success.updatedWallet,
       updatedHolding: success.updatedHolding,
       trade: success.trade,
       executionTicker: ticker,
       domainDetails: success,
-      commitConfirmation: commitResult as BuyTransactionCommitSuccess,
+      commitConfirmation: confirmation,
     );
   }
 
@@ -282,6 +296,42 @@ class ExecuteBuyUseCase {
           code: ExecuteBuyFailureCode.concurrencyConflict,
           message: failure.message,
         );
+    }
+  }
+
+  void _publishBuyEvents({
+    required String userId,
+    required Holding? previousHolding,
+    required BuyTradeSuccess success,
+    required BuyTransactionCommitSuccess commitConfirmation,
+  }) {
+    final completedTradeCount = _completedTradeCountFor(userId);
+    final isFirstTrade = completedTradeCount == 1 ||
+        (completedTradeCount == null && previousHolding == null);
+    if (!isFirstTrade) return;
+
+    eventPublisher.publish(
+      FirstTradeCompleted(
+        userId: userId,
+        occurredAt: commitConfirmation.committedAt,
+        tradeId: success.trade.id,
+        assetSymbol: success.trade.symbol,
+        side: success.trade.side,
+        totalAmountInr: success.trade.totalAmountInr,
+      ),
+    );
+  }
+
+  int? _completedTradeCountFor(String userId) {
+    final provider = completedTradeCountProvider ??
+        (transactionRepository is TradingCompletedTradeCountProvider
+            ? transactionRepository as TradingCompletedTradeCountProvider
+            : null);
+    if (provider == null) return null;
+    try {
+      return provider.completedTradeCountForUser(userId);
+    } catch (_) {
+      return null;
     }
   }
 

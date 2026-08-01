@@ -7,6 +7,8 @@ import '../domain/trading_domain_service.dart';
 import 'execute_buy_contracts.dart';
 import 'execute_sell_contracts.dart';
 import 'execute_sell_result.dart';
+import 'trading_event_publisher.dart';
+import 'trading_events.dart';
 
 class ExecuteSellRequest {
   static const String manualReason = 'MANUAL';
@@ -66,6 +68,8 @@ class ExecuteSellUseCase {
   final TradingDomainService tradingDomainService;
   final ExecuteSellClock clock;
   final ExecuteSellIdGenerator idGenerator;
+  final TradingEventPublisher eventPublisher;
+  final TradingCompletedTradeCountProvider? completedTradeCountProvider;
 
   const ExecuteSellUseCase({
     required this.walletRepository,
@@ -75,6 +79,8 @@ class ExecuteSellUseCase {
     required this.tradingDomainService,
     required this.clock,
     required this.idGenerator,
+    this.eventPublisher = const NoOpTradingEventPublisher(),
+    this.completedTradeCountProvider,
   });
 
   Future<ExecuteSellResult> execute(ExecuteSellRequest request) async {
@@ -192,13 +198,20 @@ class ExecuteSellUseCase {
       );
     }
 
+    final confirmation = commitResult as SellTransactionCommitSuccess;
+    _publishSellEvents(
+      userId: userId,
+      success: success,
+      commitConfirmation: confirmation,
+    );
+
     return ExecuteSellSuccess(
       updatedWallet: success.updatedWallet,
       updatedHolding: success.updatedHolding,
       trade: success.trade,
       executionTicker: ticker,
       domainDetails: success,
-      commitConfirmation: commitResult as SellTransactionCommitSuccess,
+      commitConfirmation: confirmation,
       sellReason: sellReason,
       sourceStopLossOrderId: request.executionRequest?.orderId,
     );
@@ -305,6 +318,65 @@ class ExecuteSellUseCase {
           code: ExecuteSellFailureCode.concurrencyConflict,
           message: failure.message,
         );
+    }
+  }
+
+  void _publishSellEvents({
+    required String userId,
+    required SellTradeSuccess success,
+    required SellTransactionCommitSuccess commitConfirmation,
+  }) {
+    final realizedProfitLossInr = success.realizedProfitLossInr;
+    if (realizedProfitLossInr > 0) {
+      eventPublisher.publish(
+        FirstProfitableTradeCompleted(
+          userId: userId,
+          occurredAt: commitConfirmation.committedAt,
+          tradeId: success.trade.id,
+          assetSymbol: success.trade.symbol,
+          realizedProfitLossInr: realizedProfitLossInr,
+        ),
+      );
+    } else if (realizedProfitLossInr < 0) {
+      eventPublisher.publish(
+        FirstLosingTradeCompleted(
+          userId: userId,
+          occurredAt: commitConfirmation.committedAt,
+          tradeId: success.trade.id,
+          assetSymbol: success.trade.symbol,
+          realizedProfitLossInr: realizedProfitLossInr,
+        ),
+      );
+    }
+
+    switch (_completedTradeCountFor(userId)) {
+      case 5:
+        eventPublisher.publish(
+          FiveTradesCompleted(
+            userId: userId,
+            occurredAt: commitConfirmation.committedAt,
+          ),
+        );
+      case 10:
+        eventPublisher.publish(
+          TenTradesCompleted(
+            userId: userId,
+            occurredAt: commitConfirmation.committedAt,
+          ),
+        );
+    }
+  }
+
+  int? _completedTradeCountFor(String userId) {
+    final provider = completedTradeCountProvider ??
+        (transactionRepository is TradingCompletedTradeCountProvider
+            ? transactionRepository as TradingCompletedTradeCountProvider
+            : null);
+    if (provider == null) return null;
+    try {
+      return provider.completedTradeCountForUser(userId);
+    } catch (_) {
+      return null;
     }
   }
 
