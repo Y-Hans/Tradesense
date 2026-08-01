@@ -10,27 +10,6 @@ import '../../trading/presentation/trade_entry_screen.dart';
 import '../../../shared/widgets/trade_card.dart';
 import 'app_shell.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({
-    super.key,
-    this.initialIndex = 0,
-  });
-
-  final int initialIndex;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppShell(
-      initialIndex: initialIndex,
-      pages: const [
-        DashboardScreen(),
-        MarketsScreen(),
-        TradeEntryScreen(),
-        PortfolioScreen(),
-      ],
-    );
-  }
-}
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

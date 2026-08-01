@@ -69,9 +69,16 @@ class RouterListenable extends ChangeNotifier {
   }
 }
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'dashboard');
+final _shellNavigatorMarketsKey = GlobalKey<NavigatorState>(debugLabel: 'markets');
+final _shellNavigatorTradeKey = GlobalKey<NavigatorState>(debugLabel: 'trade');
+final _shellNavigatorPortfolioKey = GlobalKey<NavigatorState>(debugLabel: 'portfolio');
+
 final routerProvider = Provider<GoRouter>((ref) {
   final listenable = RouterListenable(ref);
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/home',
     refreshListenable: listenable,
     redirect: listenable.redirect,
@@ -92,62 +99,105 @@ final List<RouteBase> _appRoutes = [
     path: '/register',
     builder: (context, state) => const RegisterScreen(),
   ),
-  GoRoute(
-    path: '/home',
-    builder: (context, state) => const HomeScreen(),
-  ),
-  GoRoute(
-    path: '/markets',
-    builder: (context, state) => const MarketsScreen(),
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) {
+      // NOTE: AppShell uses the child navigation shell.
+      return AppShell(child: navigationShell);
+    },
+    branches: [
+      StatefulShellBranch(
+        navigatorKey: _shellNavigatorDashboardKey,
+        routes: [
+          GoRoute(
+            path: '/home',
+            builder: (context, state) => const HomeScreen(),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        navigatorKey: _shellNavigatorMarketsKey,
+        routes: [
+          GoRoute(
+            path: '/markets',
+            builder: (context, state) => const MarketsScreen(),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        navigatorKey: _shellNavigatorTradeKey,
+        routes: [
+          GoRoute(
+            path: '/trade',
+            // Defaulting to trade entry screen. 
+            builder: (context, state) => const Scaffold(body: Center(child: Text('Trade Entry'))),
+          ),
+        ],
+      ),
+      StatefulShellBranch(
+        navigatorKey: _shellNavigatorPortfolioKey,
+        routes: [
+          GoRoute(
+            path: '/portfolio',
+            builder: (context, state) => const PortfolioScreen(),
+          ),
+        ],
+      ),
+    ],
   ),
   GoRoute(
     path: '/asset/:symbol',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => AssetDetailScreen(
       symbol: state.pathParameters['symbol'] ?? 'BTC',
     ),
   ),
   GoRoute(
     path: '/trade/:symbol',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => TradeScreen(
       symbol: state.pathParameters['symbol'] ?? 'BTC',
     ),
   ),
   GoRoute(
-    path: '/portfolio',
-    builder: (context, state) => const PortfolioScreen(),
-  ),
-  GoRoute(
     path: '/trade-history',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const TradeHistoryScreen(),
   ),
   GoRoute(
     path: '/risk-meter',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const RiskMeterScreen(),
   ),
   GoRoute(
     path: '/discipline-meter',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const DisciplineMeterScreen(),
   ),
   GoRoute(
     path: '/coach-result/:tradeId',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => CoachResultScreen(
       tradeId: state.pathParameters['tradeId'] ?? 'tr_mock_123',
     ),
   ),
   GoRoute(
     path: '/profile',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const ProfileScreen(),
   ),
   GoRoute(
     path: '/paywall',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const PaywallScreen(),
   ),
   GoRoute(
     path: '/missions',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const MissionsScreen(),
   ),
   GoRoute(
     path: '/news-detective',
+    parentNavigatorKey: _rootNavigatorKey,
     builder: (context, state) => const NewsDetectiveScreen(),
   ),
 ];
