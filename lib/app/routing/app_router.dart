@@ -15,6 +15,7 @@ import '../../features/learning/presentation/news_detective_screen.dart';
 import '../../features/market/presentation/asset_detail_screen.dart';
 import '../../features/market/presentation/markets_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/portfolio/presentation/portfolio_screen.dart';
 import '../../features/portfolio/presentation/trade_history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
@@ -79,7 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final listenable = RouterListenable(ref);
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: '/splash',
     refreshListenable: listenable,
     redirect: listenable.redirect,
     routes: _appRoutes,
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 final List<RouteBase> _appRoutes = [
+  GoRoute(
+    path: '/splash',
+    builder: (context, state) => const SplashScreen(),
+  ),
   GoRoute(
     path: '/onboarding',
     builder: (context, state) => const OnboardingScreen(),

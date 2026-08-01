@@ -6,6 +6,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 import '../../../shared/models/crypto_asset.dart';
 import '../../../shared/widgets/trade_card.dart';
+import '../../../shared/widgets/price_tick_glow_wrapper.dart';
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
@@ -52,7 +53,10 @@ class _LiveMarketTile extends ConsumerWidget {
                 100;
         final isPositive = simulatedChange >= 0;
 
-        return TradeCard(
+        return PriceTickGlowWrapper(
+          value: currentPrice,
+          borderRadius: BorderRadius.circular(20),
+          child: TradeCard(
           semanticLabel: '${asset.symbol} simulated live market price',
           onTap: () => context.push('/asset/${asset.symbol}'),
           child: Row(
@@ -97,6 +101,7 @@ class _LiveMarketTile extends ConsumerWidget {
               ),
             ],
           ),
+        ),
         );
       },
     );
