@@ -18,7 +18,9 @@ import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/portfolio/presentation/portfolio_screen.dart';
 import '../../features/portfolio/presentation/trade_history_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/subscription/presentation/paywall_screen.dart';
+import '../../features/trading/presentation/trade_entry_screen.dart';
 import '../../features/trading/presentation/trade_screen.dart';
 
 class RouterListenable extends ChangeNotifier {
@@ -39,7 +41,8 @@ class RouterListenable extends ChangeNotifier {
     }
 
     final isAuthRoute = state.matchedLocation == '/login' ||
-        state.matchedLocation == '/register';
+        state.matchedLocation == '/register' ||
+        state.matchedLocation == '/splash';
     final isOnboardingRoute = state.matchedLocation == '/onboarding';
 
     // 2. Unauthenticated state
@@ -79,7 +82,16 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+final GoRouter appRouter = GoRouter(
+  initialLocation: '/home',
+  routes: _appRoutes,
+);
+
 final List<RouteBase> _appRoutes = [
+  GoRoute(
+    path: '/splash',
+    builder: (context, state) => const SplashScreen(),
+  ),
   GoRoute(
     path: '/onboarding',
     builder: (context, state) => const OnboardingScreen(),
@@ -94,11 +106,15 @@ final List<RouteBase> _appRoutes = [
   ),
   GoRoute(
     path: '/home',
-    builder: (context, state) => const HomeScreen(),
+    builder: (context, state) => const DashboardScreen(),
   ),
   GoRoute(
     path: '/markets',
     builder: (context, state) => const MarketsScreen(),
+  ),
+  GoRoute(
+    path: '/trade',
+    builder: (context, state) => const TradeEntryScreen(),
   ),
   GoRoute(
     path: '/asset/:symbol',

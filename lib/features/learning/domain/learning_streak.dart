@@ -52,6 +52,9 @@ class LearningStreak {
     }
   }
 
+  /// Returns whether the streak is currently active.
+  bool get isStreakActive => getEffectiveStreak() > 0;
+
   /// Calculates effective active streak at a given [checkDate].
   /// If more than 1 calendar day has passed since last activity, current streak is reset to 0.
   int getEffectiveStreak({DateTime? checkDate}) {

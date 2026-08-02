@@ -8,6 +8,7 @@ import '../../../shared/models/crypto_asset.dart';
 import '../../../shared/widgets/trade_card.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/widgets/offline_state_widget.dart';
+import '../../../shared/widgets/price_tick_glow_wrapper.dart';
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
@@ -70,50 +71,54 @@ class _LiveMarketTile extends ConsumerWidget {
                 100;
         final isPositive = simulatedChange >= 0;
 
-        return TradeCard(
-          semanticLabel: '${asset.symbol} simulated live market price',
-          onTap: () => context.push('/asset/${asset.symbol}'),
-          child: Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.18),
-                child: Text(
-                  asset.symbol[0],
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(asset.name,
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 2),
-                    Text('${asset.symbol} · SIMULATED LIVE'),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    FinancialMath.formatInr(currentPrice),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(
-                    '${isPositive ? '+' : ''}${simulatedChange.toStringAsFixed(2)}%',
-                    style: TextStyle(
-                      color: isPositive ? AppColors.profit : AppColors.loss,
-                      fontWeight: FontWeight.w600,
+        return PriceTickGlowWrapper(
+          value: currentPrice,
+          borderRadius: BorderRadius.circular(20),
+          child: TradeCard(
+            semanticLabel: '${asset.symbol} simulated live market price',
+            onTap: () => context.push('/asset/${asset.symbol}'),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.18),
+                  child: Text(
+                    asset.symbol[0],
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(asset.name,
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const SizedBox(height: 2),
+                      Text('${asset.symbol} · SIMULATED LIVE'),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      FinancialMath.formatInr(currentPrice),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      '${isPositive ? '+' : ''}${simulatedChange.toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        color: isPositive ? AppColors.profit : AppColors.loss,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

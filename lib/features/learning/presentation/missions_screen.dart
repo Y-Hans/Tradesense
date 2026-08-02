@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../app/theme/app_theme.dart';
-import '../../../core/widgets/trade_card.dart';
-import '../../../core/widgets/visual_gauge.dart';
+import '../../../shared/widgets/trade_card.dart';
 import '../application/learning_progression_notifier.dart';
-import '../domain/level.dart';
+import '../domain/learning_event.dart';
 import '../domain/mission.dart';
+import 'widgets/achievement_cards_grid.dart';
+import 'widgets/level_up_celebration_dialog.dart';
+import 'widgets/player_profile_summary_card.dart';
+import 'widgets/recent_rewards_timeline.dart';
 
 class MissionsScreen extends ConsumerStatefulWidget {
   const MissionsScreen({super.key});
@@ -41,74 +45,92 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final progressionState = ref.watch(learningProgressionNotifierProvider);
-    final userXp = progressionState.totalXp;
-    final currentLevel = progressionState.currentLevel;
-    final progressToNext = progressionState.progressToNextLevel;
-    final missions = progressionState.missions;
-    final completedMissionIds = progressionState.completedMissionIds;
+    // Listen for level up events to present LevelUpCelebrationDialog deterministically
+    ref.listen<LearningProgressionState>(
+      learningProgressionNotifierProvider,
+      (previous, next) {
+        if (next.showLevelUpAnimation &&
+            !(previous?.showLevelUpAnimation ?? false)) {
+          LevelUpCelebrationDialog.show(
+            context,
+            levelTitle: next.currentLevel.title,
+            newLevelXp: next.totalXp,
+            unlockMessage:
+                'Congratulations! You have reached ${next.currentLevel.title} tier.',
+            onClaim: () {
+              ref
+                  .read(learningProgressionNotifierProvider.notifier)
+                  .dismissLevelUpAnimation();
+            },
+          );
+        }
+      },
+    );
+
+    final state = ref.watch(learningProgressionNotifierProvider);
+    final missions = state.missions;
+    final completedMissionIds = state.completedMissionIds;
+
+    // Convert domain achievements into AchievementModel
+    final achievementModels =
+        state.achievements.map(AchievementModel.fromDomain).toList();
+
+    // Map reward history from XpState or completed missions
+    final rewardItems = state.xpState.rewardHistory.map((log) {
+      final mission = state.missions.firstWhere(
+        (m) => m.id == log.missionId,
+        orElse: () => Mission(
+          id: log.missionId,
+          title: 'Learning Reward',
+          description: '',
+          xpReward: log.xpAwarded,
+          eventType: LearningEventType.completedLesson,
+        ),
+      );
+      return RewardItemModel(
+        title: mission.title,
+        subtitle: '+${log.xpAwarded} XP earned',
+        date: log.timestamp,
+        isClaimed: true,
+      );
+    }).toList();
+
+    // Fallback: If reward history is empty, populate from completed missions
+    if (rewardItems.isEmpty) {
+      for (final mission in state.missions.where((m) => m.isCompleted)) {
+        rewardItems.add(
+          RewardItemModel(
+            title: mission.title,
+            subtitle: '+${mission.xpReward} XP earned',
+            date: DateTime.now(),
+            isClaimed: true,
+          ),
+        );
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Missions & Rewards'),
+        title: const Text('Gamified Learning Hub'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Level & XP Header Card (Somya VisualGauge & TradeCard styling)
-            TradeCard(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'CURRENT LEVEL',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 11.0,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 4.0),
-                          Text(
-                            currentLevel.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22.0,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16.0),
-                          Text(
-                            currentLevel.tier == LevelTier.disciplinedTrader
-                                ? 'Maximum level reached!'
-                                : 'Next Level Tier at ${currentLevel.maxXp + 1} XP',
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 12.0),
-                          ),
-                        ],
-                      ),
-                      VisualGauge(
-                        progress: progressToNext,
-                        activeColor: AppColors.discipline,
-                        label: '$userXp XP',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+            // Glassmorphic Player Profile Summary Card
+            PlayerProfileSummaryCard(
+              avatarUrl: '',
+              levelTitle: state.currentLevel.title,
+              rank:
+                  'Tier ${state.currentLevel.tier.index + 1} · ${state.currentTitle.title}',
+              streakDays: state.streak.currentStreak,
+              isStreakActive: state.streak.isStreakActive,
+              currentXp: state.totalXp,
+              maxXp: state.currentLevel.maxXp,
             ),
 
-            const SizedBox(height: 24.0),
+            const SizedBox(height: 28.0),
 
             const Text(
               'Educational Missions',
@@ -222,6 +244,42 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                 );
               },
             ),
+
+            const SizedBox(height: 28.0),
+
+            const Text(
+              'Achievements & Badges',
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4.0),
+            const Text(
+              'Unlock achievements by making progress in your trading education.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.0),
+            ),
+            const SizedBox(height: 16.0),
+
+            AchievementCardsGrid(achievements: achievementModels),
+
+            const SizedBox(height: 28.0),
+
+            const Text(
+              'Reward History',
+              style: TextStyle(
+                fontSize: 18.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4.0),
+            const Text(
+              'Timeline of earned XP rewards and milestones.',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.0),
+            ),
+            const SizedBox(height: 16.0),
+
+            RecentRewardsTimeline(rewards: rewardItems),
           ],
         ),
       ),

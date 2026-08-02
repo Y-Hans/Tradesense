@@ -1,4 +1,5 @@
 import 'package:cryptoedu/app/theme/app_theme.dart';
+import 'package:go_router/go_router.dart';
 import 'package:cryptoedu/features/home/presentation/app_shell.dart';
 import 'package:cryptoedu/features/trading/presentation/trade_entry_screen.dart';
 import 'package:cryptoedu/shared/widgets/primary_button.dart';
@@ -52,19 +53,50 @@ void main() {
 
   testWidgets('AppShell switches between its four primary destinations',
       (tester) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.darkTheme,
-        home: const AppShell(
-          pages: [
-            Center(child: Text('Dashboard content')),
-            Center(child: Text('Markets content')),
-            Center(child: Text('Trade content')),
-            Center(child: Text('Portfolio content')),
+    final router = GoRouter(
+      initialLocation: '/0',
+      routes: [
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, navigationShell) {
+            return AppShell(navigationShell: navigationShell);
+          },
+          branches: [
+            StatefulShellBranch(routes: [
+              GoRoute(
+                  path: '/0',
+                  builder: (_, __) =>
+                      const Center(child: Text('Dashboard content')))
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                  path: '/1',
+                  builder: (_, __) =>
+                      const Center(child: Text('Markets content')))
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                  path: '/2',
+                  builder: (_, __) =>
+                      const Center(child: Text('Trade content')))
+            ]),
+            StatefulShellBranch(routes: [
+              GoRoute(
+                  path: '/3',
+                  builder: (_, __) =>
+                      const Center(child: Text('Portfolio content')))
+            ]),
           ],
         ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: AppTheme.darkTheme,
+        routerConfig: router,
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Dashboard content'), findsOneWidget);
     expect(find.text('Markets content'), findsNothing);

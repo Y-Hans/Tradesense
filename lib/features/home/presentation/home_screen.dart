@@ -4,33 +4,9 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
-import '../../market/presentation/markets_screen.dart';
-import '../../portfolio/presentation/portfolio_screen.dart';
-import '../../trading/presentation/trade_entry_screen.dart';
 import '../../../shared/widgets/trade_card.dart';
-import 'app_shell.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({
-    super.key,
-    this.initialIndex = 0,
-  });
-
-  final int initialIndex;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppShell(
-      initialIndex: initialIndex,
-      pages: const [
-        DashboardScreen(),
-        MarketsScreen(),
-        TradeEntryScreen(),
-        PortfolioScreen(),
-      ],
-    );
-  }
-}
+typedef HomeScreen = DashboardScreen;
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

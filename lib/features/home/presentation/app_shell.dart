@@ -1,55 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../app/theme/app_theme.dart';
 
 /// Keeps the four primary learning and simulator sections alive while switching
 /// destinations, so local UI state is not discarded between tabs.
-class AppShell extends StatefulWidget {
+class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
-    required this.pages,
-    this.initialIndex = 0,
-  }) : assert(initialIndex >= 0 && initialIndex < 4);
+    required this.navigationShell,
+  });
 
-  final List<Widget> pages;
-  final int initialIndex;
-
-  @override
-  State<AppShell> createState() => _AppShellState();
-}
-
-class _AppShellState extends State<AppShell> {
-  late int _selectedIndex = widget.initialIndex;
+  final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: widget.pages,
-      ),
+      body: navigationShell,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
+        selectedIndex: navigationShell.currentIndex,
         onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
         },
+        indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
+            selectedIcon: Icon(Icons.dashboard, color: AppColors.primary),
             label: 'Dashboard',
           ),
           NavigationDestination(
             icon: Icon(Icons.show_chart_outlined),
-            selectedIcon: Icon(Icons.show_chart),
+            selectedIcon: Icon(Icons.show_chart, color: AppColors.primary),
             label: 'Markets',
           ),
           NavigationDestination(
             icon: Icon(Icons.swap_horiz_outlined),
-            selectedIcon: Icon(Icons.swap_horiz),
+            selectedIcon: Icon(Icons.swap_horiz, color: AppColors.primary),
             label: 'Trade',
           ),
           NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
+            selectedIcon:
+                Icon(Icons.account_balance_wallet, color: AppColors.primary),
             label: 'Portfolio',
           ),
         ],
