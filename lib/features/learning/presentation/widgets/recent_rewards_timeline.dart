@@ -75,18 +75,18 @@ class _TimelineTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: reward.isClaimed
-                        ? AppColors.primary
+                        ? AppColors.electricCyan
                         : Colors.white.withValues(alpha: 0.1),
                     border: Border.all(
                       color: reward.isClaimed
-                          ? AppColors.primary
+                          ? AppColors.electricCyan
                           : Colors.grey,
                       width: 2.0,
                     ),
                     boxShadow: reward.isClaimed
                         ? [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.5),
+                              color: AppColors.electricCyan.withValues(alpha: 0.5),
                               blurRadius: 8.0,
                             ),
                           ]
@@ -114,7 +114,7 @@ class _TimelineTile extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.4),
+                      color: AppColors.oledSurface.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -142,13 +142,13 @@ class _TimelineTile extends StatelessWidget {
                                   vertical: 4.0,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(alpha: 0.2),
+                                  color: AppColors.electricCyan.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(8.0),
                                 ),
                                 child: const Text(
                                   'CLAIMED',
                                   style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: AppColors.electricCyan,
                                     fontSize: 10.0,
                                     fontWeight: FontWeight.bold,
                                   ),

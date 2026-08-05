@@ -27,6 +27,7 @@ dependencies:
   connectivity_plus: ^6.0.3
   video_player: ^2.13.0
   lottie: ^3.5.1
+  sensors_plus: ^5.0.1
 
 dev_dependencies:
   flutter_test:
@@ -42,3 +43,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/video/intro_splash.mp4
+    - assets/video/bitcoin_loader.mp4
+    - assets/animations/

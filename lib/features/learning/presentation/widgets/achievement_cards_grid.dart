@@ -60,7 +60,7 @@ class _AchievementCard extends StatelessWidget {
   Color _getRarityColor(AchievementRarity rarity) {
     switch (rarity) {
       case AchievementRarity.common:
-        return AppColors.primary; // Cyan
+        return AppColors.electricCyan; // Cyan
       case AchievementRarity.rare:
         return Colors.blue;
       case AchievementRarity.epic:
@@ -84,7 +84,7 @@ class _AchievementCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isActive
                 ? color.withValues(alpha: 0.1)
-                : AppColors.surface.withValues(alpha: 0.5),
+                : AppColors.oledSurface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(16.0),
             border: Border.all(
               color: isActive

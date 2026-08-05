@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 
-/// Keeps the four primary learning and simulator sections alive while switching
-/// destinations, so local UI state is not discarded between tabs.
+/// ───────────────────────────────────────────────
+///  APP SHELL (GROWW INSPIRED) ───────────────────
+///  Standard 4-tab bottom navigation shell without
+///  complex FAB mechanics. Clean and simple.
+/// ───────────────────────────────────────────────
+
 class AppShell extends StatelessWidget {
   const AppShell({
     super.key,
@@ -12,41 +17,59 @@ class AppShell extends StatelessWidget {
 
   final StatefulNavigationShell navigationShell;
 
+  void _onDestinationSelected(BuildContext context, int index) {
+    if (index != navigationShell.currentIndex) {
+      HapticFeedback.selectionClick();
+    }
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: navigationShell,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) {
-          navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          );
-        },
-        indicatorColor: AppColors.primary.withValues(alpha: 0.2),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard, color: AppColors.primary),
-            label: 'Dashboard',
+      bottomNavigationBar: Theme(
+        // Override any local nav bar styling to ensure it matches the token system.
+        data: Theme.of(context).copyWith(
+          navigationBarTheme: Theme.of(context).navigationBarTheme,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.show_chart_outlined),
-            selectedIcon: Icon(Icons.show_chart, color: AppColors.primary),
-            label: 'Markets',
+          child: NavigationBar(
+            selectedIndex: navigationShell.currentIndex,
+            onDestinationSelected: (idx) => _onDestinationSelected(context, idx),
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.dashboard_outlined),
+                selectedIcon: Icon(Icons.dashboard_rounded),
+                label: 'Dashboard',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.show_chart_outlined),
+                selectedIcon: Icon(Icons.show_chart_rounded),
+                label: 'Markets',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.swap_horiz_outlined),
+                selectedIcon: Icon(Icons.swap_horiz_rounded),
+                label: 'Trade',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.account_balance_wallet_outlined),
+                selectedIcon: Icon(Icons.account_balance_wallet_rounded),
+                label: 'Portfolio',
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.swap_horiz_outlined),
-            selectedIcon: Icon(Icons.swap_horiz, color: AppColors.primary),
-            label: 'Trade',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet, color: AppColors.primary),
-            label: 'Portfolio',
-          ),
-        ],
+        ),
       ),
     );
   }

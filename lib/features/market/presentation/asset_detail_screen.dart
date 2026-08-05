@@ -30,7 +30,7 @@ class AssetDetailScreen extends ConsumerWidget {
                       style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary)),
+                          color: AppColors.electricCyan)),
                 ],
               ),
             ),

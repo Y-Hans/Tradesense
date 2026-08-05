@@ -10,6 +10,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('CryptoEdu Simulator'), findsOneWidget);
+    expect(find.textContaining('Trader'), findsOneWidget);
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 
 /// A full-width primary action with built-in loading and disabled states.
 class PrimaryButton extends StatelessWidget {
@@ -31,10 +32,7 @@ class PrimaryButton extends StatelessWidget {
                   key: ValueKey('primary-button-loading'),
                   height: 20,
                   width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+                  child: CryptoLoadingIndicator(size: 20),
                 )
               : Row(
                   key: const ValueKey('primary-button-label'),

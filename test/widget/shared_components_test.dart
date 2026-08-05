@@ -2,6 +2,7 @@ import 'package:cryptoedu/app/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cryptoedu/features/home/presentation/app_shell.dart';
 import 'package:cryptoedu/features/trading/presentation/trade_entry_screen.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:cryptoedu/shared/widgets/primary_button.dart';
 import 'package:cryptoedu/shared/widgets/trade_card.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +47,8 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    // PrimaryButton renders its custom Bitcoin-GIF loader when loading.
+    expect(find.byType(CryptoLoadingIndicator), findsOneWidget);
     expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
         isNull);
   });

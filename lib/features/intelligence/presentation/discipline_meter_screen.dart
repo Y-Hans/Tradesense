@@ -25,14 +25,14 @@ class DisciplineMeterScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   const VisualGauge(
                     value: 0.85,
-                    color: AppColors.discipline,
+                    color: AppColors.alert,
                   ),
                   const SizedBox(height: 12),
                   Text('85/100',
                       style: Theme.of(context)
                           .textTheme
                           .displayLarge
-                          ?.copyWith(color: AppColors.discipline)),
+                          ?.copyWith(color: AppColors.alert)),
                 ],
               ),
             ),

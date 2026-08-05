@@ -43,18 +43,18 @@ class _DailyStreakCardState extends State<DailyStreakCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               decoration: BoxDecoration(
-                color: AppColors.surface.withValues(alpha: 0.4),
+                color: AppColors.oledSurface.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(16.0),
                 border: Border.all(
                   color: widget.isActive
-                      ? AppColors.discipline.withValues(alpha: 0.5)
+                      ? AppColors.alert.withValues(alpha: 0.5)
                       : Colors.white.withValues(alpha: 0.1),
                   width: 1.0,
                 ),
                 boxShadow: widget.isActive
                     ? [
                         BoxShadow(
-                          color: AppColors.discipline.withValues(alpha: 0.2),
+                          color: AppColors.alert.withValues(alpha: 0.2),
                           blurRadius: 15.0,
                           spreadRadius: -5.0,
                         )
@@ -77,7 +77,7 @@ class _DailyStreakCardState extends State<DailyStreakCard> {
                                 // Fallback icon if offline/error
                                 return const Icon(
                                   Icons.local_fire_department,
-                                  color: AppColors.discipline,
+                                  color: AppColors.alert,
                                   size: 32.0,
                                 );
                               },

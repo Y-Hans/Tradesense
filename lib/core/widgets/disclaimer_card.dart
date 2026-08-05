@@ -20,7 +20,7 @@ class DisclaimerCard extends StatelessWidget {
         children: [
           Icon(
             Icons.info_outline_rounded,
-            color: AppColors.discipline, // Neon warning accent
+            color: AppColors.alert, // Neon warning accent
             size: compact ? 18.0 : 22.0,
           ),
           const SizedBox(width: 12.0),
@@ -31,7 +31,7 @@ class DisclaimerCard extends StatelessWidget {
                 Text(
                   'Educational Simulation Notice',
                   style: TextStyle(
-                    color: AppColors.discipline, // Warning accent
+                    color: AppColors.alert, // Warning accent
                     fontSize: compact ? 12.0 : 14.0,
                     fontWeight: FontWeight.bold,
                   ),

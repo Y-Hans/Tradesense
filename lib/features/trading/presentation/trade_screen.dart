@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
@@ -32,7 +33,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         future: marketRepo.getTicker(widget.symbol),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(child: CryptoLoadingIndicator());
           }
           final ticker = snapshot.data!;
           final totalInr = quantity * ticker.priceInr;
@@ -56,7 +57,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.primary)),
+                              color: AppColors.electricCyan)),
                     ],
                   ),
                 ),
@@ -67,7 +68,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              isBuy ? AppColors.profit : AppColors.card,
+                              isBuy ? AppColors.profit : AppColors.oledCard,
                         ),
                         onPressed: () => setState(() => isBuy = true),
                         child: const Text('VIRTUAL BUY',
@@ -81,7 +82,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              !isBuy ? AppColors.loss : AppColors.card,
+                              !isBuy ? AppColors.loss : AppColors.oledCard,
                         ),
                         onPressed: () => setState(() => isBuy = false),
                         child: const Text('VIRTUAL SELL',
@@ -178,3 +179,5 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
     );
   }
 }
+
+

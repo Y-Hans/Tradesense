@@ -36,19 +36,19 @@ class _TradeCardState extends State<TradeCard> {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               color: _isHovered 
-                  ? AppColors.surface.withValues(alpha: 0.8) 
-                  : AppColors.surface.withValues(alpha: 0.5),
+                  ? AppColors.oledSurface.withValues(alpha: 0.8) 
+                  : AppColors.oledSurface.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16.0),
               border: Border.all(
                 color: _isHovered 
-                    ? AppColors.primary.withValues(alpha: 0.8)
-                    : AppColors.primary.withValues(alpha: 0.2),
+                    ? AppColors.electricCyan.withValues(alpha: 0.8)
+                    : AppColors.electricCyan.withValues(alpha: 0.2),
                 width: 1.5,
               ),
               boxShadow: _isHovered
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: AppColors.electricCyan.withValues(alpha: 0.2),
                         blurRadius: 12.0,
                         spreadRadius: 2.0,
                       )
