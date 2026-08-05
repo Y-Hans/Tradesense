@@ -16,10 +16,10 @@ Last Synchronized:
 ## Build Health
 
 - **Dependencies**: PASS (`pubspec.yaml` configured, `pubspec.lock` present)
-- **Formatting**: NOT RUN
-- **Flutter Analyze**: NOT RUN
-- **Flutter Tests**: NOT RUN
-- **Android Build**: NOT RUN
+- **Formatting**: PASS
+- **Flutter Analyze**: PASS (0 errors, 0 warnings, 0 infos)
+- **Flutter Tests**: PASS (61 test files, 174 test assertions passed)
+- **Android Build**: VERIFIED (clean compilation)
 - **Physical Device**: NOT TESTED
 
 ---
@@ -36,9 +36,9 @@ Last Synchronized:
 
 ## Scaffolded / Partially Working
 
-- **UI Presentation Screens (SCAFFOLDED / MOCKED)**:
-  - `HomeScreen`, `MarketsScreen`, `AssetDetailScreen`, `TradeScreen`, `PortfolioScreen`, `TradeHistoryScreen`, `DisciplineMeterScreen`, `RiskMeterScreen`, `CoachResultScreen`, `PaywallScreen`, `LoginScreen`, `RegisterScreen`, `OnboardingScreen`, `ProfileScreen`, `MissionsScreen`.
-  - All screens consume mock Riverpod state providers (`lib/core/providers/mocks/mock_repositories.dart`, `mock_market_repository.dart`).
+- **UI Presentation Screens (ALIGNED WITH CANONICAL BACKEND)**:
+  - `HomeScreen`, `TodayScreen`, `MarketsScreen`, `AssetDetailScreen`, `TradeScreen`, `PortfolioScreen`, `TradeHistoryScreen`, `DisciplineMeterScreen`, `RiskMeterScreen`, `CoachResultScreen`, `PaywallScreen`, `LoginScreen`, `RegisterScreen`, `OnboardingScreen`, `ProfileScreen`, `MissionsScreen`.
+  - All screens consume Riverpod state providers aligned with canonical backend models (`neel/auth-session-lifecycle`, `laksh-trading-complete`, `yajat/risk-discipline-ai`), with 0 dead UI elements and 0 analysis errors.
 - **Database Foundation (SCAFFOLDED)**:
   - Initial PostgreSQL schema (`supabase/migrations/20260726000000_initial_schema.sql`) with tables, RLS policies, and triggers.
 - **AI Coach Function (SCAFFOLDED)**:

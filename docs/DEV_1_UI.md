@@ -10,8 +10,9 @@ Primary Owner: **Somya**
 - `lib/shared/widgets/`
 - `lib/features/**/presentation/`
 
-## Immediate Tasks
-1. Refine the glassmorphic card design and animations in `HomeScreen` and `TradeScreen`.
-2. Ensure high contrast readability for financial charts and P&L cards.
-3. Build custom widgets for Risk Meter and Discipline Meter visual gauges in `lib/shared/widgets/`.
-4. Do NOT write domain business logic or financial calculations. Consume state from Riverpod providers (`portfolioProvider`, `supportedAssetsProvider`, `subscriptionStatusProvider`).
+## Immediate & Current Tasks
+1. Refine the glassmorphic card design and animations in `TodayScreen`, `HomeScreen`, `MarketsScreen`, and `TradeScreen`.
+2. Ensure high contrast readability for financial charts, risk meters, discipline meters, and P&L cards.
+3. Align presentation UI with canonical backend modules (`neel/auth-session-lifecycle`, `laksh-trading-complete`, `yajat/risk-discipline-ai`).
+4. Resolve all verified UI issues: terms disclosure modal, reactive profile setup validation, removal of redundant import trade CTA, dynamic user greeting, functional Today action plans, dynamic AI coach provider abstraction, light theme default with working theme toggle, privacy policy and help/support screens, push notification permission flow, functional app bar action icons, dynamic simulator portfolio valuation, and zero dead UI elements.
+5. Do NOT write domain business logic or financial calculations. Consume state strictly from Riverpod providers (`portfolioProvider`, `userLifecycleNotifierProvider`, `coachOrchestratorProvider`, `supportedAssetsProvider`).

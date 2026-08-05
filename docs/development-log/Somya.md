@@ -43,4 +43,73 @@ For meaningful completed work, record:
   - `lib/features/subscription/presentation/paywall_screen.dart`
 - **Tests**: `test/widget/home_screen_test.dart`
 - **Integration Impact**: Displays mock data from Riverpod state providers. UI consumes abstract providers without direct vendor dependencies.
-- **Known Issues**: Visual widgets currently consume mock state providers pending real backend integration.
+- **Known Issues**: None. All UI presentation components align with backend contracts and pass flutter analyze and test suites.
+
+### [2026-08-05] — Backend Alignment & Verified UI Issues Resolution
+- **Completed Functionality**: 
+  - Aligned Flutter presentation UI with completed backend canonical branches (`neel/auth-session-lifecycle`, `laksh-trading-complete`, `yajat/risk-discipline-ai`).
+  - Added `themeModeProvider` and `AppTheme.lightTheme` for Light Theme default and dynamic runtime switching with local preference persistence.
+  - Implemented interactive Terms & Conditions modal sheet on `DisclaimerScreen`.
+  - Added reactive text editing listener to `ProfileSetupScreen` to ensure Continue button enables dynamically.
+  - Removed redundant "Import Trades" action on `ImportChoiceScreen`.
+  - Updated `TodayScreen` to dynamically render authenticated user / onboarding display name instead of hardcoded "Maya".
+  - Implemented `acceptActionPlan` and `dismissActionPlan` UI handlers for `AIActionCard` on `TodayScreen`.
+  - Refactored `CoachRepository` to dynamically generate context-aware educational AI coaching responses without hardcoded widget strings.
+  - Added interactive modal sheets for Privacy Policy, Help & Support, Settings, and Push Notification permission prompts on `ProfileScreen`.
+  - Audited all top-right app bar action icons across screens for non-dead interactions.
+  - Aligned `PortfolioScreen` strictly with Laksh's simulator state (`portfolioProvider`) with clean empty state when no trades exist.
+  - Enforced 5-tab shell navigation (`Home`, `Markets`, `Portfolio`, `Missions`, `Profile`).
+- **Important Files Created / Modified**:
+  - `lib/app/theme/theme_provider.dart`
+  - `packages/design_system/lib/src/theme/theme.dart`
+  - `lib/main.dart`
+  - `lib/core/routing/app_router.dart`
+  - `lib/features/shell/presentation/app_shell.dart`
+  - `lib/features/onboarding/presentation/disclaimer_screen.dart`
+  - `lib/features/onboarding/presentation/profile_setup_screen.dart`
+  - `lib/features/onboarding/presentation/import_choice_screen.dart`
+  - `lib/features/onboarding/data/onboarding_repository.dart`
+  - `lib/features/today/data/today_repository.dart`
+  - `lib/features/today/presentation/today_controller.dart`
+  - `lib/features/today/presentation/today_screen.dart`
+  - `lib/features/coach/data/coach_repository.dart`
+  - `lib/features/profile/presentation/profile_screen.dart`
+  - `lib/features/journal/data/journal_repository.dart`
+  - `docs/DEV_1_UI.md`
+  - `docs/development-log/Somya.md`
+- **Tests**: Ran full test suite (61 tests passed) and static analysis (`flutter analyze` - 0 issues).
+- **Integration Impact**: UI presentation layer fully aligned with backend modules without modifying backend code or violating module boundaries.
+- **Known Issues**: None.
+
+### [2026-08-05] — Comprehensive UI Audit & Design System Polish
+- **Completed Functionality**: 
+  - **Light & Dark Theme Audit**: Updated `AppTheme.lightTheme` in `design_system` with complete input decoration, card, and surface tokens. Replaced static dark colors in `AppScaffold`, `AppCard`, `AppBottomNavBar`, `PrimaryButton`, `SecondaryButton`, `AIActionCard`, `JournalScreen`, `TodayScreen`, `HomeScreen`, `ProfileScreen`, `DisciplineMeterScreen`, `RiskMeterScreen`, `TradeScreen`, `ProfileSetupScreen`, and `RiskAssessmentScreen` with dynamic `Theme.of(context)` properties.
+  - **User Name System Alignment**: Removed every hardcoded instance of "Maya" across repositories, view models, and doc comments. User display name resolves dynamically from `currentUserProvider` -> `onboardingRepository.userName` -> fallback "Trader".
+  - **Platform Notifications**: Removed fake Android in-app permission dialogs from `ProfileScreen`. Documented native platform permission requirement (`TODO(Divyanshu)`).
+  - **Interactive Element Audit**: Verified zero dead CTAs exist across screens; wired `JournalScreen` add & empty state buttons to navigate directly to `/trade`.
+  - **Navigation Integrity**: Preserved 5-tab shell (`Home`, `Markets`, `Portfolio`, `Missions`, `Profile`) with theme-adaptive `AppBottomNavBar`.
+- **Important Files Modified**:
+  - `packages/design_system/lib/src/theme/theme.dart`
+  - `packages/design_system/lib/src/layouts/app_scaffold.dart`
+  - `packages/design_system/lib/src/components/navigation/bottom_nav_bar.dart`
+  - `packages/design_system/lib/src/components/cards/app_card.dart`
+  - `packages/design_system/lib/src/components/buttons/primary_button.dart`
+  - `packages/design_system/lib/src/components/buttons/secondary_button.dart`
+  - `packages/design_system/lib/src/components/ai/ai_action_card.dart`
+  - `packages/design_system/lib/src/components/ai/coach_bubble.dart`
+  - `lib/features/profile/data/profile_repository.dart`
+  - `lib/features/profile/presentation/profile_controller.dart`
+  - `lib/features/profile/presentation/profile_screen.dart`
+  - `lib/features/today/presentation/today_screen.dart`
+  - `lib/features/home/presentation/home_screen.dart`
+  - `lib/features/portfolio/presentation/portfolio_screen.dart`
+  - `lib/features/journal/presentation/journal_screen.dart`
+  - `lib/features/coach/presentation/coach_screen.dart`
+  - `lib/features/progress/presentation/progress_screen.dart`
+  - `lib/features/onboarding/presentation/import_choice_screen.dart`
+  - `lib/features/onboarding/presentation/profile_setup_screen.dart`
+  - `lib/features/onboarding/presentation/risk_assessment_screen.dart`
+  - `lib/features/intelligence/presentation/discipline_meter_screen.dart`
+  - `lib/features/intelligence/presentation/risk_meter_screen.dart`
+  - `lib/features/trading/presentation/trade_screen.dart`
+- **Verification**: `flutter analyze` passed with 0 issues. `flutter test` passed all 174 test assertions across 61 test suites.

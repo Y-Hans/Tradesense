@@ -34,7 +34,6 @@ class HomeScreen extends ConsumerWidget {
           children: [
             portfolioAsync.when(
               data: (portfolio) => Card(
-                color: AppColors.card,
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Column(
@@ -127,7 +126,6 @@ class HomeScreen extends ConsumerWidget {
                   child: InkWell(
                     onTap: () => context.push('/discipline-meter'),
                     child: const Card(
-                      color: AppColors.card,
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Column(
@@ -159,7 +157,6 @@ class HomeScreen extends ConsumerWidget {
                   child: InkWell(
                     onTap: () => context.push('/risk-meter'),
                     child: const Card(
-                      color: AppColors.card,
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Column(
@@ -247,9 +244,9 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.textSecondary,
+        backgroundColor: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Theme.of(context).brightness == Brightness.dark ? AppColors.textSecondary : const Color(0xFF64748B),
         currentIndex: 0,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {

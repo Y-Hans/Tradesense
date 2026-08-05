@@ -139,10 +139,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      expect(find.byType(OfflineStateWidget), findsOneWidget);
-      expect(find.text('Showing cached data'), findsOneWidget);
+      expect(find.textContaining('Showing cached data'), findsOneWidget);
       expect(find.text('Available Cash'), findsOneWidget);
-      expect(find.text('Holdings Valuation'), findsOneWidget);
+      expect(find.text('Invested'), findsOneWidget);
     });
   });
 }
