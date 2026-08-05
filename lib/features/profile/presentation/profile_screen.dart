@@ -1,12 +1,10 @@
-﻿import 'package:flutter/material.dart';
-import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
+import 'package:design_system/design_system.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
-import '../../../core/utils/financial_math.dart';
-import '../../../core/widgets/trade_card.dart';
-import '../../../core/widgets/disclaimer_card.dart';
+import '../../../app/theme/theme_provider.dart';
+import '../../../shared/models/user_profile.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -14,272 +12,339 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(currentUserProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account & Profile'),
-        elevation: 0,
-      ),
+    return AppScaffold(
+      showBackButton: false,
+      title: 'Profile',
       body: userAsync.when(
-        data: (user) {
-          final displayName = user?.displayName ?? 'Discipline Trader';
-          final email = user?.email ?? 'trader@cryptoedu.app';
-          final balance = user?.virtualBalanceInr ?? 100000.0;
+        data: (user) => _buildProfile(context, ref, user, isDark),
+        loading: () => Center(
+          child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary),
+        ),
+        error: (err, _) => EmptyState(
+          icon: Icons.error_outline,
+          title: 'Error loading profile',
+          description: 'Unable to load account information.',
+          primaryAction: PrimaryButton(
+            text: 'Retry',
+            onPressed: () => ref.invalidate(currentUserProvider),
+          ),
+        ),
+      ),
+    );
+  }
 
-          // Level Title
-          const String levelTitle = 'Risk-Aware Trader';
-          const int xp = 250;
+  Widget _buildProfile(
+    BuildContext context,
+    WidgetRef ref,
+    UserProfile? user,
+    bool isDark,
+  ) {
+    final theme = Theme.of(context);
+    final secondaryTextColor = AppColors.textSecondary;
+    final name =
+        (user?.displayName.isNotEmpty == true) ? user!.displayName : 'Trader';
+    final email = user?.email ?? '—';
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // User Profile Header Card
-                TradeCard(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: AppColors.electricCyan,
-                        child: Text(
-                          displayName.isNotEmpty
-                              ? displayName[0].toUpperCase()
-                              : 'T',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              displayName,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              email,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Starting Balance: ${FinancialMath.formatInr(balance)} SIMULATED',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.profit,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+    return ListView(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      children: [
+        // ── User Info Header ─────────────────────────────────────────────
+        Center(
+          child: Column(
+            children: [
+              const AIAvatar(size: 80),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                name,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
                 ),
-
-                const SizedBox(height: 16),
-
-                // Discipline Tier & XP Badge Card
-                TradeCard(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'DISCIPLINE TIER',
-                            style: TextStyle(
-                              color: AppColors.alert,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            levelTitle,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.electricCyan.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          '$xp XP',
-                          style: TextStyle(
-                            color: AppColors.electricCyan,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                email,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: secondaryTextColor,
                 ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              const StatusChip(
+                label: 'Simulator Account',
+                type: StatusType.neutral,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
 
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Learning Features',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+        // ── Preferences Section ──────────────────────────────────────────
+        Text('Preferences', style: theme.textTheme.titleLarge),
+        const SizedBox(height: AppSpacing.md),
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              SwitchListTile(
+                title: Text(
+                  'Dark Mode',
+                  style: theme.textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
-
-                // Missions Tile
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: const Icon(Icons.military_tech,
-                        color: AppColors.alert),
-                    title: const Text('Missions & Rewards'),
-                    subtitle:
-                        const Text('Earn XP and boost your Discipline Tier'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/missions'),
-                  ),
+                subtitle: Text(
+                  'Toggle appearance theme',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondaryTextColor),
                 ),
-
-                const SizedBox(height: 12),
-                
-                // News Detective Tile
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: const Icon(Icons.search_rounded,
-                        color: AppColors.electricCyan),
-                    title: const Text('News Detective ðŸ•µï¸â€â™‚ï¸'),
-                    subtitle: const Text(
-                        'Train source verification & spot clickbait'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/news-detective'),
-                  ),
+                activeThumbColor: AppColors.primaryCyan,
+                value: isDark,
+                onChanged: (val) {
+                  ref.read(themeModeProvider.notifier).toggleTheme(val);
+                },
+              ),
+              const Divider(height: 1),
+              // Integration Point (Divyanshu — Platform Module):
+              // Real push notification permission requires OS-level permission
+              // flow via the native notifications module.
+              // Showing status label instead of a fake permission dialog.
+              ListTile(
+                leading: const Icon(Icons.notifications_outlined),
+                title: Text(
+                  'Push Notifications',
+                  style: theme.textTheme.titleMedium,
                 ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Settings & Account',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                subtitle: Text(
+                  'Requires platform notification module — contact Divyanshu',
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: secondaryTextColor),
                 ),
-                const SizedBox(height: 8),
-
-                // Replay Onboarding
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: const Icon(Icons.replay_rounded,
-                        color: AppColors.electricCyan),
-                    title: const Text('Replay Onboarding'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
-                    onTap: () => context.push('/onboarding'),
-                  ),
+                trailing: const StatusChip(
+                  label: 'Pending',
+                  type: StatusType.warning,
                 ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
 
-                const SizedBox(height: 12),
+        // ── Account Info ─────────────────────────────────────────────────
+        Text('Account', style: theme.textTheme.titleLarge),
+        const SizedBox(height: AppSpacing.md),
+        AppCard(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            children: [
+              _InfoRow(label: 'Account type', value: 'Educational Simulator'),
+              const Divider(height: AppSpacing.xl),
+              _InfoRow(label: 'Currency', value: 'INR (₹) — Fixed Precision'),
+              const Divider(height: AppSpacing.xl),
+              _InfoRow(label: 'Starting balance', value: '₹1,00,000 virtual'),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
 
-                // Subscription Status
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading:
-                        const Icon(Icons.star, color: AppColors.alert),
-                    title: const Text('Subscription Status'),
-                    trailing: Text(
-                      user?.isPremium == true ? 'PREMIUM' : 'FREE',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    onTap: () => context.push('/paywall'),
-                  ),
-                ),
+        // ── Support Section ──────────────────────────────────────────────
+        Text('Support', style: theme.textTheme.titleLarge),
+        const SizedBox(height: AppSpacing.md),
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.help_outline),
+                title:
+                    Text('Help & Support', style: theme.textTheme.titleMedium),
+                trailing: const Icon(Icons.chevron_right,
+                    color: AppColors.textSecondary),
+                onTap: () => _showHelpSheet(context),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.privacy_tip_outlined),
+                title:
+                    Text('Privacy Policy', style: theme.textTheme.titleMedium),
+                trailing: const Icon(Icons.chevron_right,
+                    color: AppColors.textSecondary),
+                onTap: () => _showPrivacySheet(context),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text('About TradeSense',
+                    style: theme.textTheme.titleMedium),
+                trailing: const Icon(Icons.chevron_right,
+                    color: AppColors.textSecondary),
+                onTap: () => _showAboutDialog(context),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
 
-                const SizedBox(height: 12),
+        // ── Sign Out ─────────────────────────────────────────────────────
+        SecondaryButton(
+          text: 'Sign Out',
+          onPressed: () => _confirmSignOut(context, ref),
+        ),
+        const SizedBox(height: AppSpacing.xxl),
+      ],
+    );
+  }
 
-                // Sign Out
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading:
-                        const Icon(Icons.logout, color: AppColors.textPrimary),
-                    title: const Text('Sign Out'),
-                    onTap: () async {
-                      await ref.read(authStateProvider.notifier).signOut();
-                      if (context.mounted) context.go('/login');
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                // Delete Account
-                TradeCard(
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading:
-                        const Icon(Icons.delete_forever, color: AppColors.loss),
-                    title: const Text(
-                      'Delete Account & Private Data',
-                      style: TextStyle(color: AppColors.loss),
-                    ),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Account deletion requires platform infrastructure setup.',
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Educational Disclaimer Card
-                const DisclaimerCard(compact: false),
-              ],
+  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text(
+          'Are you sure you want to sign out? Your virtual portfolio and trade history will be preserved.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(color: AppColors.errorRed),
             ),
-          );
-        },
-        loading: () => const Center(child: CryptoLoadingIndicator()),
-        error: (err, stack) => Text('Error: $err'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signOut();
+      // Invalidate user state so the app reflects the signed-out status
+      ref.invalidate(currentUserProvider);
+      if (context.mounted) {
+        context.go('/splash');
+      }
+    }
+  }
+
+  void _showHelpSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Help & Support',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Need assistance or have feedback on TradeSense AI Coaching?',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Contact Support'),
+              subtitle: const Text('support@tradesense.app'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            ListTile(
+              leading: const Icon(Icons.menu_book_outlined),
+              title: const Text('Trading Guides & FAQ'),
+              subtitle: const Text('Learn about risk score calculation'),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPrivacySheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).cardTheme.color,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Privacy Policy',
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'TradeSense respects your privacy. All trading data, discipline scores, and journal entries are securely processed and protected. We do not sell or share personal data with third-party brokers.',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            PrimaryButton(
+              text: 'Close',
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+            const SizedBox(height: AppSpacing.md),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('TradeSense'),
+        content: const Text(
+          'Version 1.0.0-beta\n\nAn educational crypto trading simulator with AI coaching. Trade virtual funds, build discipline, and learn risk management.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
   }
 }
 
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
 
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ],
+    );
+  }
+}

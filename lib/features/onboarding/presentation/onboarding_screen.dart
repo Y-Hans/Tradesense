@@ -1,261 +1,191 @@
+import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
-import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
-import '../../../core/widgets/disclaimer_card.dart';
-import '../../../core/widgets/trade_card.dart';
+import '../../../core/providers/app_providers.dart';
 
-class OnboardingStep {
-  final String title;
-  final String description;
-  final IconData icon;
-
-  const OnboardingStep({
-    required this.title,
-    required this.description,
-    required this.icon,
-  });
-
-  static const List<OnboardingStep> steps = [
-    OnboardingStep(
-      title: 'Practice Crypto Safely',
-      description:
-          'Practice crypto trading without risking real money in a risk-free educational environment.',
-      icon: Icons.shield_outlined,
-    ),
-    OnboardingStep(
-      title: '₹100,000 Virtual Starting Balance',
-      description:
-          'Start with ₹100,000 virtual funds and practise using real market prices in real-time.',
-      icon: Icons.account_balance_wallet_outlined,
-    ),
-    OnboardingStep(
-      title: 'Discipline Score & AI Insights',
-      description:
-          'Improve your Discipline Score and learn from AI feedback after simulated trades.',
-      icon: Icons.psychology_outlined,
-    ),
-  ];
-}
-
-class OnboardingScreen extends StatefulWidget {
-  final VoidCallback onGetStarted;
-  final bool isLoading;
-
-  const OnboardingScreen({
-    super.key,
-    required this.onGetStarted,
-    this.isLoading = false,
-  });
+class OnboardingScreen extends ConsumerWidget {
+  const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final userAsync = ref.watch(currentUserProvider);
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  late final PageController _pageController;
-  int _currentIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  bool get _isLastStep => _currentIndex == OnboardingStep.steps.length - 1;
-
-  void _finishOnboarding() {
-    if (!widget.isLoading) {
-      widget.onGetStarted();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const steps = OnboardingStep.steps;
-
-    return Scaffold(
-      backgroundColor: AppColors.oledBlack,
+    return AppScaffold(
+      showBackButton: false,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'ONBOARDING',
-                    style: TextStyle(
-                      color: AppColors.electricCyan,
-                      fontSize: 12.0,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                  if (!_isLastStep && !widget.isLoading)
-                    TextButton(
-                      onPressed: _finishOnboarding,
-                      child: const Text(
-                        'Skip',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: steps.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  final step = steps[index];
-                  return Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Center(
-                      child: TradeCard(
-                        padding: const EdgeInsets.all(32.0),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                            Container(
-                              padding: const EdgeInsets.all(24.0),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.electricCyan.withValues(alpha: 0.15),
-                                border: Border.all(
-                                  color: AppColors.electricCyan.withValues(alpha: 0.4),
-                                  width: 2.0,
-                                ),
-                              ),
-                              child: Icon(
-                                step.icon,
-                                size: 64.0,
-                                color: AppColors.electricCyan,
-                              ),
-                            ),
-                            const SizedBox(height: 32.0),
-                            Text(
-                              step.title,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 22.0,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 16.0),
-                            Text(
-                              step.description,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 15.0,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                steps.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
-                  width: _currentIndex == index ? 24.0 : 8.0,
-                  height: 8.0,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xxl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Spacer(),
+
+              // Hero icon
+              Center(
+                child: Container(
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
-                    color: _currentIndex == index
-                        ? const Color(0xFF00E5FF) // neon-cyan
-                        : AppColors.oledCard,
-                    borderRadius: BorderRadius.circular(4.0),
-                    boxShadow: _currentIndex == index
-                        ? [
-                            const BoxShadow(
-                              color: Color(0x6600E5FF),
-                              blurRadius: 8.0,
-                              spreadRadius: 1.0,
-                            )
-                          ]
-                        : [],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24.0),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: DisclaimerCard(compact: true),
-            ),
-            const SizedBox(height: 24.0),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 50.0,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.electricCyan,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryCyan.withValues(alpha: 0.12),
+                    border: Border.all(
+                      color: AppColors.primaryCyan.withValues(alpha: 0.4),
+                      width: 2,
                     ),
                   ),
-                  onPressed: widget.isLoading
-                      ? null
-                      : () {
-                          if (_isLastStep) {
-                            _finishOnboarding();
-                          } else {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
-                        },
-                  child: widget.isLoading
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CryptoLoadingIndicator(size: 24),
-                        )
-                      : Text(
-                          _isLastStep ? 'Get Started' : 'Next',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16.0,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                  child: const Icon(
+                    Icons.school_outlined,
+                    size: 52,
+                    color: AppColors.primaryCyan,
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: AppSpacing.xxl),
+
+              // Greeting
+              userAsync.when(
+                data: (user) => Text(
+                  user != null
+                      ? 'Welcome, ${user.displayName}!'
+                      : 'Welcome to TradeSense!',
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                loading: () => Text(
+                  'Welcome to TradeSense!',
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                error: (_, __) => Text(
+                  'Welcome to TradeSense!',
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              Text(
+                'Learn to trade crypto without financial risk.\nPractice with ₹1,00,000 in virtual funds.',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+
+              const SizedBox(height: AppSpacing.xxl),
+
+              // Feature highlights
+              _FeatureRow(
+                icon: Icons.psychology_outlined,
+                color: AppColors.primaryCyan,
+                title: 'AI Trade Coach',
+                description:
+                    'Get personalised feedback after every virtual trade',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _FeatureRow(
+                icon: Icons.shield_outlined,
+                color: AppColors.successGreen,
+                title: 'Risk & Discipline Scores',
+                description:
+                    'Understand your trading behaviour with real-time analysis',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              _FeatureRow(
+                icon: Icons.emoji_events_outlined,
+                color: AppColors.warningOrange,
+                title: 'Learning Missions',
+                description:
+                    'Complete challenges and earn XP to unlock new concepts',
+              ),
+
+              const Spacer(),
+
+              // CTA — goes to profile setup
+              PrimaryButton(
+                text: 'Set Up Trading Profile',
+                onPressed: () => context.go('/profile-setup'),
+                icon: const Icon(Icons.arrow_forward),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              // Skip to home (if user knows what they're doing)
+              SecondaryButton(
+                text: 'Skip for now',
+                onPressed: () => context.go('/'),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+class _FeatureRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String title;
+  final String description;
 
+  const _FeatureRow({
+    required this.icon,
+    required this.color,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.12),
+          ),
+          child: Icon(icon, color: color, size: 22),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
