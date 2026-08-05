@@ -67,15 +67,15 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 400),
                     padding: const EdgeInsets.all(32.0),
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.8),
+                      color: AppColors.oledSurface.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(24.0),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.5),
+                        color: AppColors.electricCyan.withValues(alpha: 0.5),
                         width: 2.0,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
+                          color: AppColors.electricCyan.withValues(alpha: 0.3),
                           blurRadius: 30.0,
                           spreadRadius: 5.0,
                         ),
@@ -88,10 +88,10 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                           padding: const EdgeInsets.all(20.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: AppColors.primary.withValues(alpha: 0.15),
+                            color: AppColors.electricCyan.withValues(alpha: 0.15),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.5),
+                                color: AppColors.electricCyan.withValues(alpha: 0.5),
                                 blurRadius: 20.0,
                                 spreadRadius: -5.0,
                               ),
@@ -100,20 +100,20 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                           child: const Icon(
                             Icons.rocket_launch_rounded,
                             size: 64.0,
-                            color: AppColors.primary,
+                            color: AppColors.electricCyan,
                           ),
                         ),
                         const SizedBox(height: 24.0),
                         const Text(
                           'LEVEL UP!',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.electricCyan,
                             fontSize: 28.0,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2.0,
                             shadows: [
                               Shadow(
-                                color: AppColors.primary,
+                                color: AppColors.electricCyan,
                                 blurRadius: 10.0,
                               ),
                             ],
@@ -145,13 +145,13 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                           height: 50.0,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: AppColors.electricCyan,
                               foregroundColor: Colors.black,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                               elevation: 10.0,
-                              shadowColor: AppColors.primary.withValues(alpha: 0.5),
+                              shadowColor: AppColors.electricCyan.withValues(alpha: 0.5),
                             ),
                             onPressed: onClaim,
                             child: const Text(

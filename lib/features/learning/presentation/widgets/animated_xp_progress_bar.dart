@@ -31,11 +31,11 @@ class AnimatedXpProgressBar extends StatelessWidget {
                   Container(
                     width: constraints.maxWidth * value,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: AppColors.electricCyan,
                       borderRadius: BorderRadius.circular(height / 2),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.8),
+                          color: AppColors.electricCyan.withValues(alpha: 0.8),
                           blurRadius: 10.0,
                           spreadRadius: 1.0,
                         ),

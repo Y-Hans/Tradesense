@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
@@ -41,7 +42,7 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.electricCyan,
                         child: Text(
                           displayName.isNotEmpty
                               ? displayName[0].toUpperCase()
@@ -104,7 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                           Text(
                             'DISCIPLINE TIER',
                             style: TextStyle(
-                              color: AppColors.discipline,
+                              color: AppColors.alert,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.0,
@@ -125,13 +126,13 @@ class ProfileScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.2),
+                          color: AppColors.electricCyan.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
                           '$xp XP',
                           style: TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.electricCyan,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -157,7 +158,7 @@ class ProfileScreen extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.military_tech,
-                        color: AppColors.discipline),
+                        color: AppColors.alert),
                     title: const Text('Missions & Rewards'),
                     subtitle:
                         const Text('Earn XP and boost your Discipline Tier'),
@@ -174,8 +175,8 @@ class ProfileScreen extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.search_rounded,
-                        color: AppColors.primary),
-                    title: const Text('News Detective 🕵️‍♂️'),
+                        color: AppColors.electricCyan),
+                    title: const Text('News Detective ðŸ•µï¸â€â™‚ï¸'),
                     subtitle: const Text(
                         'Train source verification & spot clickbait'),
                     trailing: const Icon(Icons.arrow_forward_ios,
@@ -201,7 +202,7 @@ class ProfileScreen extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   child: ListTile(
                     leading: const Icon(Icons.replay_rounded,
-                        color: AppColors.primary),
+                        color: AppColors.electricCyan),
                     title: const Text('Replay Onboarding'),
                     trailing: const Icon(Icons.arrow_forward_ios,
                         size: 16, color: AppColors.textSecondary),
@@ -216,7 +217,7 @@ class ProfileScreen extends ConsumerWidget {
                   padding: EdgeInsets.zero,
                   child: ListTile(
                     leading:
-                        const Icon(Icons.star, color: AppColors.discipline),
+                        const Icon(Icons.star, color: AppColors.alert),
                     title: const Text('Subscription Status'),
                     trailing: Text(
                       user?.isPremium == true ? 'PREMIUM' : 'FREE',
@@ -274,9 +275,11 @@ class ProfileScreen extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CryptoLoadingIndicator()),
         error: (err, stack) => Text('Error: $err'),
       ),
     );
   }
 }
+
+

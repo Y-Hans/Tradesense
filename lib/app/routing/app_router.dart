@@ -4,7 +4,7 @@ import '../../features/startup/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
-import '../../features/home/presentation/home_screen.dart';
+import '../../features/home/presentation/dashboard_screen.dart';
 import '../../features/home/presentation/app_shell.dart';
 import '../../features/market/presentation/asset_detail_screen.dart';
 import '../../features/market/presentation/markets_screen.dart';

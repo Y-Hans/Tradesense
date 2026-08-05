@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
@@ -43,7 +44,7 @@ class CoachResultScreen extends ConsumerWidget {
               ),
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
+              return const Center(child: CryptoLoadingIndicator());
             }
             final analysis = snapshot.data!;
             final feedback = analysis.coachFeedback;
@@ -68,7 +69,7 @@ class CoachResultScreen extends ConsumerWidget {
                                 style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.discipline)),
+                                    color: AppColors.alert)),
                           ],
                         ),
                         Container(
@@ -107,21 +108,21 @@ class CoachResultScreen extends ConsumerWidget {
                     title: 'What Increased Risk',
                     content: feedback.whatIncreasedRisk,
                     icon: Icons.warning_amber_outlined,
-                    color: AppColors.discipline,
+                    color: AppColors.alert,
                   ),
                   _buildExplanationCard(
                     context,
                     title: 'Key Educational Takeaway',
                     content: feedback.whatToLearn,
                     icon: Icons.school_outlined,
-                    color: AppColors.primary,
+                    color: AppColors.electricCyan,
                   ),
                   _buildExplanationCard(
                     context,
                     title: 'What To Consider Next',
                     content: feedback.whatToConsiderNext,
                     icon: Icons.lightbulb_outline,
-                    color: AppColors.accent,
+                    color: AppColors.cyberGold,
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -137,11 +138,11 @@ class CoachResultScreen extends ConsumerWidget {
             );
           },
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CryptoLoadingIndicator()),
         error: (err, stack) => Text('Error: $err'),
       );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CryptoLoadingIndicator()),
       error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
@@ -174,3 +175,5 @@ class CoachResultScreen extends ConsumerWidget {
     );
   }
 }
+
+

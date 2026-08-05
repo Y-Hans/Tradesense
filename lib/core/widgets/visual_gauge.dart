@@ -26,7 +26,7 @@ class VisualGauge extends StatelessWidget {
             painter: _GaugePainter(
               progress: progress,
               activeColor: activeColor,
-              backgroundColor: AppColors.card,
+              backgroundColor: AppColors.oledCard,
             ),
             child: Center(
               child: Text(

@@ -12,7 +12,7 @@ class VisualGauge extends StatelessWidget {
   const VisualGauge({
     super.key,
     required this.value,
-    this.color = AppColors.primary,
+    this.color = AppColors.electricCyan,
     this.size = 160.0,
     this.strokeWidth = 16.0,
   });
@@ -26,7 +26,7 @@ class VisualGauge extends StatelessWidget {
         painter: _GaugePainter(
           value: value,
           color: color,
-          backgroundColor: AppColors.background.withValues(alpha: 0.5),
+          backgroundColor: AppColors.oledBlack.withValues(alpha: 0.5),
           strokeWidth: strokeWidth,
         ),
       ),

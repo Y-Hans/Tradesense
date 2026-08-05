@@ -16,7 +16,7 @@ class PaywallScreen extends ConsumerWidget {
         child: Column(
           children: [
             const Icon(Icons.workspace_premium,
-                size: 72, color: AppColors.discipline),
+                size: 72, color: AppColors.alert),
             const SizedBox(height: 16),
             Text('Unlock Deep AI Coaching',
                 style: Theme.of(context).textTheme.headlineMedium),
@@ -32,7 +32,7 @@ class PaywallScreen extends ConsumerWidget {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.discipline),
+                    backgroundColor: AppColors.alert),
                 onPressed: () async {
                   final sub = ref.read(subscriptionProvider);
                   await sub.purchasePremium();

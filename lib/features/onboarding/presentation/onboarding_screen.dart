@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/widgets/disclaimer_card.dart';
@@ -80,7 +81,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     const steps = OnboardingStep.steps;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.oledBlack,
       body: SafeArea(
         child: Column(
           children: [
@@ -93,7 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const Text(
                     'ONBOARDING',
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: AppColors.electricCyan,
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.5,
@@ -135,16 +136,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               padding: const EdgeInsets.all(24.0),
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: AppColors.primary.withValues(alpha: 0.15),
+                                color: AppColors.electricCyan.withValues(alpha: 0.15),
                                 border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.4),
+                                  color: AppColors.electricCyan.withValues(alpha: 0.4),
                                   width: 2.0,
                                 ),
                               ),
                               child: Icon(
                                 step.icon,
                                 size: 64.0,
-                                color: AppColors.primary,
+                                color: AppColors.electricCyan,
                               ),
                             ),
                             const SizedBox(height: 32.0),
@@ -187,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   decoration: BoxDecoration(
                     color: _currentIndex == index
                         ? const Color(0xFF00E5FF) // neon-cyan
-                        : AppColors.card,
+                        : AppColors.oledCard,
                     borderRadius: BorderRadius.circular(4.0),
                     boxShadow: _currentIndex == index
                         ? [
@@ -216,7 +217,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 height: 50.0,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.electricCyan,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
@@ -237,10 +238,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ? const SizedBox(
                           height: 24,
                           width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
+                          child: CryptoLoadingIndicator(size: 24),
                         )
                       : Text(
                           _isLastStep ? 'Get Started' : 'Next',
@@ -259,3 +257,5 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 }
+
+

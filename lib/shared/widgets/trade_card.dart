@@ -47,14 +47,14 @@ class _TradeCardState extends State<TradeCard> {
               borderRadius: borderRadius,
               border: Border.all(
                 color: _isHovered
-                    ? AppColors.primary
+                    ? AppColors.electricCyan
                     : AppColors.outline.withValues(alpha: 0.6),
                 width: _isHovered ? 2.0 : 1.5,
               ),
               boxShadow: _isHovered
                   ? [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
+                        color: AppColors.electricCyan.withValues(alpha: 0.3),
                         blurRadius: 16,
                         spreadRadius: 2,
                       )
@@ -64,8 +64,8 @@ class _TradeCardState extends State<TradeCard> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.card.withValues(alpha: _isHovered ? 0.8 : 0.7),
-                  AppColors.card.withValues(alpha: _isHovered ? 0.4 : 0.3),
+                  AppColors.oledCard.withValues(alpha: _isHovered ? 0.8 : 0.7),
+                  AppColors.oledCard.withValues(alpha: _isHovered ? 0.4 : 0.3),
                 ],
               ),
             ),
@@ -75,7 +75,7 @@ class _TradeCardState extends State<TradeCard> {
                 borderRadius: borderRadius,
                 onTap: isInteractive ? () {} : null, // Handled by SpringScaleButton
                 hoverColor: Colors.transparent,
-                splashColor: AppColors.primary.withValues(alpha: 0.1),
+                splashColor: AppColors.electricCyan.withValues(alpha: 0.1),
                 highlightColor: Colors.transparent,
                 child: Padding(
                   padding: widget.padding,

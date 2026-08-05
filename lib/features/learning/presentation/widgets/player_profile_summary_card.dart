@@ -35,7 +35,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24.0),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.3),
+            color: AppColors.oledSurface.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
@@ -53,10 +53,10 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                     height: 72.0,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 2.0),
+                      border: Border.all(color: AppColors.electricCyan, width: 2.0),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
+                          color: AppColors.electricCyan.withValues(alpha: 0.3),
                           blurRadius: 10.0,
                           spreadRadius: 2.0,
                         ),
@@ -69,7 +69,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                           : null,
                       child: avatarUrl.isEmpty
                           ? const Icon(Icons.person,
-                              size: 40.0, color: AppColors.primary)
+                              size: 40.0, color: AppColors.electricCyan)
                           : null,
                     ),
                   ),
@@ -122,7 +122,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: AppColors.electricCyan,
                     ),
                   ),
                 ],

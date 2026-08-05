@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,7 +28,7 @@ class TradeEntryScreen extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.school_outlined, color: AppColors.accent),
+                  const Icon(Icons.school_outlined, color: AppColors.cyberGold),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -64,11 +65,11 @@ class TradeEntryScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         backgroundColor:
-                            AppColors.primary.withValues(alpha: 0.18),
+                            AppColors.electricCyan.withValues(alpha: 0.18),
                         child: Text(
                           asset.symbol[0],
                           style: const TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.electricCyan,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -113,7 +114,7 @@ class TradeEntryScreen extends ConsumerWidget {
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CryptoLoadingIndicator()),
         error: (error, stackTrace) => Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -124,3 +125,5 @@ class TradeEntryScreen extends ConsumerWidget {
     );
   }
 }
+
+

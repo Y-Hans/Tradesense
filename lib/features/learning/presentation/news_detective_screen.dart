@@ -162,7 +162,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                       Text(
                         'QUESTION ${_currentIndex + 1} OF ${_questions.length}',
                         style: const TextStyle(
-                          color: AppColors.primary,
+                          color: AppColors.electricCyan,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -171,7 +171,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.card,
+                          color: AppColors.oledCard,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text('Score: $_score',
@@ -200,7 +200,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                           const SizedBox(height: 16),
                           const Text('Clues & Red Flags:',
                               style: TextStyle(
-                                  color: AppColors.primary,
+                                  color: AppColors.electricCyan,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13)),
                           const SizedBox(height: 8),
@@ -307,7 +307,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary),
+                            backgroundColor: AppColors.electricCyan),
                         onPressed: _nextQuestion,
                         child: const Text('Next Headline',
                             style: TextStyle(
@@ -330,7 +330,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.verified_outlined,
-                size: 64, color: AppColors.discipline),
+                size: 64, color: AppColors.alert),
             const SizedBox(height: 16),
             const Text('Quiz Completed!',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
@@ -338,7 +338,7 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
             Text('You scored $_score / ${_questions.length}',
                 style: const TextStyle(
                     fontSize: 18,
-                    color: AppColors.primary,
+                    color: AppColors.electricCyan,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             const Text(

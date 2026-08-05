@@ -21,7 +21,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Reward already claimed for this mission.'),
-          backgroundColor: AppColors.discipline,
+          backgroundColor: AppColors.alert,
         ),
       );
       return;
@@ -61,7 +61,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
               padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.accent],
+                  colors: [AppColors.electricCyan, AppColors.cyberGold],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -106,7 +106,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
                       ),
                       VisualGauge(
                         progress: progressToNext,
-                        activeColor: AppColors.discipline,
+                        activeColor: AppColors.alert,
                         label: '$_userXp XP',
                       ),
                     ],
@@ -150,7 +150,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
                           shape: BoxShape.circle,
                           color: isCompleted
                               ? AppColors.profit.withValues(alpha: 0.2)
-                              : AppColors.primary.withValues(alpha: 0.15),
+                              : AppColors.electricCyan.withValues(alpha: 0.15),
                         ),
                         child: Icon(
                           isCompleted
@@ -158,7 +158,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
                               : Icons.stars_rounded,
                           color: isCompleted
                               ? AppColors.profit
-                              : AppColors.primary,
+                              : AppColors.electricCyan,
                           size: 24.0,
                         ),
                       ),
@@ -206,7 +206,7 @@ class _MissionsScreenState extends State<MissionsScreen> {
                       else
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: AppColors.electricCyan,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12.0, vertical: 8.0),
                             shape: RoundedRectangleBorder(

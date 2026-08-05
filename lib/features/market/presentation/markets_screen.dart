@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
@@ -26,7 +27,7 @@ class MarketsScreen extends ConsumerWidget {
             asset: assets[index],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CryptoLoadingIndicator()),
         error: (err, stack) => Text('Error: $err'),
       ),
     );
@@ -62,11 +63,11 @@ class _LiveMarketTile extends ConsumerWidget {
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.18),
+                backgroundColor: AppColors.electricCyan.withValues(alpha: 0.18),
                 child: Text(
                   asset.symbol[0],
                   style: const TextStyle(
-                    color: AppColors.primary,
+                    color: AppColors.electricCyan,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -79,7 +80,7 @@ class _LiveMarketTile extends ConsumerWidget {
                     Text(asset.name,
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 2),
-                    Text('${asset.symbol} · SIMULATED LIVE'),
+                    Text('${asset.symbol} Â· SIMULATED LIVE'),
                   ],
                 ),
               ),
@@ -107,3 +108,5 @@ class _LiveMarketTile extends ConsumerWidget {
     );
   }
 }
+
+

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
@@ -28,7 +29,7 @@ class DashboardScreen extends ConsumerWidget {
             onPressed: () => context.push('/profile'),
           ),
           IconButton(
-            icon: const Icon(Icons.star_border, color: AppColors.discipline),
+            icon: const Icon(Icons.star_border, color: AppColors.alert),
             onPressed: () => context.push('/paywall'),
           ),
         ],
@@ -54,12 +55,12 @@ class DashboardScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.2),
+                              color: AppColors.electricCyan.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text('SIMULATED ₹',
                                 style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: AppColors.electricCyan,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12)),
                           ),
@@ -121,7 +122,7 @@ class DashboardScreen extends ConsumerWidget {
                     ],
                 ),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CryptoLoadingIndicator()),
               error: (err, stack) => Text('Error loading wallet: $err'),
             ),
             const SizedBox(height: 16),
@@ -134,7 +135,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: const Column(
                       children: [
                         Icon(Icons.verified_outlined,
-                            color: AppColors.discipline, size: 28),
+                            color: AppColors.alert, size: 28),
                         SizedBox(height: 8),
                         Text('Discipline Score',
                             style: TextStyle(
@@ -145,7 +146,7 @@ class DashboardScreen extends ConsumerWidget {
                             style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.discipline)),
+                                color: AppColors.alert)),
                         Text('High Process',
                             style: TextStyle(
                                 fontSize: 10, color: AppColors.profit)),
@@ -161,7 +162,7 @@ class DashboardScreen extends ConsumerWidget {
                     child: const Column(
                       children: [
                         Icon(Icons.speed_outlined,
-                            color: AppColors.accent, size: 28),
+                            color: AppColors.cyberGold, size: 28),
                         SizedBox(height: 8),
                         Text('Risk Score',
                             style: TextStyle(
@@ -204,10 +205,10 @@ class DashboardScreen extends ConsumerWidget {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor:
-                            AppColors.primary.withValues(alpha: 0.2),
+                            AppColors.electricCyan.withValues(alpha: 0.2),
                         child: Text(asset.symbol[0],
                             style: const TextStyle(
-                                color: AppColors.primary,
+                                color: AppColors.electricCyan,
                                 fontWeight: FontWeight.bold)),
                       ),
                       title: Text(asset.name,
@@ -235,7 +236,7 @@ class DashboardScreen extends ConsumerWidget {
                   );
                 }).toList(),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CryptoLoadingIndicator()),
               error: (err, stack) => Text('Error loading markets: $err'),
             ),
           ],
@@ -244,3 +245,5 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 }
+
+

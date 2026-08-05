@@ -13,8 +13,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('CryptoEdu Simulator'), findsOneWidget);
-    expect(find.text('Virtual Portfolio Equity'), findsOneWidget);
-    expect(find.text('Supported V1 Markets'), findsOneWidget);
+    expect(find.textContaining('Trader'), findsOneWidget);
+    expect(find.text('Total Portfolio Value'), findsOneWidget);
+    expect(find.text('Watchlist'), findsOneWidget);
   });
 }

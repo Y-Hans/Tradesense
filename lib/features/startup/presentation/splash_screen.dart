@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:video_player/video_player.dart';
 
@@ -103,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 )
-              : const CircularProgressIndicator(color: Color(0xFF00E5FF)),
+              : const CryptoLoadingIndicator(size: 40),
         ),
       ),
     );
