@@ -44,14 +44,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signIn(
+      final success = await ref.read(authStateProvider.notifier).signIn(
         email: _emailController.text.trim(),
         password: _passController.text,
       );
-      if (mounted) {
-        context.go('/');
+      
+      if (!success) {
+        if (mounted) {
+          setState(() {
+            final error = ref.read(authStateProvider).errorMessage;
+            _errorMessage = _friendlyError(error ?? 'Authentication failed');
+          });
+        }
       }
+      // RouterListenable will automatically redirect upon successful auth.
     } catch (e) {
       if (mounted) {
         setState(() {

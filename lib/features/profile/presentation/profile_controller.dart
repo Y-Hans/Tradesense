@@ -13,7 +13,7 @@ class ProfileController extends _$ProfileController {
   FutureOr<ProfileState> build() async {
     final repo = ref.read(profileRepositoryProvider);
     final onboardingRepo = ref.read(onboardingRepositoryProvider);
-    final currentUser = await ref.read(currentUserProvider.future).catchError((_) => null);
+    final currentUser = ref.read(currentUserProvider).valueOrNull;
     
     final name = currentUser?.displayName ?? onboardingRepo.userName;
     final email = currentUser?.email;

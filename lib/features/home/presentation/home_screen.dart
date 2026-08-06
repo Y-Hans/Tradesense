@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 
@@ -22,7 +22,7 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () => context.push('/profile'),
           ),
           IconButton(
-            icon: const Icon(Icons.star_border, color: AppColors.discipline),
+            icon: const Icon(Icons.star_border, color: AppColors.successGreen),
             onPressed: () => context.push('/paywall'),
           ),
         ],
@@ -48,12 +48,12 @@ class HomeScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.2),
+                              color: AppColors.primaryCyan.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text('SIMULATED ₹',
                                 style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: AppColors.primaryCyan,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12)),
                           ),
@@ -85,8 +85,8 @@ class HomeScreen extends ConsumerWidget {
                                     portfolio.totalUnrealisedPnlInr),
                                 style: TextStyle(
                                   color: portfolio.totalUnrealisedPnlInr >= 0
-                                      ? AppColors.profit
-                                      : AppColors.loss,
+                                      ? AppColors.successGreen
+                                      : AppColors.errorRed,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -103,8 +103,8 @@ class HomeScreen extends ConsumerWidget {
                                 '${portfolio.overallPnlPercent.toStringAsFixed(2)}%',
                                 style: TextStyle(
                                   color: portfolio.overallPnlPercent >= 0
-                                      ? AppColors.profit
-                                      : AppColors.loss,
+                                      ? AppColors.successGreen
+                                      : AppColors.errorRed,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -131,7 +131,7 @@ class HomeScreen extends ConsumerWidget {
                         child: Column(
                           children: [
                             Icon(Icons.verified_outlined,
-                                color: AppColors.discipline, size: 28),
+                                color: AppColors.successGreen, size: 28),
                             SizedBox(height: 8),
                             Text('Discipline Score',
                                 style: TextStyle(
@@ -142,10 +142,10 @@ class HomeScreen extends ConsumerWidget {
                                 style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.discipline)),
+                                    color: AppColors.successGreen)),
                             Text('High Process',
                                 style: TextStyle(
-                                    fontSize: 10, color: AppColors.profit)),
+                                    fontSize: 10, color: AppColors.successGreen)),
                           ],
                         ),
                       ),
@@ -162,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
                         child: Column(
                           children: [
                             Icon(Icons.speed_outlined,
-                                color: AppColors.accent, size: 28),
+                                color: AppColors.primaryCyan, size: 28),
                             SizedBox(height: 8),
                             Text('Risk Score',
                                 style: TextStyle(
@@ -173,10 +173,10 @@ class HomeScreen extends ConsumerWidget {
                                 style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.profit)),
+                                    color: AppColors.successGreen)),
                             Text('MODERATE',
                                 style: TextStyle(
-                                    fontSize: 10, color: AppColors.profit)),
+                                    fontSize: 10, color: AppColors.successGreen)),
                           ],
                         ),
                       ),
@@ -205,10 +205,10 @@ class HomeScreen extends ConsumerWidget {
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor:
-                            AppColors.primary.withValues(alpha: 0.2),
+                            AppColors.primaryCyan.withValues(alpha: 0.2),
                         child: Text(asset.symbol[0],
                             style: const TextStyle(
-                                color: AppColors.primary,
+                                color: AppColors.primaryCyan,
                                 fontWeight: FontWeight.bold)),
                       ),
                       title: Text(asset.name,
@@ -225,8 +225,8 @@ class HomeScreen extends ConsumerWidget {
                             '${asset.change24hPercent >= 0 ? '+' : ''}${asset.change24hPercent}%',
                             style: TextStyle(
                               color: asset.change24hPercent >= 0
-                                  ? AppColors.profit
-                                  : AppColors.loss,
+                                  ? AppColors.successGreen
+                                  : AppColors.errorRed,
                               fontSize: 12,
                             ),
                           ),

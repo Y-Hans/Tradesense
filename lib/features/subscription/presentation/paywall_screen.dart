@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 import '../../../core/providers/app_providers.dart';
 
 class PaywallScreen extends ConsumerWidget {
@@ -16,7 +16,7 @@ class PaywallScreen extends ConsumerWidget {
         child: Column(
           children: [
             const Icon(Icons.workspace_premium,
-                size: 72, color: AppColors.discipline),
+                size: 72, color: AppColors.successGreen),
             const SizedBox(height: 16),
             Text('Unlock Deep AI Coaching',
                 style: Theme.of(context).textTheme.headlineMedium),
@@ -32,7 +32,7 @@ class PaywallScreen extends ConsumerWidget {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.discipline),
+                    backgroundColor: AppColors.successGreen),
                 onPressed: () async {
                   final sub = ref.read(subscriptionProvider);
                   await sub.purchasePremium();

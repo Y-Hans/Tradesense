@@ -38,18 +38,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     });
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signUp(
+      final success = await ref.read(authStateProvider.notifier).signUp(
         email: _emailController.text.trim(),
         password: _passController.text,
         displayName: _nameController.text.trim().isNotEmpty
             ? _nameController.text.trim()
             : null,
       );
-      if (mounted) {
-        // Navigate to onboarding for new users
-        context.go('/onboarding');
+      if (!success) {
+        if (mounted) {
+          setState(() {
+            final error = ref.read(authStateProvider).errorMessage;
+            _errorMessage = _friendlyError(error ?? 'Registration failed');
+          });
+        }
       }
+      // RouterListenable will automatically redirect upon successful auth.
     } catch (e) {
       if (mounted) {
         setState(() {

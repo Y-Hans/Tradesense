@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 import '../../../core/services/connectivity/connectivity_provider.dart';
 import '../../../core/services/connectivity/connectivity_status.dart';
 import '../../../shared/constants/app_strings.dart';
@@ -43,7 +43,7 @@ class AssetDetailScreen extends ConsumerWidget {
                         style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary)),
+                            color: AppColors.primaryCyan)),
                   ],
                 ),
               ),

@@ -1,7 +1,7 @@
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import '../../../core/providers/app_providers.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../shared/models/user_profile.dart';
@@ -44,7 +44,7 @@ class ProfileScreen extends ConsumerWidget {
     bool isDark,
   ) {
     final theme = Theme.of(context);
-    final secondaryTextColor = AppColors.textSecondary;
+    const secondaryTextColor = AppColors.textSecondary;
     final name =
         (user?.displayName.isNotEmpty == true) ? user!.displayName : 'Trader';
     final email = user?.email ?? '—';
@@ -220,13 +220,12 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     if (confirmed == true) {
-      final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signOut();
+      await ref.read(authStateProvider.notifier).signOut();
       // Invalidate user state so the app reflects the signed-out status
       ref.invalidate(currentUserProvider);
-      if (context.mounted) {
-        context.go('/splash');
-      }
+      // RouterListenable will handle redirecting to /splash automatically
+      // But we can keep context.go just in case it's missed, or remove it.
+      // Let's rely on RouterListenable.
     }
   }
 

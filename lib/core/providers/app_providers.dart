@@ -17,6 +17,11 @@ export '../events/domain_event_providers.dart';
 
 import '../events/domain_event_providers.dart';
 import '../../features/market/providers/market_cache_providers.dart';
+import '../../features/auth/data/supabase_auth_repository.dart';
+import '../../features/auth/domain/auth_state.dart';
+import '../../features/auth/application/auth_notifier.dart';
+import '../../features/auth/application/user_lifecycle_notifier.dart';
+import '../../features/onboarding/application/onboarding_notifier.dart';
 
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
@@ -26,10 +31,18 @@ final marketRepositoryProvider = Provider<MarketProvider>((ref) {
   return ref.watch(cachedMarketRepositoryProvider);
 });
 
-/// Trading Repository Provider
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
+  final marketRepo = ref.watch(marketRepositoryProvider);
   final eventPublisher = ref.watch(domainEventPublisherProvider);
-  return MockTradingRepository(eventPublisher);
+  final repo = MockTradingRepository(
+    marketRepo,
+    initialBalance: 100000.0,
+    eventPublisher: eventPublisher,
+  );
+  ref.onDispose(() {
+    repo.dispose();
+  });
+  return repo;
 });
 
 /// Portfolio Repository Provider
@@ -47,7 +60,17 @@ final intelligenceRepositoryProvider = Provider<IntelligenceRepository>((ref) {
 
 /// Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return MockAuthRepository();
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock) {
+    return MockAuthRepository();
+  }
+  return SupabaseAuthRepository();
+});
+
+/// Auth State Provider (manages session lifecycle)
+final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final authRepo = ref.watch(authRepositoryProvider);
+  return AuthNotifier(authRepo);
 });
 
 /// Subscription Provider
@@ -60,10 +83,17 @@ final remoteConfigProvider = Provider<RemoteConfigProvider>((ref) {
   return MockRemoteConfigRepository();
 });
 
-/// Current User State Provider
-final currentUserProvider = FutureProvider<UserProfile?>((ref) async {
-  final authRepo = ref.watch(authRepositoryProvider);
-  return authRepo.getCurrentUser();
+/// Current User State Provider (wired to authStateProvider for seamless reactive access)
+final currentUserProvider = Provider<AsyncValue<UserProfile?>>((ref) {
+  final authState = ref.watch(authStateProvider);
+  if (authState.isRestoring || authState.isAuthenticating) {
+    return const AsyncValue.loading();
+  }
+  if (authState.hasError) {
+    return AsyncValue.error(
+        authState.errorMessage ?? 'Authentication error', StackTrace.current);
+  }
+  return AsyncValue.data(authState.user);
 });
 
 /// Current Portfolio State Provider
@@ -90,6 +120,30 @@ final subscriptionStatusProvider =
     FutureProvider<SubscriptionStatus>((ref) async {
   final subProvider = ref.watch(subscriptionProvider);
   return subProvider.getStatus();
+});
+
+/// User Lifecycle State Provider (tracks idempotent user initialization)
+final userLifecycleProvider =
+    StateNotifierProvider<UserLifecycleNotifier, UserLifecycleState>((ref) {
+  final notifier = UserLifecycleNotifier();
+  ref.listen<AuthState>(authStateProvider, (previous, next) {
+    if (next.isAuthenticated && next.user != null) {
+      notifier.initializeUser(next.user!);
+    } else if (next.status == AuthStatus.unauthenticated) {
+      notifier.reset();
+    }
+  });
+  final currentAuth = ref.read(authStateProvider);
+  if (currentAuth.isAuthenticated && currentAuth.user != null) {
+    notifier.initializeUser(currentAuth.user!);
+  }
+  return notifier;
+});
+
+/// Onboarding State Provider (manages onboarding completion per user)
+final onboardingNotifierProvider =
+    StateNotifierProvider<OnboardingNotifier, Map<String, bool>>((ref) {
+  return OnboardingNotifier();
 });
 
 /// Feature Flags Provider

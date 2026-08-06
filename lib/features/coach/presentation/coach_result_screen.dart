@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../shared/constants/app_strings.dart';
 import '../../../shared/models/trade.dart';
@@ -142,7 +142,7 @@ class CoachResultScreen extends ConsumerWidget {
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.discipline,
+                                    color: AppColors.successGreen,
                                   ),
                                 ),
                               ],
@@ -166,7 +166,7 @@ class CoachResultScreen extends ConsumerWidget {
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.profit,
+                                    color: AppColors.successGreen,
                                   ),
                                 ),
                               ],
@@ -185,28 +185,28 @@ class CoachResultScreen extends ConsumerWidget {
                         title: 'What Was Done Well',
                         content: feedback.whatDoneWell,
                         icon: Icons.check_circle_outline,
-                        color: AppColors.profit,
+                        color: AppColors.successGreen,
                       ),
                       _buildExplanationCard(
                         context,
                         title: 'What Increased Risk',
                         content: feedback.whatIncreasedRisk,
                         icon: Icons.warning_amber_outlined,
-                        color: AppColors.discipline,
+                        color: AppColors.successGreen,
                       ),
                       _buildExplanationCard(
                         context,
                         title: 'Key Educational Takeaway',
                         content: feedback.whatToLearn,
                         icon: Icons.school_outlined,
-                        color: AppColors.primary,
+                        color: AppColors.primaryCyan,
                       ),
                       _buildExplanationCard(
                         context,
                         title: 'What To Consider Next',
                         content: feedback.whatToConsiderNext,
                         icon: Icons.lightbulb_outline,
-                        color: AppColors.accent,
+                        color: AppColors.primaryCyan,
                       ),
                       const SizedBox(height: 24),
                       SizedBox(

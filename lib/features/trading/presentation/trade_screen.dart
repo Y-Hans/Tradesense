@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../intelligence/providers/score_providers.dart';
+import '../providers/trading_use_case_providers.dart';
+import '../application/execute_buy_use_case.dart';
+import '../application/execute_sell_use_case.dart';
+import '../application/execute_buy_result.dart';
+import '../application/execute_sell_result.dart';
+import '../../../shared/models/crypto_asset.dart';
 
 class TradeScreen extends ConsumerStatefulWidget {
   final String symbol;
@@ -208,7 +215,8 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                             ),
                       ),
                       value: useStopLoss,
-                      activeColor: AppColors.primaryCyan,
+                      activeTrackColor: AppColors.primaryCyan,
+                      activeThumbColor: AppColors.primaryCyan,
                       onChanged: (val) => setState(() => useStopLoss = val),
                     ),
                     if (useStopLoss) ...[
@@ -268,32 +276,73 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   }
 
   Future<void> _executeTrade() async {
-    final tradingRepo = ref.read(tradingRepositoryProvider);
+    final user = ref.read(currentUserProvider).valueOrNull;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User not authenticated.')),
+      );
+      return;
+    }
+
     final marketRepo = ref.read(marketRepositoryProvider);
-
+    final scores = ref.read(portfolioScoresProvider).valueOrNull;
+    final disciplineScore = scores?.disciplineScore ?? 50;
+    final riskScore = scores?.riskScore ?? 50;
+    
     try {
-      final ticker = await marketRepo.getTicker(widget.symbol);
+      final assets = await marketRepo.getSupportedAssets();
+      final asset = assets.firstWhere((a) => a.symbol == widget.symbol,
+          orElse: () => CryptoAsset(
+                symbol: widget.symbol,
+                name: widget.symbol,
+                iconUrl: '',
+                currentPriceInr: 0,
+                change24hPercent: 0,
+              ));
 
-      final stopLossPrice = isBuy
-          ? ticker.priceInr * (1 - (stopLossPercent / 100))
-          : ticker.priceInr * (1 + (stopLossPercent / 100));
 
-      final trade = isBuy
-          ? await tradingRepo.executeMarketBuy(
-              symbol: widget.symbol,
-              quantity: quantity,
-              executionPriceInr: ticker.priceInr,
-              stopLossPriceInr: useStopLoss ? stopLossPrice : null,
-            )
-          : await tradingRepo.executeMarketSell(
-              symbol: widget.symbol,
-              quantity: quantity,
-              executionPriceInr: ticker.priceInr,
-            );
 
-      ref.invalidate(portfolioProvider);
-      if (mounted) {
-        context.push('/coach-result/${trade.id}');
+      if (isBuy) {
+        final useCase = ref.read(executeBuyUseCaseProvider);
+        final result = await useCase.execute(ExecuteBuyRequest(
+          userId: user.id,
+          asset: asset,
+          buyAmountInr: quantity * (await marketRepo.getTicker(widget.symbol)).priceInr,
+          disciplineScoreAtTrade: disciplineScore,
+          riskScoreAtTrade: riskScore,
+        ));
+
+        if (result is ExecuteBuySuccess) {
+          ref.invalidate(portfolioProvider);
+          if (mounted) {
+            context.push('/coach-result/${result.trade.id}');
+          }
+        } else if (result is ExecuteBuyDomainRejected) {
+          throw Exception(result.failure.message);
+        } else if (result is ExecuteBuyApplicationFailed) {
+          throw Exception(result.failure.message);
+        }
+      } else {
+        final useCase = ref.read(executeSellUseCaseProvider);
+        final result = await useCase.execute(ExecuteSellRequest(
+          userId: user.id,
+          assetSymbol: widget.symbol,
+          quantity: quantity,
+          disciplineScoreAtTrade: disciplineScore,
+          riskScoreAtTrade: riskScore,
+          sellReason: ExecuteSellRequest.manualReason,
+        ));
+
+        if (result is ExecuteSellSuccess) {
+          ref.invalidate(portfolioProvider);
+          if (mounted) {
+            context.push('/coach-result/${result.trade.id}');
+          }
+        } else if (result is ExecuteSellDomainRejected) {
+          throw Exception(result.failure.message);
+        } else if (result is ExecuteSellApplicationFailed) {
+          throw Exception(result.failure.message);
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -23,8 +23,11 @@ import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/journal/presentation/journal_screen.dart';
 import '../../features/coach/presentation/coach_result_screen.dart';
 import '../../features/trading/presentation/trade_screen.dart';
+import '../../features/trading/presentation/trade_entry_screen.dart';
 import '../../features/intelligence/presentation/discipline_meter_screen.dart';
 import '../../features/intelligence/presentation/risk_meter_screen.dart';
+import '../../features/auth/domain/auth_state.dart';
+import '../providers/app_providers.dart';
 
 part 'app_router.g.dart';
 
@@ -33,12 +36,67 @@ final GlobalKey<NavigatorState> _rootNavigatorKey =
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+class RouterListenable extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterListenable(this._ref) {
+    _ref.listen<AuthState>(authStateProvider, (_, __) => notifyListeners());
+    _ref.listen<Map<String, bool>>(
+        onboardingNotifierProvider, (_, __) => notifyListeners());
+  }
+
+  String? redirect(BuildContext context, GoRouterState state) {
+    final authState = _ref.read(authStateProvider);
+
+    if (authState.isRestoring) {
+      return null;
+    }
+
+    final isAuthRoute = state.matchedLocation == '/login' ||
+        state.matchedLocation == '/register' ||
+        state.matchedLocation == '/splash' ||
+        state.matchedLocation == '/welcome' ||
+        state.matchedLocation == '/disclaimer';
+    
+    final isOnboardingRoute = state.matchedLocation == '/onboarding' ||
+        state.matchedLocation == '/profile-setup' ||
+        state.matchedLocation == '/risk-assessment' ||
+        state.matchedLocation == '/import-choice';
+
+    if (!authState.isAuthenticated && !authState.isAuthenticating) {
+      if (isAuthRoute) return null;
+      return '/splash';
+    }
+
+    if (authState.isAuthenticated) {
+      final user = authState.user;
+      final onboardingNotifier = _ref.read(onboardingNotifierProvider.notifier);
+      final onboardingDone = onboardingNotifier.isCompleted(user?.id);
+
+      if (!onboardingDone) {
+        if (isOnboardingRoute) return null;
+        return '/onboarding';
+      } else {
+        if (isAuthRoute || isOnboardingRoute) {
+          return '/';
+        }
+        return null;
+      }
+    }
+
+    return null;
+  }
+}
+
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
+  final listenable = RouterListenable(ref);
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     debugLogDiagnostics: false,
+    refreshListenable: listenable,
+    redirect: listenable.redirect,
     routes: [
       // ── Pre-auth & onboarding flow ──────────────────────────────────────
       GoRoute(
@@ -95,6 +153,10 @@ GoRouter appRouter(AppRouterRef ref) {
           final tradeId = state.pathParameters['tradeId'] ?? '';
           return CoachResultScreen(tradeId: tradeId);
         },
+      ),
+      GoRoute(
+        path: '/trade-entry',
+        builder: (context, state) => const TradeEntryScreen(),
       ),
       GoRoute(
         path: '/trade',

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 
 /// A reusable, presentation-focused network-aware state widget.
 ///
@@ -30,10 +30,10 @@ class OfflineStateWidget extends StatelessWidget {
 
     if (compact) {
       return Card(
-        color: AppColors.card,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.outline, width: 1),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         child: Padding(
@@ -44,7 +44,7 @@ class OfflineStateWidget extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(icon, color: AppColors.discipline, size: 20),
+                  Icon(icon, color: AppColors.successGreen, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -72,7 +72,7 @@ class OfflineStateWidget extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.outline, width: 1),
+        side: const BorderSide(color: AppColors.border, width: 1),
       ),
       margin: const EdgeInsets.all(16.0),
       child: Padding(
@@ -86,13 +86,13 @@ class OfflineStateWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.discipline.withValues(alpha: 0.15),
+                  color: AppColors.successGreen.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
                   size: 40,
-                  color: AppColors.discipline,
+                  color: AppColors.successGreen,
                 ),
               ),
               const SizedBox(height: 16),

@@ -11,6 +11,8 @@ import '../../../shared/models/user_profile.dart';
 import '../../intelligence/providers/score_providers.dart';
 import 'today_controller.dart';
 import '../domain/today_state.dart';
+import '../../learning/application/learning_progression_notifier.dart';
+import '../../learning/presentation/widgets/player_profile_summary_card.dart';
 
 class TodayScreen extends ConsumerWidget {
   const TodayScreen({super.key});
@@ -87,14 +89,14 @@ class TodayScreen extends ConsumerWidget {
             _MarketOverview(assetsAsync: assetsAsync),
             const SizedBox(height: AppSpacing.xxl),
 
-            // ── Missions Progress ─────────────────────────────────────────
+            // ── Gamification ──────────────────────────────────────────────
             _SectionHeader(
-              title: 'Missions',
-              action: 'View all',
+              title: 'Trader Profile',
+              action: 'Missions',
               onAction: () => context.go('/missions'),
             ),
             const SizedBox(height: AppSpacing.md),
-            const _MissionsProgress(),
+            const _GamificationSummary(),
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Recent Activity ───────────────────────────────────────────
@@ -640,80 +642,22 @@ class _MarketOverview extends StatelessWidget {
   }
 }
 
-// ── Missions Progress ─────────────────────────────────────────────────────────
-
-class _MissionsProgress extends ConsumerWidget {
-  const _MissionsProgress();
+class _GamificationSummary extends ConsumerWidget {
+  const _GamificationSummary();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Integration Point (Learning Module):
-    // Real mission data will come from the learning/gamification provider.
-    // Currently showing calculated state based on portfolio activity.
-    final portfolioAsync = ref.watch(portfolioProvider);
+    final learningState = ref.watch(learningProgressionNotifierProvider);
+    final userAsync = ref.watch(currentUserProvider);
 
-    return portfolioAsync.when(
-      data: (portfolio) {
-        final hasTraded = portfolio.holdings.isNotEmpty;
-        final completedMissions = hasTraded ? 1 : 0;
-        const totalMissions = 2;
-        final progress = completedMissions / totalMissions;
-
-        return AppCard(
-          hasBorder: true,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.emoji_events,
-                    color: AppColors.warningOrange,
-                    size: 20,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      '$completedMissions/$totalMissions missions completed',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
-                  StatusChip(
-                    label: hasTraded ? 'In Progress' : 'Not Started',
-                    type: hasTraded ? StatusType.warning : StatusType.neutral,
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.warningOrange,
-                  ),
-                  minHeight: 8,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                hasTraded
-                    ? '🏆 Mission 1 complete! Set a stop-loss to earn Mission 2.'
-                    : '📋 Place your first virtual trade to start earning XP.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-              ),
-            ],
-          ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+    return PlayerProfileSummaryCard(
+      avatarUrl: '',
+      levelTitle: learningState.playerProfileSummary.currentTitle.title,
+      rank: 'Level ${learningState.playerProfileSummary.currentLevel.tier.index + 1}',
+      streakDays: learningState.playerProfileSummary.currentStreak,
+      isStreakActive: learningState.playerProfileSummary.currentStreak > 0,
+      currentXp: learningState.playerProfileSummary.totalXp,
+      maxXp: learningState.playerProfileSummary.totalXp + learningState.playerProfileSummary.xpRemainingToNextLevel,
     );
   }
 }
@@ -737,7 +681,7 @@ class _RecentActivity extends ConsumerWidget {
         final trades = (snapshot.data ?? []).take(3).toList();
 
         if (trades.isEmpty) {
-          return AppCard(
+          return const AppCard(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: const EmptyState(
               icon: Icons.history,
