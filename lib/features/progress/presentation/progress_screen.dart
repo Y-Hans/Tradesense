@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:design_system/design_system.dart';
@@ -17,7 +18,7 @@ class ProgressScreen extends ConsumerWidget {
       body: asyncState.when(
         data: (state) => _buildBody(context, ref, state),
         loading: () => Center(
-          child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+          child: AdaptiveLoader().colorScheme.primary),
         ),
         error: (error, stack) => EmptyState(
           icon: Icons.error_outline,

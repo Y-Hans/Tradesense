@@ -1,12 +1,13 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/trading_use_case_providers.dart';
 import '../../../core/utils/financial_math.dart';
-import '../../../shared/constants/app_strings.dart';
-import '../../../shared/widgets/offline_state_widget.dart';
-import '../../../shared/models/holding.dart';
+
+import '../../portfolio/domain/portfolio_engine_result.dart';
 
 class PortfolioScreen extends ConsumerWidget {
   const PortfolioScreen({super.key});
@@ -17,7 +18,7 @@ class PortfolioScreen extends ConsumerWidget {
       connectivityProvider
           .select((status) => status == ConnectivityStatus.offline),
     );
-    final portfolioAsync = ref.watch(portfolioProvider);
+    final portfolioAsync = ref.watch(portfolioSnapshotProvider);
 
     return AppScaffold(
       showBackButton: false,
@@ -36,16 +37,22 @@ class PortfolioScreen extends ConsumerWidget {
         ],
       ),
       body: isOffline && portfolioAsync.value == null
-          ? const Center(
-              child: OfflineStateWidget(
-                title: 'Portfolio Offline',
-                message: AppStrings.portfolioOfflineNotice,
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('You are currently offline.'),
+                  TextButton(
+                    onPressed: () => ref.refresh(portfolioSnapshotProvider),
+                    child: const Text('RETRY'),
+                  ),
+                ],
               ),
             )
           : portfolioAsync.when(
               data: (portfolio) => _buildContent(context, ref, portfolio, isOffline),
               loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryCyan),
+                child: AdaptiveLoader(),
               ),
               error: (err, stack) => EmptyState(
                 icon: Icons.account_balance_wallet_outlined,
@@ -53,31 +60,32 @@ class PortfolioScreen extends ConsumerWidget {
                 description: err.toString(),
                 primaryAction: PrimaryButton(
                   text: 'Retry',
-                  onPressed: () => ref.invalidate(portfolioProvider),
+                  onPressed: () => ref.invalidate(portfolioSnapshotProvider),
                 ),
               ),
             ),
     );
   }
 
-  Widget _buildContent(BuildContext context, WidgetRef ref, portfolio, bool isOffline) {
-    final hasHoldings = portfolio.holdings.isNotEmpty;
+  Widget _buildContent(BuildContext context, WidgetRef ref, PortfolioSnapshot portfolio, bool isOffline) {
+    final hasHoldings = portfolio.assetSummaries.isNotEmpty;
 
     return RefreshIndicator(
       color: AppColors.primaryCyan,
       backgroundColor: Theme.of(context).cardTheme.color,
-      onRefresh: () async => ref.invalidate(portfolioProvider),
+      onRefresh: () async => ref.invalidate(portfolioSnapshotProvider),
       child: ListView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         children: [
-          if (isOffline) ...[
-            const StatusChip(
-              label: '${AppStrings.portfolioOfflineNotice} (Showing cached data)',
-              type: StatusType.warning,
-              icon: Icons.cloud_off,
+          if (isOffline)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Chip(
+                label: const Text('You are currently offline (Showing cached data)'),
+                backgroundColor: Colors.orange.withOpacity(0.2),
+              ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-          ],
+          const SizedBox(height: AppSpacing.lg),
 
           // Total Equity Card
           AppCard(
@@ -93,7 +101,7 @@ class PortfolioScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
-                  FinancialMath.formatInr(portfolio.totalPortfolioValueInr),
+                  FinancialMath.formatInr(portfolio.totals.portfolioValueInr),
                   style: Theme.of(context).textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -117,7 +125,7 @@ class PortfolioScreen extends ConsumerWidget {
                     Expanded(
                       child: _StatColumn(
                         label: 'Invested',
-                        value: FinancialMath.formatInr(portfolio.holdingsValueInr),
+                        value: FinancialMath.formatInr(portfolio.totals.cryptoValueInr),
                       ),
                     ),
                   ],
@@ -147,7 +155,7 @@ class PortfolioScreen extends ConsumerWidget {
               ),
               if (hasHoldings)
                 Text(
-                  '${portfolio.holdings.length} positions',
+                  '${portfolio.assetSummaries.length} positions',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -170,7 +178,7 @@ class PortfolioScreen extends ConsumerWidget {
               ),
             )
           else
-            ...portfolio.holdings.map((h) => Padding(
+            ...portfolio.assetSummaries.map((h) => Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),
                   child: _HoldingCard(holding: h),
                 )),
@@ -217,21 +225,21 @@ class _StatColumn extends StatelessWidget {
 }
 
 class _HoldingCard extends StatelessWidget {
-  final Holding holding;
+  final AssetSummary holding;
 
   const _HoldingCard({required this.holding});
 
   @override
   Widget build(BuildContext context) {
-    final isProfit = holding.unrealisedPnlInr >= 0;
+    final isProfit = holding.unrealizedProfitLossInr >= 0;
     final pnlColor = isProfit ? AppColors.successGreen : AppColors.errorRed;
-    final initial = holding.symbol.length >= 2
-        ? holding.symbol.substring(0, 2).toUpperCase()
-        : holding.symbol.toUpperCase();
+    final initial = holding.assetSymbol.length >= 2
+        ? holding.assetSymbol.substring(0, 2).toUpperCase()
+        : holding.assetSymbol.toUpperCase();
 
     return AppCard(
       hasBorder: true,
-      onTap: () => context.push('/asset/${holding.symbol}'),
+      onTap: () => context.push('/asset/${holding.assetSymbol}'),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         children: [
@@ -261,7 +269,7 @@ class _HoldingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      holding.symbol,
+                      holding.assetSymbol,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -293,7 +301,7 @@ class _HoldingCard extends StatelessWidget {
                         size: 16,
                       ),
                       Text(
-                        '${FinancialMath.formatInr(holding.unrealisedPnlInr.abs())} (${holding.unrealisedPnlPercent.abs().toStringAsFixed(2)}%)',
+                        '${FinancialMath.formatInr(holding.unrealizedProfitLossInr.abs())} (${holding.returnPercent.abs().toStringAsFixed(2)}%)',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: pnlColor,
                               fontWeight: FontWeight.w600,
@@ -316,7 +324,7 @@ class _HoldingCard extends StatelessWidget {
                     ),
               ),
               GestureDetector(
-                onTap: () => context.push('/trade', extra: holding.symbol),
+                onTap: () => context.push('/trade', extra: holding.assetSymbol),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,

@@ -1,8 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/trading_use_case_providers.dart';
 import '../../../core/utils/financial_math.dart';
 
 class TradeHistoryScreen extends ConsumerWidget {
@@ -10,24 +10,20 @@ class TradeHistoryScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tradingRepo = ref.watch(tradingRepositoryProvider);
+    final historyAsync = ref.watch(tradeHistorySnapshotProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Trade History')),
-      body: FutureBuilder(
-        future: tradingRepo.getTradeHistory(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CryptoLoadingIndicator());
-          }
-          final trades = snapshot.data!;
+      body: historyAsync.when(
+        data: (snapshot) {
+          final trades = snapshot.timeline;
           if (trades.isEmpty) {
             return const Center(child: Text('No executed trades yet.'));
           }
           return ListView.builder(
             itemCount: trades.length,
             itemBuilder: (context, index) {
-              final trade = trades[index];
+              final trade = trades[index].trade;
               return ListTile(
                 title: Text('${trade.side.name.toUpperCase()} ${trade.symbol}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -40,9 +36,9 @@ class TradeHistoryScreen extends ConsumerWidget {
             },
           );
         },
+        loading: () => const Center(child: CryptoLoadingIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
   }
 }
-
-

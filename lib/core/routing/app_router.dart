@@ -12,8 +12,8 @@ import '../../features/onboarding/presentation/import_choice_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
-import '../../features/shell/presentation/app_shell.dart';
-import '../../features/today/presentation/today_screen.dart';
+import '../../features/home/presentation/app_shell.dart';
+import '../../features/home/presentation/dashboard_screen.dart';
 import '../../features/market/presentation/markets_screen.dart';
 import '../../features/market/presentation/asset_detail_screen.dart';
 import '../../features/portfolio/presentation/portfolio_screen.dart';
@@ -126,7 +126,7 @@ GoRouter appRouter(AppRouterRef ref) {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const TodayScreen(),
+            builder: (context, state) => const DashboardScreen(),
           ),
           GoRoute(
             path: '/markets',
@@ -135,10 +135,6 @@ GoRouter appRouter(AppRouterRef ref) {
           GoRoute(
             path: '/portfolio',
             builder: (context, state) => const PortfolioScreen(),
-          ),
-          GoRoute(
-            path: '/missions',
-            builder: (context, state) => const MissionsScreen(),
           ),
           GoRoute(
             path: '/profile',

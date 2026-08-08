@@ -29,6 +29,8 @@ dependencies:
   design_system:
     path: packages/design_system
   uuid: ^4.6.0
+  permission_handler: ^13.0.0
+  video_player: ^2.13.0
 
 dev_dependencies:
   flutter_test:

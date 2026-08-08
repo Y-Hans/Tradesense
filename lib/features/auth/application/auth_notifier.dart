@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/contracts/repository_contracts.dart';
 import '../domain/auth_exception.dart';
@@ -5,9 +6,23 @@ import '../domain/auth_state.dart';
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  StreamSubscription? _authSubscription;
 
   AuthNotifier(this._authRepository) : super(AuthState.restoringSession()) {
     restoreSession();
+    _authSubscription = _authRepository.authStateChanges.listen((user) {
+      if (user != null) {
+        state = AuthState.authenticated(user);
+      } else {
+        state = AuthState.unauthenticated();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authSubscription?.cancel();
+    super.dispose();
   }
 
   /// Restores active user session on app launch.

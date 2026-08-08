@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,8 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 import '../../../shared/models/crypto_asset.dart';
-import '../../../shared/widgets/offline_state_widget.dart';
-import '../../../shared/constants/app_strings.dart';
+
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
@@ -27,20 +27,26 @@ class MarketsScreen extends ConsumerWidget {
           : null,
       body: isOffline
           ? const Center(
-              child: OfflineStateWidget(
-                title: 'Markets Offline',
-                message: AppStrings.marketsOfflineMessage,
+              child: Text(
+                'Markets Offline\nCannot connect to live markets at this time.',
+                textAlign: TextAlign.center,
               ),
             )
           : assetsAsync.when(
               data: (assets) => _buildMarketList(context, ref, assets),
               loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryCyan),
+                child: AdaptiveLoader(),
               ),
-              error: (_, __) => const Center(
-                child: OfflineStateWidget(
-                  title: 'Markets Unavailable',
-                  message: AppStrings.marketsOfflineMessage,
+              error: (_, __) => Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Cannot connect to live markets at this time.'),
+                    TextButton(
+                      onPressed: () => ref.refresh(marketTickersProvider),
+                      child: const Text('RETRY'),
+                    ),
+                  ],
                 ),
               ),
             ),

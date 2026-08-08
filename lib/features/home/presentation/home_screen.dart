@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -116,7 +117,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: AdaptiveLoader()),
               error: (err, stack) => Text('Error loading wallet: $err'),
             ),
             const SizedBox(height: 16),
@@ -237,7 +238,7 @@ class HomeScreen extends ConsumerWidget {
                   );
                 }).toList(),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: AdaptiveLoader()),
               error: (err, stack) => Text('Error loading markets: $err'),
             ),
           ],

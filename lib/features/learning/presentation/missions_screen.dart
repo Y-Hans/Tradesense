@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -163,7 +164,7 @@ class MissionsScreen extends ConsumerWidget {
               );
             },
             loading: () => const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryCyan),
+              child: AdaptiveLoader(),
             ),
             error: (_, __) => const EmptyState(
               icon: Icons.error_outline,

@@ -10,6 +10,26 @@ class SupabaseAuthRepository implements AuthRepository {
       : _client = client ?? supabase.Supabase.instance.client;
 
   @override
+  Stream<UserProfile?> get authStateChanges {
+    return _client.auth.onAuthStateChange.map((data) {
+      final session = data.session;
+      final user = session?.user;
+      if (session == null || user == null) return null;
+
+      final metadata = user.userMetadata ?? {};
+      final displayName = metadata['display_name'] as String? ??
+          user.email?.split('@').first ??
+          'Trader';
+
+      return UserProfile.initial(
+        id: user.id,
+        email: user.email ?? '',
+        displayName: displayName,
+      );
+    });
+  }
+
+  @override
   Future<UserProfile?> getCurrentUser() async {
     try {
       final session = _client.auth.currentSession;

@@ -1,9 +1,14 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/providers/trading_use_case_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../shared/models/crypto_asset.dart';
+import '../../trading/application/execute_buy_use_case.dart';
+import '../../trading/application/execute_sell_use_case.dart';
 
 class TradeScreen extends ConsumerStatefulWidget {
   final String symbol;
@@ -22,6 +27,7 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   @override
   Widget build(BuildContext context) {
     final marketRepo = ref.watch(marketRepositoryProvider);
+    final tradingDomainService = ref.watch(tradingDomainServiceProvider);
 
     return AppScaffold(
       title: 'Trade ${widget.symbol}',
@@ -30,14 +36,19 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(
-              child: CircularProgressIndicator(color: AppColors.primaryCyan),
+              child: AdaptiveLoader(),
             );
           }
           final ticker = snapshot.data!;
-          final totalInr = quantity * ticker.priceInr;
-          final stopLossPrice = isBuy
-              ? ticker.priceInr * (1 - (stopLossPercent / 100))
-              : ticker.priceInr * (1 + (stopLossPercent / 100));
+          final totalInr = tradingDomainService.calculateTradeTotalValueInr(
+            quantity: quantity,
+            executionPriceInr: ticker.priceInr,
+          );
+          final stopLossPrice = tradingDomainService.calculateStopLossPriceInr(
+            executionPriceInr: ticker.priceInr,
+            stopLossPercent: stopLossPercent,
+            isBuy: isBuy,
+          );
 
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -268,32 +279,51 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
   }
 
   Future<void> _executeTrade() async {
-    final tradingRepo = ref.read(tradingRepositoryProvider);
     final marketRepo = ref.read(marketRepositoryProvider);
+    final tradingDomainService = ref.read(tradingDomainServiceProvider);
+    final buyUseCase = ref.read(executeBuyUseCaseProvider);
+    final sellUseCase = ref.read(executeSellUseCaseProvider);
+    final authRepo = ref.read(authRepositoryProvider);
 
     try {
+      final user = await authRepo.getCurrentUser();
+      if (user == null) throw Exception('User not logged in');
+
       final ticker = await marketRepo.getTicker(widget.symbol);
 
-      final stopLossPrice = isBuy
-          ? ticker.priceInr * (1 - (stopLossPercent / 100))
-          : ticker.priceInr * (1 + (stopLossPercent / 100));
+      final stopLossPrice = tradingDomainService.calculateStopLossPriceInr(
+        executionPriceInr: ticker.priceInr,
+        stopLossPercent: stopLossPercent,
+        isBuy: isBuy,
+      );
 
-      final trade = isBuy
-          ? await tradingRepo.executeMarketBuy(
-              symbol: widget.symbol,
-              quantity: quantity,
-              executionPriceInr: ticker.priceInr,
-              stopLossPriceInr: useStopLoss ? stopLossPrice : null,
-            )
-          : await tradingRepo.executeMarketSell(
-              symbol: widget.symbol,
-              quantity: quantity,
-              executionPriceInr: ticker.priceInr,
-            );
+      String tradeId;
+      if (isBuy) {
+        final result = await buyUseCase.execute(ExecuteBuyRequest(
+          userId: user.id,
+          asset: CryptoAsset(symbol: widget.symbol, name: widget.symbol, iconUrl: '', currentPriceInr: ticker.priceInr, change24hPercent: 0),
+          buyAmountInr: tradingDomainService.calculateTradeTotalValueInr(
+            quantity: quantity,
+            executionPriceInr: ticker.priceInr,
+          ),
+          disciplineScoreAtTrade: 100, // Default placeholders
+          riskScoreAtTrade: 100,
+        ));
+        tradeId = result.isSuccess ? 'success_buy' : 'error';
+      } else {
+        final result = await sellUseCase.execute(ExecuteSellRequest(
+          userId: user.id,
+          assetSymbol: widget.symbol,
+          quantity: quantity,
+          disciplineScoreAtTrade: 100,
+          riskScoreAtTrade: 100,
+        ));
+        tradeId = result.isSuccess ? 'success_sell' : 'error';
+      }
 
       ref.invalidate(portfolioProvider);
       if (mounted) {
-        context.push('/coach-result/${trade.id}');
+        context.push('/coach-result/$tradeId');
       }
     } catch (e) {
       if (mounted) {

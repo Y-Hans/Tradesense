@@ -36,9 +36,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => OnboardingScreen(
-        onGetStarted: () => context.go('/home'),
-      ),
+      builder: (context, state) => const OnboardingScreen(),
     ),
     GoRoute(
       path: '/login',
@@ -50,7 +48,7 @@ final GoRouter appRouter = GoRouter(
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return AppShell(navigationShell: navigationShell);
+        return AppShell(child: navigationShell);
       },
       branches: [
         StatefulShellBranch(

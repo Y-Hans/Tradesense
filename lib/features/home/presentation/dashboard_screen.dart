@@ -1,6 +1,7 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../app/theme/app_theme.dart';
+import 'package:design_system/design_system.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/utils/financial_math.dart';
@@ -52,7 +53,7 @@ class DashboardScreen extends ConsumerWidget {
                             loading: () => const SizedBox(
                                 height: 24,
                                 width: 100,
-                                child: CircularProgressIndicator(strokeWidth: 2)),
+                                child: AdaptiveLoader()),
                             error: (_, __) => Text(
                               'Hello, Trader',
                               style: Theme.of(context).textTheme.headlineMedium,
@@ -91,7 +92,7 @@ class DashboardScreen extends ConsumerWidget {
                             child: Row(
                               children: [
                                 const Icon(Icons.local_fire_department_rounded,
-                                    color: AppColors.warning, size: 16),
+                                    color: AppColors.warningOrange, size: 16),
                                 const SizedBox(width: 6),
                                 Text(
                                   '7 Days',
@@ -180,7 +181,7 @@ class DashboardScreen extends ConsumerWidget {
                   );
                 },
                 loading: () => const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: AdaptiveLoader()),
                 ),
                 error: (e, _) => SliverToBoxAdapter(
                   child: Center(child: Text('Error loading assets: $e')),
@@ -208,7 +209,7 @@ class _PortfolioCard extends StatelessWidget {
     final returnsPercent = portfolio.overallPnlPercent;
     
     final isProfit = returns >= 0;
-    final returnColor = isProfit ? AppColors.profit : Theme.of(context).colorScheme.error;
+    final returnColor = isProfit ? AppColors.successGreen : Theme.of(context).colorScheme.error;
     final sign = isProfit ? '+' : '';
 
     return Container(
@@ -378,7 +379,7 @@ class _AssetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isProfit = asset.change24hPercent >= 0;
-    final color = isProfit ? AppColors.profit : Theme.of(context).colorScheme.error;
+    final color = isProfit ? AppColors.successGreen : Theme.of(context).colorScheme.error;
     final sign = isProfit ? '+' : '';
 
     return InkWell(
@@ -490,7 +491,7 @@ class _LoadingCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Theme.of(context).dividerColor),
       ),
-      child: const Center(child: CircularProgressIndicator()),
+      child: const Center(child: AdaptiveLoader()),
     );
   }
 }

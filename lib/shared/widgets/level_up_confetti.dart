@@ -87,7 +87,7 @@ class _LevelUpConfettiState extends State<LevelUpConfetti>
   }
 
   void _updateParticles() {
-    final dt = 0.016; // Approx 60fps delta
+    const dt = 0.016; // Approx 60fps delta
     for (var particle in _particles) {
       particle.x += particle.vx * dt;
       particle.y += particle.vy * dt;

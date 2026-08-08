@@ -53,6 +53,17 @@ class CoachRepository {
       timestamp: DateTime.now(),
     );
   }
+
+  Future<String> getInsights(String routeName) async {
+    await Future.delayed(const Duration(milliseconds: 600));
+    if (routeName == '/' || routeName.contains('dashboard')) {
+      return "Your portfolio is well diversified, but your discipline score could improve. Try setting strict stop losses on your next trades.";
+    } else if (routeName.contains('trade') || routeName.contains('markets')) {
+      return "Current market volatility is high. Ensure you define a clear risk/reward ratio before entering any position.";
+    } else {
+      return "Keep an eye on your overall risk exposure and always stick to your trading plan.";
+    }
+  }
 }
 
 @riverpod

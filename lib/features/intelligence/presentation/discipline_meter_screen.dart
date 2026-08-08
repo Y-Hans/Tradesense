@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:design_system/design_system.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,7 +17,7 @@ class DisciplineMeterScreen extends ConsumerWidget {
       body: scoreAsync.when(
         data: (scores) => _buildContent(context, scores.disciplineScore),
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryCyan),
+          child: AdaptiveLoader(),
         ),
         error: (err, _) => EmptyState(
           icon: Icons.error_outline,

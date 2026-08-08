@@ -12,6 +12,8 @@ class StopLossOrder {
   final double quantity;
   final StopLossStatus status;
   final DateTime createdAt;
+  final DateTime? expiresAt;
+  final DateTime? triggeredAt;
 
   const StopLossOrder({
     required this.id,
@@ -22,7 +24,35 @@ class StopLossOrder {
     required this.quantity,
     required this.status,
     required this.createdAt,
+    this.expiresAt,
+    this.triggeredAt,
   });
+
+  StopLossOrder copyWith({
+    String? id,
+    String? tradeId,
+    String? userId,
+    String? symbol,
+    double? triggerPriceInr,
+    double? quantity,
+    StopLossStatus? status,
+    DateTime? createdAt,
+    DateTime? expiresAt,
+    DateTime? triggeredAt,
+  }) {
+    return StopLossOrder(
+      id: id ?? this.id,
+      tradeId: tradeId ?? this.tradeId,
+      userId: userId ?? this.userId,
+      symbol: symbol ?? this.symbol,
+      triggerPriceInr: triggerPriceInr ?? this.triggerPriceInr,
+      quantity: quantity ?? this.quantity,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      expiresAt: expiresAt ?? this.expiresAt,
+      triggeredAt: triggeredAt ?? this.triggeredAt,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -33,6 +63,8 @@ class StopLossOrder {
         'quantity': quantity,
         'status': status.name,
         'created_at': createdAt.toIso8601String(),
+        'expires_at': expiresAt?.toIso8601String(),
+        'triggered_at': triggeredAt?.toIso8601String(),
       };
 
   factory StopLossOrder.fromJson(Map<String, dynamic> json) => StopLossOrder(
@@ -44,5 +76,11 @@ class StopLossOrder {
         quantity: (json['quantity'] as num).toDouble(),
         status: StopLossStatus.values.byName(json['status'] as String),
         createdAt: DateTime.parse(json['created_at'] as String),
+        expiresAt: json['expires_at'] == null
+            ? null
+            : DateTime.parse(json['expires_at'] as String),
+        triggeredAt: json['triggered_at'] == null
+            ? null
+            : DateTime.parse(json['triggered_at'] as String),
       );
 }

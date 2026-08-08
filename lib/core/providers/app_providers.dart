@@ -14,6 +14,11 @@ import '../../shared/models/feature_flags.dart';
 import '../../features/auth/data/supabase_auth_repository.dart';
 import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/application/auth_notifier.dart';
+import '../../features/trading/data/supabase_trading_repository.dart';
+
+enum ConnectivityStatus { online, offline }
+
+final connectivityProvider = StateProvider<ConnectivityStatus>((ref) => ConnectivityStatus.online);
 
 /// Flag to toggle between Mock repository mode and Live backend mode
 final mockModeProvider = StateProvider<bool>((ref) => true);
@@ -24,12 +29,16 @@ final marketRepositoryProvider = Provider<MarketProvider>((ref) {
 });
 
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
-  final marketRepo = ref.watch(marketRepositoryProvider);
-  final repo = MockTradingRepository(marketRepo, initialBalance: 100000.0);
-  ref.onDispose(() {
-    repo.dispose();
-  });
-  return repo;
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock) {
+    final marketRepo = ref.watch(marketRepositoryProvider);
+    final repo = MockTradingRepository(marketRepo, initialBalance: 100000.0);
+    ref.onDispose(() {
+      repo.dispose();
+    });
+    return repo;
+  }
+  return SupabaseTradingRepository();
 });
 
 /// Portfolio Repository Provider

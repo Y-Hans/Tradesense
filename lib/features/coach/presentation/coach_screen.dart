@@ -1,3 +1,4 @@
+import 'package:cryptoedu/shared/widgets/bitcoin_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:design_system/design_system.dart';
@@ -46,7 +47,7 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
           return _buildChat(context, state);
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryCyan),
+          child: AdaptiveLoader(),
         ),
         error: (error, stack) => EmptyState(
           icon: Icons.error_outline,

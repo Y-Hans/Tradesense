@@ -6,20 +6,52 @@ import '../../../core/providers/app_providers.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../shared/models/user_profile.dart';
 
-class ProfileScreen extends ConsumerWidget {
+import 'package:permission_handler/permission_handler.dart';
+
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  bool _notificationsGranted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final status = await Permission.notification.status;
+    if (mounted) {
+      setState(() {
+        _notificationsGranted = status.isGranted;
+      });
+    }
+  }
+
+  Future<void> _requestPermission() async {
+    final status = await Permission.notification.request();
+    if (mounted) {
+      setState(() {
+        _notificationsGranted = status.isGranted;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userAsync = ref.watch(currentUserProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final isDark = themeMode == ThemeMode.dark;
 
     return AppScaffold(
       showBackButton: false,
       title: 'Profile',
       body: userAsync.when(
-        data: (user) => _buildProfile(context, ref, user, isDark),
+        data: (user) => _buildProfile(context, user, themeMode),
         loading: () => Center(
           child: CircularProgressIndicator(
               color: Theme.of(context).colorScheme.primary),
@@ -39,9 +71,8 @@ class ProfileScreen extends ConsumerWidget {
 
   Widget _buildProfile(
     BuildContext context,
-    WidgetRef ref,
     UserProfile? user,
-    bool isDark,
+    AppThemeMode themeMode,
   ) {
     final theme = Theme.of(context);
     final secondaryTextColor = AppColors.textSecondary;
@@ -88,27 +119,41 @@ class ProfileScreen extends ConsumerWidget {
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              SwitchListTile(
+              ListTile(
                 title: Text(
-                  'Dark Mode',
+                  'App Theme',
                   style: theme.textTheme.titleMedium,
                 ),
                 subtitle: Text(
-                  'Toggle appearance theme',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                      color: secondaryTextColor),
+                  'Select light, dark, or special theme',
+                  style: theme.textTheme.bodySmall?.copyWith(color: secondaryTextColor),
                 ),
-                activeThumbColor: AppColors.primaryCyan,
-                value: isDark,
-                onChanged: (val) {
-                  ref.read(themeModeProvider.notifier).toggleTheme(val);
-                },
+                trailing: DropdownButton<AppThemeMode>(
+                  value: themeMode,
+                  dropdownColor: theme.cardTheme.color,
+                  underline: const SizedBox(),
+                  onChanged: (AppThemeMode? newValue) {
+                    if (newValue != null) {
+                      ref.read(themeModeProvider.notifier).toggleTheme(newValue);
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: AppThemeMode.light,
+                      child: Text('Light'),
+                    ),
+                    DropdownMenuItem(
+                      value: AppThemeMode.dark,
+                      child: Text('Dark'),
+                    ),
+                    DropdownMenuItem(
+                      value: AppThemeMode.special,
+                      child: Text('Special Green'),
+                    ),
+                  ],
+                ),
               ),
               const Divider(height: 1),
-              // Integration Point (Divyanshu — Platform Module):
-              // Real push notification permission requires OS-level permission
-              // flow via the native notifications module.
-              // Showing status label instead of a fake permission dialog.
               ListTile(
                 leading: const Icon(Icons.notifications_outlined),
                 title: Text(
@@ -116,14 +161,21 @@ class ProfileScreen extends ConsumerWidget {
                   style: theme.textTheme.titleMedium,
                 ),
                 subtitle: Text(
-                  'Requires platform notification module — contact Divyanshu',
+                  _notificationsGranted ? 'Notifications Enabled' : 'Tap to enable notifications',
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: secondaryTextColor),
                 ),
-                trailing: const StatusChip(
-                  label: 'Pending',
-                  type: StatusType.warning,
+                trailing: StatusChip(
+                  label: _notificationsGranted ? 'Enabled' : 'Disabled',
+                  type: _notificationsGranted ? StatusType.success : StatusType.warning,
                 ),
+                onTap: () {
+                  if (!_notificationsGranted) {
+                    _requestPermission();
+                  } else {
+                    openAppSettings();
+                  }
+                },
               ),
             ],
           ),
@@ -188,14 +240,14 @@ class ProfileScreen extends ConsumerWidget {
         // ── Sign Out ─────────────────────────────────────────────────────
         SecondaryButton(
           text: 'Sign Out',
-          onPressed: () => _confirmSignOut(context, ref),
+          onPressed: () => _confirmSignOut(context),
         ),
         const SizedBox(height: AppSpacing.xxl),
       ],
     );
   }
 
-  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmSignOut(BuildContext context) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(

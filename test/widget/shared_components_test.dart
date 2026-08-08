@@ -60,7 +60,7 @@ void main() {
       routes: [
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {
-            return AppShell(navigationShell: navigationShell);
+            return AppShell(child: const SizedBox());
           },
           branches: [
             StatefulShellBranch(routes: [GoRoute(path: '/0', builder: (_, __) => const Center(child: Text('Dashboard content')))]),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import '../../app/theme/app_theme.dart';
@@ -107,37 +108,21 @@ class _BitcoinLoaderState extends State<BitcoinLoader>
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Video layer
+                      // Video layer with BlendMode.screen to remove black background
                       SizedBox.expand(
                         child: FittedBox(
                           fit: BoxFit.cover,
                           child: SizedBox(
                             width: _controller.value.size.width,
                             height: _controller.value.size.height,
-                            child: VideoPlayer(_controller),
-                          ),
-                        ),
-                      ),
-                      // Green-screen neutralizer overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Colors.transparent,
-                              AppColors.oledObsidian.withValues(alpha: 0.35),
-                            ],
-                            stops: const [0.55, 1.0],
-                          ),
-                        ),
-                      ),
-                      // Outer rim darkening to crush green fringe
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.oledObsidian.withValues(alpha: 0.6),
-                            width: 3,
+                            // If video background is black, screen blend mode makes it transparent
+                            child: ColorFiltered(
+                              colorFilter: const ColorFilter.mode(
+                                Colors.transparent, // Background color of app
+                                BlendMode.screen,
+                              ),
+                              child: VideoPlayer(_controller),
+                            ),
                           ),
                         ),
                       ),
@@ -263,13 +248,9 @@ class AdaptiveLoader extends StatelessWidget {
     if (isFullScreen) {
       return const BitcoinLoadingOverlay();
     }
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CircularProgressIndicator(
-        strokeWidth: strokeWidth,
-        valueColor: const AlwaysStoppedAnimation(AppColors.electricCyan),
-      ),
+    return BitcoinLoader(
+      size: size,
+      showLabel: false,
     );
   }
 }

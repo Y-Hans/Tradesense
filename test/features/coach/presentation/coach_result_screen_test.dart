@@ -11,13 +11,15 @@ import 'package:cryptoedu/shared/models/virtual_wallet.dart';
 import 'package:cryptoedu/shared/models/risk_score.dart';
 import 'package:cryptoedu/shared/models/discipline_score.dart';
 import 'package:cryptoedu/shared/models/coach_request.dart';
-
+import 'package:cryptoedu/shared/models/holding.dart';
+import 'package:cryptoedu/features/trading/application/execute_buy_contracts.dart';
+import 'package:cryptoedu/features/trading/application/execute_sell_contracts.dart';
 class FakeIntelligenceRepository implements IntelligenceRepository {
   @override
   Future<TradeAnalysis> analyzeTrade(Trade trade, Portfolio portfolio) async {
     return TradeAnalysis(
       tradeId: trade.id,
-      disciplineScore: DisciplineScore(
+      disciplineScore: const DisciplineScore(
         score: 85,
         riskMgmtScore: 80,
         positionSizingScore: 80,
@@ -26,7 +28,7 @@ class FakeIntelligenceRepository implements IntelligenceRepository {
         frequencyScore: 90,
         breakdownNotes: [],
       ),
-      riskScore: RiskScore(
+      riskScore: const RiskScore(
         score: 35,
         level: RiskLevel.moderate,
         concentrationScore: 30,
@@ -35,7 +37,7 @@ class FakeIntelligenceRepository implements IntelligenceRepository {
         stopLossScore: 50,
         explanations: [],
       ),
-      coachFeedback: CoachResponse(
+      coachFeedback: const CoachResponse(
         whatDoneWell: 'Good',
         whatIncreasedRisk: 'Risk',
         whatToLearn: 'Learn',
@@ -88,6 +90,49 @@ class FakeTradingRepository implements TradingRepository {
   Future<List<Trade>> getTradeHistory() async {
     return _trades;
   }
+
+  @override
+  Future<Holding?> getHoldingForUserAsset({required String userId, required String symbol}) async => null;
+
+  @override
+  String nextHoldingId({required String userId, required String symbol}) => 'h1';
+
+  @override
+  String nextTradeId() => 't1';
+
+  @override
+  Future<PersistedVirtualWallet?> getWalletForUser(String userId) async => null;
+
+  @override
+  Future<List<Holding>> getHoldingsForUser(String userId) async => [];
+
+  @override
+  Future<List<Trade>> getTradesForUser(String userId) async => _trades;
+
+  @override
+  Future<BuyTransactionCommitResult> commitBuy({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+  }) async => throw UnimplementedError();
+
+  @override
+  Future<SellTransactionCommitResult> commitSell({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    required double expectedPreviousHoldingQuantity,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+    required String sellReason,
+    String? sourceStopLossOrderId,
+  }) async => throw UnimplementedError();
 }
 
 void main() {
@@ -111,7 +156,7 @@ void main() {
       overrides: [
         tradingRepositoryProvider.overrideWithValue(FakeTradingRepository(history)),
         portfolioProvider.overrideWith((ref) => Future.value(
-          Portfolio(
+          const Portfolio(
             wallet: VirtualWallet(balanceInr: 100000, lockedInr: 0, initialBalanceInr: 100000),
             holdings: [],
             totalRealisedPnlInr: 0,

@@ -22,6 +22,9 @@ class AppScaffold extends StatelessWidget {
   /// Optional bottom navigation bar
   final Widget? bottomNavigationBar;
 
+  /// Optional floating action button
+  final Widget? floatingActionButton;
+
   /// Whether to show the back button
   final bool showBackButton;
 
@@ -31,6 +34,7 @@ class AppScaffold extends StatelessWidget {
     this.title,
     this.trailing,
     this.bottomNavigationBar,
+    this.floatingActionButton,
     this.showBackButton = true,
   });
 
@@ -54,6 +58,7 @@ class AppScaffold extends StatelessWidget {
           : null,
       body: body,
       bottomNavigationBar: bottomNavigationBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 }

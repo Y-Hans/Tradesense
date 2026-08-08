@@ -6,8 +6,13 @@ import '../../shared/models/risk_score.dart';
 import '../../shared/models/discipline_score.dart';
 import '../../shared/models/coach_request.dart';
 
+import '../../features/trading/application/execute_buy_contracts.dart';
+import '../../features/portfolio/application/execute_portfolio_contracts.dart';
+import '../../features/trading/application/execute_trade_history_contracts.dart';
+
 abstract class AuthRepository {
   Future<UserProfile?> getCurrentUser();
+  Stream<UserProfile?> get authStateChanges;
   Future<UserProfile> signUp(
       {required String email, required String password, String? displayName});
   Future<UserProfile> signIn({required String email, required String password});
@@ -15,7 +20,16 @@ abstract class AuthRepository {
   Future<void> deleteAccount();
 }
 
-abstract class TradingRepository {
+abstract class TradingRepository implements
+    ExecuteBuyWalletRepository,
+    ExecuteBuyHoldingRepository,
+    TradingTransactionRepository,
+    ExecutePortfolioHoldingRepository,
+    ExecutePortfolioTradeRepository,
+    ExecuteTradeHistoryTradeRepository,
+    ExecuteBuyIdGenerator {
+  
+  // Legacy methods (can be deprecated or removed later)
   Future<Trade> executeMarketBuy({
     required String symbol,
     required double quantity,

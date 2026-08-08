@@ -162,7 +162,7 @@ class AppTheme {
         onError: Colors.white,
         outline: borderColor,
       ),
-      textTheme: _buildTextTheme(textColor, const Color(0xFF4A5568), const Color(0xFF718096)),
+      textTheme: _buildTextTheme(textColor, const Color(0xFF2D3748), const Color(0xFF4A5568)),
       cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
@@ -171,6 +171,17 @@ class AppTheme {
           borderRadius: _cardRadius,
           side: const BorderSide(color: borderColor, width: 1),
         ),
+      ),
+      sliderTheme: const SliderThemeData(
+        activeTrackColor: primaryColor,
+        inactiveTrackColor: Color(0xFFE2E8F0),
+        thumbColor: primaryColor,
+        overlayColor: Color(0x2900D09C), // primary with alpha
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: primaryColor,
+        unselectedLabelColor: Color(0xFF718096),
+        indicatorColor: primaryColor,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: bgColor,
@@ -248,6 +259,16 @@ class AppTheme {
           side: BorderSide(color: glowingBorderColor.withValues(alpha: 0.3), width: 1.5),
         ),
       ),
+      sliderTheme: const SliderThemeData(
+        activeTrackColor: primaryColor,
+        inactiveTrackColor: borderColor,
+        thumbColor: primaryColor,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: textColor,
+        unselectedLabelColor: Color(0xFFA0AEC0),
+        indicatorColor: primaryColor,
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: bgColor,
         foregroundColor: textColor,
@@ -320,6 +341,16 @@ class AppTheme {
           borderRadius: _cardRadius,
           side: const BorderSide(color: borderColor, width: 1.5),
         ),
+      ),
+      sliderTheme: const SliderThemeData(
+        activeTrackColor: primaryColor,
+        inactiveTrackColor: borderColor,
+        thumbColor: primaryColor,
+      ),
+      tabBarTheme: const TabBarThemeData(
+        labelColor: textColor,
+        unselectedLabelColor: Color(0xFFA0AABF),
+        indicatorColor: primaryColor,
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: bgColor,

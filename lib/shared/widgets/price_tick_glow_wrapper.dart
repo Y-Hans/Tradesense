@@ -51,9 +51,7 @@ class _PriceTickGlowWrapperState extends State<PriceTickGlowWrapper>
         
         _controller.forward(from: 0.0);
       }
-    } else if (_previousValue == null) {
-      _previousValue = widget.value;
-    }
+    } else _previousValue ??= widget.value;
   }
 
   @override

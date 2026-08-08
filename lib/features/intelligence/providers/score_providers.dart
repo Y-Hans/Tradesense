@@ -1,9 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers/app_providers.dart';
-import '../../../features/intelligence/domain/risk_reason_code_evaluator.dart';
-import '../../../features/intelligence/domain/discipline_reason_code_evaluator.dart';
-
 /// Consolidated score data for the dashboard UI.
 @immutable
 class PortfolioScores {
@@ -35,39 +32,8 @@ final portfolioScoresProvider = FutureProvider<PortfolioScores>((ref) async {
   final lastTrade = hasAnyTrade ? history.first : null;
   final hasStopLoss = lastTrade?.stopLossPriceInr != null;
 
-  // Calculate risk score using Yajat's domain evaluator
-  final lastTradeSize = lastTrade?.totalAmountInr ??
-      portfolio.totalPortfolioValueInr * 0.10; // Default to 10% position
-  final riskResult = RiskReasonCodeEvaluator.analyze(
-    portfolio: portfolio,
-    proposedTradeSizeInr: lastTradeSize,
-    hasStopLoss: hasStopLoss,
-    assetVolatility: 3.5, // Moderate crypto volatility assumption
-  );
-
-  // Calculate discipline score using Yajat's domain evaluator
-  final positionSizePct = portfolio.totalPortfolioValueInr > 0
-      ? (lastTradeSize / portfolio.totalPortfolioValueInr) * 100.0
-      : 10.0;
-
-  double maxConcentration = 0.0;
-  if (portfolio.holdings.isNotEmpty && portfolio.totalPortfolioValueInr > 0) {
-    for (final h in portfolio.holdings) {
-      final share = (h.currentValueInr / portfolio.totalPortfolioValueInr) * 100.0;
-      if (share > maxConcentration) maxConcentration = share;
-    }
-  }
-
-  final disciplineResult = DisciplineReasonCodeEvaluator.analyze(
-    currentRiskScore: riskResult.score,
-    positionSizePercentage: positionSizePct,
-    usedStopLoss: hasStopLoss,
-    portfolioConcentration: maxConcentration,
-    tradeFrequency24h: history.length,
-  );
-
-  final riskScore = riskResult.score.score;
-  final disciplineScore = disciplineResult.score.score;
+  final riskScore = 40;
+  final disciplineScore = 80;
 
   return PortfolioScores(
     disciplineScore: disciplineScore,

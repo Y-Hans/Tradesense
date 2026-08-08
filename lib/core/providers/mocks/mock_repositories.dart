@@ -2,6 +2,9 @@ import 'dart:async';
 import '../../contracts/repository_contracts.dart';
 import '../../contracts/provider_contracts.dart';
 import '../../contracts/market_provider.dart';
+import '../../../features/auth/domain/auth_state.dart';
+import '../../../features/trading/application/execute_buy_contracts.dart';
+import '../../../features/trading/application/execute_sell_contracts.dart';
 import '../../../shared/models/market_ticker.dart';
 import '../../../shared/models/user_profile.dart';
 import '../../../shared/models/virtual_wallet.dart';
@@ -37,6 +40,8 @@ class MockTradingRepository implements TradingRepository {
   
   final Map<String, StreamSubscription> _tickerSubscriptions = {};
   final List<_ActiveStopLoss> _activeStopLosses = [];
+  int _tradeIdCounter = 0;
+  int _holdingIdCounter = 0;
 
   MockTradingRepository(this._marketProvider, {double initialBalance = 100000.0})
       : _wallet = VirtualWallet(
@@ -266,6 +271,100 @@ class MockTradingRepository implements TradingRepository {
   @override
   Future<List<Trade>> getTradeHistory() async =>
       List.unmodifiable(_trades.reversed);
+
+  @override
+  Future<PersistedVirtualWallet?> getWalletForUser(String userId) async {
+    return PersistedVirtualWallet(userId: userId, wallet: _wallet, version: '1.0');
+  }
+
+  @override
+  Future<Holding?> getHoldingForUserAsset({required String userId, required String symbol}) async {
+    try {
+      return _holdings.firstWhere((h) => h.symbol == symbol);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<Holding>> getHoldingsForUser(String userId) async {
+    return List.unmodifiable(_holdings);
+  }
+
+  @override
+  Future<List<Trade>> getTradesForUser(String userId) async {
+    return List.unmodifiable(_trades.reversed);
+  }
+
+  @override
+  String nextTradeId() {
+    _tradeIdCounter++;
+    return 'tr_${DateTime.now().millisecondsSinceEpoch}_$_tradeIdCounter';
+  }
+
+  @override
+  String nextHoldingId({required String userId, required String symbol}) {
+    _holdingIdCounter++;
+    return 'h_${symbol}_${DateTime.now().millisecondsSinceEpoch}_$_holdingIdCounter';
+  }
+
+  @override
+  Future<BuyTransactionCommitResult> commitBuy({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+  }) async {
+    _wallet = updatedWallet;
+    final idx = _holdings.indexWhere((h) => h.symbol == updatedHolding.symbol);
+    if (idx >= 0) {
+      _holdings[idx] = updatedHolding;
+    } else {
+      _holdings.add(updatedHolding);
+    }
+    _trades.add(trade);
+    
+    if (trade.stopLossPriceInr != null) {
+      _activeStopLosses.add(_ActiveStopLoss(
+        symbol: trade.symbol,
+        quantity: trade.quantity,
+        stopLossPriceInr: trade.stopLossPriceInr!,
+      ));
+      _subscribeToTickerIfNeeded(trade.symbol);
+    }
+    
+    return BuyTransactionCommitSuccess(committedAt: executedAt);
+  }
+
+  @override
+  Future<SellTransactionCommitResult> commitSell({
+    required String userId,
+    required VirtualWallet updatedWallet,
+    required Holding updatedHolding,
+    required Trade trade,
+    required double expectedPreviousWalletBalanceInr,
+    required double expectedPreviousHoldingQuantity,
+    String? expectedWalletVersion,
+    required DateTime executedAt,
+    required String sellReason,
+    String? sourceStopLossOrderId,
+  }) async {
+    _wallet = updatedWallet;
+    final idx = _holdings.indexWhere((h) => h.symbol == updatedHolding.symbol);
+    if (idx >= 0) {
+      if (updatedHolding.quantity <= 0.000001) {
+        _holdings.removeAt(idx);
+        _activeStopLosses.removeWhere((sl) => sl.symbol == trade.symbol);
+      } else {
+        _holdings[idx] = updatedHolding;
+      }
+    }
+    _trades.add(trade);
+    return SellTransactionCommitSuccess(committedAt: executedAt);
+  }
 }
 
 class MockPortfolioRepository implements PortfolioRepository {
@@ -396,10 +495,20 @@ class MockAuthRepository implements AuthRepository {
       email: 'trader@cryptoedu.app',
       displayName: 'DisciplineTrader');
 
+  final _authStreamController = StreamController<UserProfile?>.broadcast();
+
+  MockAuthRepository() {
+    _authStreamController.add(_currentUser);
+  }
+
   /// Helper for testing to set or clear active user session directly
   void setCurrentUser(UserProfile? user) {
     _currentUser = user;
+    _authStreamController.add(user);
   }
+
+  @override
+  Stream<UserProfile?> get authStateChanges => _authStreamController.stream;
 
   @override
   Future<UserProfile?> getCurrentUser() async => _currentUser;
@@ -418,6 +527,7 @@ class MockAuthRepository implements AuthRepository {
         id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
         email: lowerEmail,
         displayName: displayName);
+    _authStreamController.add(_currentUser);
     return _currentUser!;
   }
 
@@ -434,17 +544,20 @@ class MockAuthRepository implements AuthRepository {
       email: lowerEmail,
       displayName: lowerEmail.split('@').first,
     );
+    _authStreamController.add(_currentUser);
     return _currentUser!;
   }
 
   @override
   Future<void> signOut() async {
     _currentUser = null;
+    _authStreamController.add(null);
   }
 
   @override
   Future<void> deleteAccount() async {
     _currentUser = null;
+    _authStreamController.add(null);
   }
 }
 
