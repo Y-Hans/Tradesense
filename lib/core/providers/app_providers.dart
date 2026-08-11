@@ -15,6 +15,11 @@ import '../../features/auth/domain/auth_state.dart';
 import '../../features/auth/application/auth_notifier.dart';
 import '../../features/auth/application/user_lifecycle_notifier.dart';
 import '../../features/onboarding/application/onboarding_notifier.dart';
+import '../services/connectivity/connectivity_provider.dart';
+import '../services/connectivity/connectivity_service.dart';
+import '../services/connectivity/connectivity_status.dart';
+import '../events/domain_event_providers.dart';
+
 export '../services/connectivity/connectivity_provider.dart';
 export '../services/connectivity/connectivity_service.dart';
 export '../services/connectivity/connectivity_status.dart';

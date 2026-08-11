@@ -40,8 +40,9 @@ class MockTradingRepository implements TradingRepository {
   final List<_ActiveStopLoss> _activeStopLosses = [];
   final DomainEventPublisher? _eventPublisher;
 
-  MockTradingRepository(this._marketProvider, {this._eventPublisher, double initialBalance = 100000.0})
-      : _wallet = VirtualWallet(
+  MockTradingRepository(this._marketProvider, {DomainEventPublisher? eventPublisher, double initialBalance = 100000.0})
+      : _eventPublisher = eventPublisher,
+        _wallet = VirtualWallet(
           balanceInr: initialBalance,
           lockedInr: 0.0,
           initialBalanceInr: initialBalance,

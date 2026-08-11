@@ -22,6 +22,8 @@ class AppColors {
   static const Color profit     = Color(0xFF00D09C); // Mint Green
   static const Color loss       = Color(0xFFEB5757); // Soft Crimson
   static const Color warning    = Color(0xFFFF9F0A); // Warning Orange
+  static const Color discipline = Color(0xFF5E72E4); // Discipline / Soft Blue
+  static const Color accent     = Color(0xFF00B8D9); // Accent Cyan
   
   /// ── Borders & UI Elements ────────────────────
   static const Color border     = Color(0xFFE2E8F0); // Light Border
