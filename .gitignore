@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Platform environment configuration — dart-define secrets files
+# These files contain real API keys and MUST NEVER be committed.
+# See lib/core/config/DART_DEFINES.md for the required key names.
+.dart_defines.json
+.dart_defines.*.json
+*.env
+.env
+.env.*
