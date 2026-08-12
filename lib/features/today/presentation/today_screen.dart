@@ -26,7 +26,7 @@ class TodayScreen extends ConsumerWidget {
     return AppScaffold(
       showBackButton: false,
       trailing: IconButton(
-        icon: const Icon(Icons.notifications_none),
+        icon: Icon(Icons.notifications_none),
         // Integration Point (Divyanshu): Real-time push notifications require
         // the native notification module from the platform team.
         onPressed: () => _showNotificationsSheet(context),
@@ -72,7 +72,7 @@ class TodayScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Discipline & Risk Scores ──────────────────────────────────
-            const _SectionHeader(title: 'Trading Performance'),
+            _SectionHeader(title: 'Trading Performance'),
             const SizedBox(height: AppSpacing.md),
             _ScoreCards(scoreAsync: scoreAsync),
             const SizedBox(height: AppSpacing.xxl),
@@ -108,9 +108,9 @@ class TodayScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xxl),
 
             // ── Quick Actions ─────────────────────────────────────────────
-            const _SectionHeader(title: 'Quick Actions'),
+            _SectionHeader(title: 'Quick Actions'),
             const SizedBox(height: AppSpacing.md),
-            const _QuickActions(),
+            _QuickActions(),
           ],
         ),
       ),
@@ -125,7 +125,7 @@ class TodayScreen extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => Padding(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,11 +189,11 @@ class _GreetingSection extends StatelessWidget {
                     height: 1.1,
                   ),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            SizedBox(height: AppSpacing.xs),
             Text(
               _getSubtitle(),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   ),
             ),
           ],
@@ -254,17 +254,17 @@ class _PortfolioSnapshot extends StatelessWidget {
 
         return AppCard(
           hasBorder: true,
-          padding: const EdgeInsets.all(AppSpacing.lg),
+          padding: EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Total Portfolio Value',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     ),
               ),
-              const SizedBox(height: AppSpacing.xs),
+              SizedBox(height: AppSpacing.xs),
               Text(
                 FinancialMath.formatInr(totalValue),
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
@@ -279,7 +279,7 @@ class _PortfolioSnapshot extends StatelessWidget {
                     color: pnlColor,
                     size: 18,
                   ),
-                  const SizedBox(width: AppSpacing.xs),
+                  SizedBox(width: AppSpacing.xs),
                   Text(
                     '${isProfit ? '+' : ''}${FinancialMath.formatInr(unrealisedPnl)} unrealised',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -321,8 +321,8 @@ class _PortfolioSnapshot extends StatelessWidget {
       },
       loading: () => AppCard(
         hasBorder: true,
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: const SizedBox(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: SizedBox(
           height: 80,
           child: Center(
             child: CircularProgressIndicator(color: AppColors.primaryCyan),
@@ -330,11 +330,11 @@ class _PortfolioSnapshot extends StatelessWidget {
         ),
       ),
       error: (_, __) => AppCard(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.all(AppSpacing.lg),
         child: Text(
           'Unable to load portfolio data.',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               ),
         ),
       ),
@@ -346,7 +346,7 @@ class _PortfolioStat extends StatelessWidget {
   final String label;
   final String value;
 
-  const _PortfolioStat({required this.label, required this.value});
+  _PortfolioStat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -356,15 +356,19 @@ class _PortfolioStat extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+        SizedBox(height: 2),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
         ),
       ],
     );
@@ -409,8 +413,8 @@ class _ScoreCards extends StatelessWidget {
           Expanded(
             child: AppCard(
               hasBorder: true,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: const SizedBox(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: SizedBox(
                 height: 100,
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.primaryCyan),
@@ -418,12 +422,12 @@ class _ScoreCards extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: AppSpacing.md),
+          SizedBox(width: AppSpacing.md),
           Expanded(
             child: AppCard(
               hasBorder: true,
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: const SizedBox(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: SizedBox(
                 height: 100,
                 child: Center(
                   child: CircularProgressIndicator(color: AppColors.primaryCyan),
@@ -463,33 +467,33 @@ class _ScoreCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppCard(
       hasBorder: true,
-      padding: const EdgeInsets.all(AppSpacing.lg),
+      padding: EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Icon(icon, color: color, size: 16),
-              const SizedBox(width: AppSpacing.xs),
+              SizedBox(width: AppSpacing.xs),
               Text(
                 label,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ScoreRing(score: score, size: 56, color: color),
-              const SizedBox(width: AppSpacing.sm),
+              SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: Text(
                   description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                         height: 1.3,
                       ),
                   maxLines: 2,
@@ -553,7 +557,7 @@ class _MarketOverview extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -570,7 +574,7 @@ class _MarketOverview extends StatelessWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                           ),
                         ],
                       ),
@@ -609,10 +613,10 @@ class _MarketOverview extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(width: AppSpacing.xs),
-                    const Icon(
+                    SizedBox(width: AppSpacing.xs),
+                    Icon(
                       Icons.chevron_right,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       size: 18,
                     ),
                   ],
@@ -629,8 +633,8 @@ class _MarketOverview extends StatelessWidget {
         ),
       ),
       error: (_, __) => AppCard(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: const EmptyState(
+        padding: EdgeInsets.all(AppSpacing.lg),
+        child: EmptyState(
           icon: Icons.wifi_off,
           title: 'Markets unavailable',
           description: 'Check your connection to see live prices.',
@@ -672,7 +676,7 @@ class _MissionsProgress extends ConsumerWidget {
                     color: AppColors.warningOrange,
                     size: 20,
                   ),
-                  const SizedBox(width: AppSpacing.sm),
+                  SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
                       '$completedMissions/$totalMissions missions completed',
@@ -687,25 +691,25 @@ class _MissionsProgress extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
                 child: LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: AppColors.border,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
+                  backgroundColor: Theme.of(context).dividerColor,
+                  valueColor: AlwaysStoppedAnimation<Color>(
                     AppColors.warningOrange,
                   ),
                   minHeight: 8,
                 ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              SizedBox(height: AppSpacing.sm),
               Text(
                 hasTraded
                     ? '🏆 Mission 1 complete! Set a stop-loss to earn Mission 2.'
                     : '📋 Place your first virtual trade to start earning XP.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     ),
               ),
             ],
@@ -738,8 +742,8 @@ class _RecentActivity extends ConsumerWidget {
 
         if (trades.isEmpty) {
           return AppCard(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: const EmptyState(
+            padding: EdgeInsets.all(AppSpacing.lg),
+            child: EmptyState(
               icon: Icons.history,
               title: 'No trades yet',
               description:
@@ -778,7 +782,7 @@ class _RecentActivity extends ConsumerWidget {
                         size: 18,
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.md),
+                    SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -795,7 +799,7 @@ class _RecentActivity extends ConsumerWidget {
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall
-                                ?.copyWith(color: AppColors.textSecondary),
+                                ?.copyWith(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                           ),
                         ],
                       ),
@@ -911,11 +915,11 @@ class _QuickActionButton extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            SizedBox(height: AppSpacing.xs),
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   ),
               textAlign: TextAlign.center,
             ),
@@ -933,7 +937,7 @@ class _SectionHeader extends StatelessWidget {
   final String? action;
   final VoidCallback? onAction;
 
-  const _SectionHeader({
+  _SectionHeader({
     required this.title,
     this.action,
     this.onAction,

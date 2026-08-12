@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +8,7 @@ import '../../../core/utils/financial_math.dart';
 import '../../../shared/models/crypto_asset.dart';
 import '../../../shared/widgets/trade_card.dart';
 import '../../../shared/widgets/price_tick_glow_wrapper.dart';
+import '../../../shared/widgets/offline_state_widget.dart';
 
 class MarketsScreen extends ConsumerWidget {
   const MarketsScreen({super.key});
@@ -15,21 +16,31 @@ class MarketsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetsAsync = ref.watch(supportedAssetsProvider);
+    final isOffline = ref.watch(connectivityProvider) == ConnectivityStatus.offline;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Live Crypto Markets')),
-      body: assetsAsync.when(
-        data: (assets) => ListView.separated(
-          padding: const EdgeInsets.all(16),
-          itemCount: assets.length,
-          separatorBuilder: (context, index) => const SizedBox(height: 12),
-          itemBuilder: (context, index) => _LiveMarketTile(
-            asset: assets[index],
+      body: isOffline 
+        ? Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: OfflineStateWidget(
+                message: 'Live market prices are unavailable while offline.',
+              ),
+            ),
+          )
+        : assetsAsync.when(
+            data: (assets) => ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: assets.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) => _LiveMarketTile(
+                asset: assets[index],
+              ),
+            ),
+            loading: () => const Center(child: CryptoLoadingIndicator()),
+            error: (err, stack) => Text('Error: $err'),
           ),
-        ),
-        loading: () => const Center(child: CryptoLoadingIndicator()),
-        error: (err, stack) => Text('Error: $err'),
-      ),
     );
   }
 }
@@ -72,24 +83,31 @@ class _LiveMarketTile extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(asset.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 2),
-                    Text('${asset.symbol} Â· SIMULATED LIVE'),
+                    SizedBox(height: 2),
+                    Text('${asset.symbol} · SIMULATED LIVE',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    FinancialMath.formatInr(currentPrice),
-                    style: Theme.of(context).textTheme.titleMedium,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      FinancialMath.formatInr(currentPrice),
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
                   ),
                   Text(
                     '${isPositive ? '+' : ''}${simulatedChange.toStringAsFixed(2)}%',

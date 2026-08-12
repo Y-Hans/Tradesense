@@ -14,25 +14,25 @@ class DisclaimerScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(
+            Icon(
               Icons.warning_amber_rounded,
               color: AppColors.warningOrange,
               size: 48,
             ),
-            const SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xl),
             Text(
               'Important Disclaimer',
               style: Theme.of(context).textTheme.displaySmall,
             ),
-            const SizedBox(height: AppSpacing.lg),
+            SizedBox(height: AppSpacing.lg),
             Text(
               'TradeSense is an educational and coaching tool. It is NOT a brokerage and does not provide financial advice.\n\nAll trading involves risk. You are solely responsible for your own trading decisions.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     height: 1.5,
                   ),
             ),
-            const Spacer(),
+            Spacer(),
             SecondaryButton(
               text: 'Review full terms',
               onPressed: () {
@@ -49,7 +49,7 @@ class DisclaimerScreen extends StatelessWidget {
                     minChildSize: 0.5,
                     expand: false,
                     builder: (context, scrollController) => Padding(
-                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      padding: EdgeInsets.all(AppSpacing.xl),
                       child: ListView(
                         controller: scrollController,
                         children: [
@@ -57,7 +57,7 @@ class DisclaimerScreen extends StatelessWidget {
                             'Terms of Service & Disclosures',
                             style: Theme.of(context).textTheme.titleLarge,
                           ),
-                          const SizedBox(height: AppSpacing.md),
+                          SizedBox(height: AppSpacing.md),
                           Text(
                             '1. Educational Nature: TradeSense is strictly an educational crypto trading simulator. No real money or actual cryptocurrency is involved.\n\n'
                             '2. No Financial Advice: AI Coach suggestions, discipline metrics, and risk scores are produced by deterministic scoring formulas and LLM models for learning purposes only. They do not constitute investment advice.\n\n'

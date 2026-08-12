@@ -39,7 +39,7 @@ class AppLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         logo,
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Text(
           'TradeSense',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(

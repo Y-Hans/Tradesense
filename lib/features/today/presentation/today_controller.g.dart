@@ -6,7 +6,7 @@ part of 'today_controller.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$todayControllerHash() => r'b0179f9d7dd3f406168acd4a791bf654594bb7ed';
+String _$todayControllerHash() => r'8b7d556f2a194ef31430e009526b1afaf19961b9';
 
 /// See also [TodayController].
 @ProviderFor(TodayController)

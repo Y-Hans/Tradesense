@@ -131,7 +131,7 @@ class BinanceWebSocketClient {
       // Dynamic import avoids direct dart:io dependency in this file, allowing
       // this file to parse cleanly.  The real connection is established here
       // via dynamic dispatch.
-      final wsConnect = _WebSocketConnector.connect;
+      const wsConnect = _WebSocketConnector.connect;
       final stream = await wsConnect(uri);
 
       _wsSub = stream.listen(

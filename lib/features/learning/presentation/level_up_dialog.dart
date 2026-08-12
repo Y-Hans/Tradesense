@@ -12,7 +12,7 @@ class LevelUpDialog extends StatelessWidget {
   final List<Achievement> newlyUnlockedAchievements;
   final VoidCallback onContinue;
 
-  const LevelUpDialog({
+  LevelUpDialog({
     super.key,
     required this.level,
     required this.title,
@@ -24,7 +24,7 @@ class LevelUpDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
       ),
@@ -58,8 +58,8 @@ class LevelUpDialog extends StatelessWidget {
             const SizedBox(height: 4.0),
             Text(
               level.title,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
               ),
@@ -67,8 +67,8 @@ class LevelUpDialog extends StatelessWidget {
             const SizedBox(height: 4.0),
             Text(
               'Title: ${title.title}',
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                 fontSize: 14.0,
               ),
             ),
@@ -100,7 +100,7 @@ class LevelUpDialog extends StatelessWidget {
                 child: Text(
                   'Newly Unlocked Achievements:',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 13.0,
                     fontWeight: FontWeight.bold,
                   ),

@@ -33,11 +33,11 @@ class _TradeCardState extends State<TradeCard> {
         child: GestureDetector(
           onTap: widget.onTap,
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: Duration(milliseconds: 200),
             decoration: BoxDecoration(
               color: _isHovered 
-                  ? AppColors.oledSurface.withValues(alpha: 0.8) 
-                  : AppColors.oledSurface.withValues(alpha: 0.5),
+                  ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8) 
+                  : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16.0),
               border: Border.all(
                 color: _isHovered 

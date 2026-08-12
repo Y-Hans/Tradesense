@@ -1,16 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
-import '../../market/presentation/markets_screen.dart';
-import '../../portfolio/presentation/portfolio_screen.dart';
-import '../../trading/presentation/trade_entry_screen.dart';
 import '../../../shared/widgets/trade_card.dart';
-import 'app_shell.dart';
-
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -49,8 +44,13 @@ class DashboardScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Virtual Portfolio Equity',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                          Expanded(
+                            child: Text(
+                              'Virtual Portfolio Equity',
+                              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 8, vertical: 4),
@@ -66,7 +66,7 @@ class DashboardScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       Text(
                         FinancialMath.formatInr(
                             portfolio.totalPortfolioValueInr),
@@ -80,42 +80,48 @@ class DashboardScreen extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Unrealised P&L',
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Unrealised P&L',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
+                                Text(
+                                  FinancialMath.formatInr(
+                                      portfolio.totalUnrealisedPnlInr),
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text(
-                                FinancialMath.formatInr(
-                                    portfolio.totalUnrealisedPnlInr),
-                                style: TextStyle(
-                                  color: portfolio.totalUnrealisedPnlInr >= 0
-                                      ? AppColors.profit
-                                      : AppColors.loss,
-                                  fontWeight: FontWeight.bold,
+                                    color: portfolio.totalUnrealisedPnlInr >= 0
+                                        ? AppColors.profit
+                                        : AppColors.loss,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              const Text('Overall Return',
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text('Overall Return',
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
+                                Text(
+                                  '${portfolio.overallPnlPercent.toStringAsFixed(2)}%',
                                   style: TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary)),
-                              Text(
-                                '${portfolio.overallPnlPercent.toStringAsFixed(2)}%',
-                                style: TextStyle(
-                                  color: portfolio.overallPnlPercent >= 0
-                                      ? AppColors.profit
-                                      : AppColors.loss,
-                                  fontWeight: FontWeight.bold,
+                                    color: portfolio.overallPnlPercent >= 0
+                                        ? AppColors.profit
+                                        : AppColors.loss,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -132,7 +138,7 @@ class DashboardScreen extends ConsumerWidget {
                   child: TradeCard(
                     onTap: () => context.push('/discipline-meter'),
                     margin: EdgeInsets.zero,
-                    child: const Column(
+                    child: Column(
                       children: [
                         Icon(Icons.verified_outlined,
                             color: AppColors.alert, size: 28),
@@ -140,7 +146,7 @@ class DashboardScreen extends ConsumerWidget {
                         Text('Discipline Score',
                             style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary)),
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
                         SizedBox(height: 4),
                         Text('85/100',
                             style: TextStyle(
@@ -159,7 +165,7 @@ class DashboardScreen extends ConsumerWidget {
                   child: TradeCard(
                     onTap: () => context.push('/risk-meter'),
                     margin: EdgeInsets.zero,
-                    child: const Column(
+                    child: Column(
                       children: [
                         Icon(Icons.speed_outlined,
                             color: AppColors.cyberGold, size: 28),
@@ -167,7 +173,7 @@ class DashboardScreen extends ConsumerWidget {
                         Text('Risk Score',
                             style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.textSecondary)),
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
                         SizedBox(height: 4),
                         Text('35/100',
                             style: TextStyle(
@@ -183,7 +189,7 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -245,5 +251,3 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 }
-
-

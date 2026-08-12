@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -61,33 +61,33 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              isBuy ? AppColors.profit : AppColors.oledCard,
+                              isBuy ? AppColors.profit : Theme.of(context).cardColor,
                         ),
                         onPressed: () => setState(() => isBuy = true),
-                        child: const Text('VIRTUAL BUY',
+                        child: Text('VIRTUAL BUY',
                             style: TextStyle(
-                                color: Colors.white,
+                                color: isBuy ? Colors.white : (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
                                 fontWeight: FontWeight.bold)),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor:
-                              !isBuy ? AppColors.loss : AppColors.oledCard,
+                              !isBuy ? AppColors.loss : Theme.of(context).cardColor,
                         ),
                         onPressed: () => setState(() => isBuy = false),
-                        child: const Text('VIRTUAL SELL',
+                        child: Text('VIRTUAL SELL',
                             style: TextStyle(
-                                color: Colors.white,
+                                color: !isBuy ? Colors.white : (Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black),
                                 fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -113,9 +113,9 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                         style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text('Total Order Value: ${FinancialMath.formatInr(totalInr)}',
-                    style: const TextStyle(color: AppColors.textSecondary)),
+                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)),
                 const SizedBox(height: 20),
                 SwitchListTile(
                   title: const Text('Set Stop-Loss Protection'),

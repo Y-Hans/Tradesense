@@ -27,10 +27,10 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'PLAYER PROFILE',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                         fontSize: 11.0,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1.2,
@@ -76,8 +76,8 @@ class PlayerProfileSummaryCard extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 16.0),
-          const Divider(color: AppColors.outline, height: 1.0),
+          SizedBox(height: 16.0),
+          Divider(color: Theme.of(context).dividerColor, height: 1.0),
           const SizedBox(height: 16.0),
 
           // Grid of 4 Key Player Profile Metrics
@@ -128,18 +128,18 @@ class PlayerProfileSummaryCard extends StatelessWidget {
           // Bottom Bar: XP remaining to next level
           Container(
             padding:
-                const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             decoration: BoxDecoration(
-              color: AppColors.card,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Next Level Requirement:',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     fontSize: 12.0,
                   ),
                 ),
@@ -181,14 +181,14 @@ class PlayerProfileSummaryCard extends StatelessWidget {
             size: 18.0,
           ),
         ),
-        const SizedBox(width: 10.0),
+        SizedBox(width: 10.0),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                 fontSize: 11.0,
               ),
             ),

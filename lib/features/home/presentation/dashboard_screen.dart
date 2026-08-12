@@ -12,7 +12,7 @@ import '../../../shared/models/crypto_asset.dart';
 /// ───────────────────────────────────────────────
 
 class DashboardScreen extends ConsumerWidget {
-  const DashboardScreen({super.key});
+  DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +37,7 @@ class DashboardScreen extends ConsumerWidget {
               // ── Header ──────────────────────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+                  padding: EdgeInsets.fromLTRB(20, 24, 20, 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -49,7 +49,7 @@ class DashboardScreen extends ConsumerWidget {
                               'Hello, ${user?.displayName ?? 'Trader'}',
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
-                            loading: () => const SizedBox(
+                            loading: () => SizedBox(
                                 height: 24,
                                 width: 100,
                                 child: CircularProgressIndicator(strokeWidth: 2)),
@@ -58,7 +58,7 @@ class DashboardScreen extends ConsumerWidget {
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             'Ready to trade today?',
                             style: Theme.of(context).textTheme.bodyMedium,
@@ -79,9 +79,9 @@ class DashboardScreen extends ConsumerWidget {
                               ref.read(themeModeProvider.notifier).state = nextMode;
                             },
                           ),
-                          const SizedBox(width: 4),
+                          SizedBox(width: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: Theme.of(context).colorScheme.surface,
@@ -92,7 +92,7 @@ class DashboardScreen extends ConsumerWidget {
                               children: [
                                 const Icon(Icons.local_fire_department_rounded,
                                     color: AppColors.warning, size: 16),
-                                const SizedBox(width: 6),
+                                SizedBox(width: 6),
                                 Text(
                                   '7 Days',
                                   style: Theme.of(context)
@@ -103,7 +103,7 @@ class DashboardScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: 12),
                           IconButton(
                             icon: Icon(Icons.notifications_none_rounded,
                                 color: Theme.of(context).colorScheme.onSurface),
@@ -131,7 +131,7 @@ class DashboardScreen extends ConsumerWidget {
               // ── Quick Access: Discipline & Risk ─────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                  padding: EdgeInsets.fromLTRB(20, 24, 20, 24),
                   child: Row(
                     children: [
                       Expanded(
@@ -142,7 +142,7 @@ class DashboardScreen extends ConsumerWidget {
                           color: Theme.of(context).colorScheme.secondary,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      SizedBox(width: 16),
                       Expanded(
                         child: _ScorePill(
                           title: 'Risk Score',
@@ -159,7 +159,7 @@ class DashboardScreen extends ConsumerWidget {
               // ── Live Market Watchlist ───────────────────────
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
                     'Watchlist',
                     style: Theme.of(context).textTheme.titleLarge,
@@ -196,7 +196,7 @@ class DashboardScreen extends ConsumerWidget {
 }
 
 class _PortfolioCard extends StatelessWidget {
-  const _PortfolioCard({required this.portfolio});
+  _PortfolioCard({required this.portfolio});
 
   final dynamic portfolio;
 
@@ -212,7 +212,7 @@ class _PortfolioCard extends StatelessWidget {
     final sign = isProfit ? '+' : '';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
@@ -236,7 +236,7 @@ class _PortfolioCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
@@ -248,7 +248,7 @@ class _PortfolioCard extends StatelessWidget {
                       color: returnColor,
                       size: 14,
                     ),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       '${returnsPercent.toStringAsFixed(2)}%',
                       style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -261,7 +261,7 @@ class _PortfolioCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             FinancialMath.formatInr(totalValue),
             style: Theme.of(context).textTheme.displayMedium,
@@ -310,7 +310,7 @@ class _PortfolioStat extends StatelessWidget {
           label,
           style: Theme.of(context).textTheme.labelMedium,
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: 4),
         Text(
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -338,7 +338,7 @@ class _ScorePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
@@ -357,7 +357,7 @@ class _ScorePill extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           LinearProgressIndicator(
             value: progress,
             backgroundColor: Theme.of(context).cardTheme.color,
@@ -372,7 +372,7 @@ class _ScorePill extends StatelessWidget {
 }
 
 class _AssetRow extends StatelessWidget {
-  const _AssetRow({required this.asset});
+  _AssetRow({required this.asset});
   final CryptoAsset asset;
 
   @override
@@ -384,7 +384,7 @@ class _AssetRow extends StatelessWidget {
     return InkWell(
       onTap: () {},
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Row(
           children: [
             Container(
@@ -403,7 +403,7 @@ class _AssetRow extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,7 +412,7 @@ class _AssetRow extends StatelessWidget {
                     asset.symbol,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     asset.name,
                     style: Theme.of(context).textTheme.labelMedium,
@@ -428,7 +428,7 @@ class _AssetRow extends StatelessWidget {
                 painter: _SimpleSparklinePainter(color: color),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -436,7 +436,7 @@ class _AssetRow extends StatelessWidget {
                   FinancialMath.formatInr(asset.currentPriceInr),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   '$sign${asset.change24hPercent.toStringAsFixed(2)}%',
                   style: Theme.of(context)
@@ -480,7 +480,7 @@ class _SimpleSparklinePainter extends CustomPainter {
 }
 
 class _LoadingCard extends StatelessWidget {
-  const _LoadingCard();
+  _LoadingCard();
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -496,7 +496,7 @@ class _LoadingCard extends StatelessWidget {
 }
 
 class _ErrorCard extends StatelessWidget {
-  const _ErrorCard({required this.error});
+  _ErrorCard({required this.error});
   final String error;
   @override
   Widget build(BuildContext context) {

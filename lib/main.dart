@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:design_system/design_system.dart';
 import 'core/routing/app_router.dart';
 import 'app/theme/theme_provider.dart';
+import 'app/theme/app_theme.dart' as local_theme;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -19,7 +20,7 @@ Future<void> main() async {
   if (config.isSupabaseConfigured) {
     await Supabase.initialize(
       url: config.supabaseUrl,
-      anonKey: config.supabaseAnonKey,
+      publishableKey: config.supabaseAnonKey,
       debug: config.environment.isDebugLoggingEnabled,
     );
   }
@@ -59,8 +60,8 @@ class TradeSenseApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'TradeSense',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: local_theme.AppTheme.lightTheme,
+      darkTheme: local_theme.AppTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: goRouter,
       debugShowCheckedModeBanner: false,

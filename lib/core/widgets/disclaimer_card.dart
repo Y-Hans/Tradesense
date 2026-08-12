@@ -36,20 +36,20 @@ class DisclaimerCard extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4.0),
+                SizedBox(height: 4.0),
                 Text(
                   EducationalDisclaimers.coreDisclaimer,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     fontSize: compact ? 11.0 : 12.5,
                   ),
                 ),
                 if (!compact) ...[
                   const SizedBox(height: 4.0),
-                  const Text(
+                  Text(
                     EducationalDisclaimers.performanceDisclaimer,
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       fontSize: 11.5,
                       fontStyle: FontStyle.italic,
                     ),

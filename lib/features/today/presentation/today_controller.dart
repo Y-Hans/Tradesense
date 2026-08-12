@@ -18,7 +18,7 @@ class TodayController extends _$TodayController {
     try {
       final repo = ref.read(todayRepositoryProvider);
       final onboardingRepo = ref.read(onboardingRepositoryProvider);
-      final userProfile = await ref.read(currentUserProvider.future).catchError((_) => null);
+      final userProfile = ref.read(currentUserProvider).valueOrNull;
       
       final userName = userProfile?.displayName ?? onboardingRepo.userName;
       return await repo.fetchTodayDashboard(userName: userName);

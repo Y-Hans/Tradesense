@@ -17,8 +17,8 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              const AIAvatar(size: 64),
-              const SizedBox(height: AppSpacing.xxl),
+              AIAvatar(size: 64),
+              SizedBox(height: AppSpacing.xxl),
               Text(
                 'Become a\nbetter trader.',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
@@ -26,11 +26,11 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppSpacing.md),
+              SizedBox(height: AppSpacing.md),
               Text(
                 'TradeSense is your AI trading coach.\nJournal trades, detect mistakes, and improve discipline.',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       height: 1.5,
                     ),
                 textAlign: TextAlign.center,

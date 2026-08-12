@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../providers/app_providers.dart';
+import '../../features/auth/domain/auth_state.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/onboarding/presentation/welcome_screen.dart';
 import '../../features/onboarding/presentation/disclaimer_screen.dart';
@@ -19,28 +21,93 @@ import '../../features/market/presentation/asset_detail_screen.dart';
 import '../../features/portfolio/presentation/portfolio_screen.dart';
 import '../../features/portfolio/presentation/trade_history_screen.dart';
 import '../../features/learning/presentation/missions_screen.dart';
+import '../../features/learning/presentation/news_detective_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/journal/presentation/journal_screen.dart';
+import '../../features/coach/presentation/coach_screen.dart';
 import '../../features/coach/presentation/coach_result_screen.dart';
 import '../../features/trading/presentation/trade_screen.dart';
 import '../../features/intelligence/presentation/discipline_meter_screen.dart';
 import '../../features/intelligence/presentation/risk_meter_screen.dart';
+import '../../features/subscription/presentation/paywall_screen.dart';
 
 part 'app_router.g.dart';
 
+class RouterListenable extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterListenable(this._ref) {
+    _ref.listen<AuthState>(authStateProvider, (_, __) => notifyListeners());
+    _ref.listen<Map<String, bool>>(
+        onboardingNotifierProvider, (_, __) => notifyListeners());
+  }
+
+  String? redirect(BuildContext context, GoRouterState state) {
+    final authState = _ref.read(authStateProvider);
+
+    if (authState.isRestoring) {
+      return null;
+    }
+
+    final loc = state.matchedLocation;
+    final isAuthRoute = loc == '/login' || loc == '/register' || loc == '/welcome' || loc == '/disclaimer';
+    final isOnboardingRoute = loc == '/onboarding' || loc == '/profile-setup' || loc == '/risk-assessment' || loc == '/import-choice';
+    final isSplash = loc == '/splash';
+    
+    // Convert root access to home
+    if (loc == '/') return '/home';
+
+    if (!authState.isAuthenticated && !authState.isAuthenticating) {
+      if (isAuthRoute || isSplash) return null;
+      return '/login';
+    }
+
+    if (authState.isAuthenticated) {
+      final user = authState.user;
+      final onboardingNotifier = _ref.read(onboardingNotifierProvider.notifier);
+      final onboardingDone = onboardingNotifier.isCompleted(user?.id);
+
+      if (!onboardingDone) {
+        if (isOnboardingRoute || isSplash) return null;
+        return '/onboarding';
+      } else {
+        if (isAuthRoute || isOnboardingRoute || isSplash) {
+          return '/home';
+        }
+        return null;
+      }
+    }
+
+    return null;
+  }
+}
+
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
-final GlobalKey<NavigatorState> _shellNavigatorKey =
-    GlobalKey<NavigatorState>(debugLabel: 'shell');
+final GlobalKey<NavigatorState> _shellNavigatorHomeKey =
+    GlobalKey<NavigatorState>(debugLabel: 'home');
+final GlobalKey<NavigatorState> _shellNavigatorMarketsKey =
+    GlobalKey<NavigatorState>(debugLabel: 'markets');
+final GlobalKey<NavigatorState> _shellNavigatorPortfolioKey =
+    GlobalKey<NavigatorState>(debugLabel: 'portfolio');
+final GlobalKey<NavigatorState> _shellNavigatorCoachKey =
+    GlobalKey<NavigatorState>(debugLabel: 'coach');
+final GlobalKey<NavigatorState> _shellNavigatorMissionsKey =
+    GlobalKey<NavigatorState>(debugLabel: 'missions');
+final GlobalKey<NavigatorState> _shellNavigatorProfileKey =
+    GlobalKey<NavigatorState>(debugLabel: 'profile');
 
 @riverpod
 GoRouter appRouter(AppRouterRef ref) {
+  final listenable = RouterListenable(ref);
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
-    debugLogDiagnostics: false,
+    debugLogDiagnostics: true,
+    refreshListenable: listenable,
+    redirect: listenable.redirect,
     routes: [
-      // ── Pre-auth & onboarding flow ──────────────────────────────────────
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
@@ -61,8 +128,6 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-
-      // ── Onboarding steps (accessible after auth) ────────────────────────
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
@@ -79,11 +144,9 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/import-choice',
         builder: (context, state) => const ImportChoiceScreen(),
       ),
-
-      // ── Journal & Coach (full-screen, outside shell) ────────────────────
       GoRoute(
         path: '/journal',
-        builder: (context, state) => const JournalScreen(),
+        builder: (context, state) => JournalScreen(),
       ),
       GoRoute(
         path: '/trade-history',
@@ -104,6 +167,13 @@ GoRouter appRouter(AppRouterRef ref) {
         },
       ),
       GoRoute(
+        path: '/trade/:symbol',
+        builder: (context, state) {
+          final symbol = state.pathParameters['symbol'] ?? 'BTCUSDT';
+          return TradeScreen(symbol: symbol);
+        },
+      ),
+      GoRoute(
         path: '/asset/:symbol',
         builder: (context, state) {
           final symbol = state.pathParameters['symbol'] ?? 'BTC';
@@ -118,31 +188,70 @@ GoRouter appRouter(AppRouterRef ref) {
         path: '/risk-meter',
         builder: (context, state) => const RiskMeterScreen(),
       ),
-
-      // ── Main app shell with bottom nav ──────────────────────────────────
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => AppShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const TodayScreen(),
+      GoRoute(
+        path: '/paywall',
+        builder: (context, state) => const PaywallScreen(),
+      ),
+      GoRoute(
+        path: '/news-detective',
+        builder: (context, state) => const NewsDetectiveScreen(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorHomeKey,
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const TodayScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/markets',
-            builder: (context, state) => const MarketsScreen(),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorMarketsKey,
+            routes: [
+              GoRoute(
+                path: '/markets',
+                builder: (context, state) => const MarketsScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/portfolio',
-            builder: (context, state) => const PortfolioScreen(),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorPortfolioKey,
+            routes: [
+              GoRoute(
+                path: '/portfolio',
+                builder: (context, state) => const PortfolioScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/missions',
-            builder: (context, state) => const MissionsScreen(),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorCoachKey,
+            routes: [
+              GoRoute(
+                path: '/coach',
+                builder: (context, state) => const CoachScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/profile',
-            builder: (context, state) => const ProfileScreen(),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorMissionsKey,
+            routes: [
+              GoRoute(
+                path: '/missions',
+                builder: (context, state) => const MissionsScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorProfileKey,
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
           ),
         ],
       ),

@@ -14,7 +14,7 @@ class OfflineStateWidget extends StatelessWidget {
   final Widget? footer;
   final bool compact;
 
-  const OfflineStateWidget({
+  OfflineStateWidget({
     super.key,
     required this.message,
     this.title,
@@ -30,10 +30,10 @@ class OfflineStateWidget extends StatelessWidget {
 
     if (compact) {
       return Card(
-        color: AppColors.card,
+        color: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.outline, width: 1),
+          side: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
         margin: const EdgeInsets.symmetric(vertical: 8.0),
         child: Padding(
@@ -45,12 +45,12 @@ class OfflineStateWidget extends StatelessWidget {
               Row(
                 children: [
                   Icon(icon, color: AppColors.discipline, size: 20),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       message,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -58,7 +58,7 @@ class OfflineStateWidget extends StatelessWidget {
                 ],
               ),
               if (footer != null) ...[
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 footer!,
               ],
             ],
@@ -68,11 +68,11 @@ class OfflineStateWidget extends StatelessWidget {
     }
 
     return Card(
-      color: AppColors.surface,
+      color: Theme.of(context).colorScheme.surface,
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: const BorderSide(color: AppColors.outline, width: 1),
+        side: BorderSide(color: Theme.of(context).dividerColor, width: 1),
       ),
       margin: const EdgeInsets.all(16.0),
       child: Padding(
@@ -95,22 +95,22 @@ class OfflineStateWidget extends StatelessWidget {
                   color: AppColors.discipline,
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               if (title != null && title!.isNotEmpty) ...[
                 Text(
                   title!,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
               ],
               Text(
                 message,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   height: 1.4,
                 ),
                 textAlign: TextAlign.center,

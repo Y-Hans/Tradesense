@@ -17,14 +17,14 @@ class PaywallScreen extends ConsumerWidget {
           children: [
             const Icon(Icons.workspace_premium,
                 size: 72, color: AppColors.alert),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text('Unlock Deep AI Coaching',
                 style: Theme.of(context).textTheme.headlineMedium),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'Get unlimited trade explanations, advanced risk analytics, and exclusive beginner trading missions.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             ),
             const Spacer(),
             SizedBox(
@@ -40,7 +40,7 @@ class PaywallScreen extends ConsumerWidget {
                 },
                 child: const Text('UPGRADE NOW (REVENUECAT INTEGRATED)',
                     style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold)),
+                        color: Colors.white, fontWeight: FontWeight.bold)),
               ),
             ),
           ],

@@ -97,6 +97,7 @@ class _CyberGoldVipShieldState extends State<CyberGoldVipShield>
                   CustomPaint(
                     size: Size(widget.size, widget.size),
                     painter: _VipRingPainter(
+                      context: context,
                       progress: _progress,
                       strokeWidth: 3.5,
                       glowIntensity: _pulseController.value,
@@ -111,7 +112,7 @@ class _CyberGoldVipShieldState extends State<CyberGoldVipShield>
                       gradient: RadialGradient(
                         colors: [
                           AppColors.cyberGold.withValues(alpha: 0.2),
-                          AppColors.oledSurface.withValues(alpha: 0.9),
+                          Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
                         ],
                       ),
                       border: Border.all(
@@ -205,11 +206,13 @@ class _Sparkle extends StatelessWidget {
 }
 
 class _VipRingPainter extends CustomPainter {
+  final BuildContext context;
   final double progress;
   final double strokeWidth;
   final double glowIntensity;
 
   _VipRingPainter({
+    required this.context,
     required this.progress,
     required this.strokeWidth,
     required this.glowIntensity,
@@ -225,7 +228,7 @@ class _VipRingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
-      ..color = AppColors.oledCard.withValues(alpha: 0.6);
+      ..color = Theme.of(context).cardColor.withValues(alpha: 0.6);
     canvas.drawCircle(center, radius, trackPaint);
 
     // Progress arc

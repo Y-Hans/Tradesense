@@ -75,10 +75,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const steps = OnboardingStep.steps;
+    final steps = OnboardingStep.steps;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +88,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'ONBOARDING',
                     style: TextStyle(
                       color: AppColors.primary,
@@ -100,9 +100,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   if (!_isLastStep)
                     TextButton(
                       onPressed: _finishOnboarding,
-                      child: const Text(
+                      child: Text(
                         'Skip',
-                        style: TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                       ),
                     ),
                 ],
@@ -149,12 +149,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16.0),
+                        SizedBox(height: 16.0),
                         Text(
                           step.description,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             fontSize: 15.0,
                             height: 1.4,
                           ),
@@ -171,13 +171,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 steps.length,
                 (index) => AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  margin: EdgeInsets.symmetric(horizontal: 4.0),
                   width: _currentIndex == index ? 24.0 : 8.0,
                   height: 8.0,
                   decoration: BoxDecoration(
                     color: _currentIndex == index
                         ? AppColors.primary
-                        : AppColors.card,
+                        : Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(4.0),
                   ),
                 ),

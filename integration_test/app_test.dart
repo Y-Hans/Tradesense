@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cryptoedu/app/app.dart';
+import 'package:cryptoedu/main.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +10,7 @@ void main() {
       (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: CryptoEduApp(),
+        child: TradeSenseApp(),
       ),
     );
 

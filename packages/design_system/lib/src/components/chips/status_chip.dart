@@ -30,7 +30,7 @@ class StatusChip extends StatelessWidget {
     this.icon,
   });
 
-  Color _getColor() {
+  Color _getColor(BuildContext context) {
     switch (type) {
       case StatusType.success:
         return AppColors.successGreen;
@@ -39,13 +39,13 @@ class StatusChip extends StatelessWidget {
       case StatusType.error:
         return AppColors.errorRed;
       case StatusType.neutral:
-        return AppColors.textSecondary;
+        return Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = _getColor();
+    final color = _getColor(context);
     
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -69,7 +69,7 @@ class StatusChip extends StatelessWidget {
               size: 12,
               color: color,
             ),
-            const SizedBox(width: AppSpacing.xs),
+            SizedBox(width: AppSpacing.xs),
           ],
           Text(
             label,

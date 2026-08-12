@@ -26,7 +26,7 @@ class PrimaryButton extends StatelessWidget {
   final Widget? icon;
 
   /// Create a PrimaryButton
-  const PrimaryButton({
+  PrimaryButton({
     super.key,
     required this.text,
     this.onPressed,
@@ -41,9 +41,9 @@ class PrimaryButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = _isDisabled
-        ? (isDark ? AppColors.textDisabled : Colors.grey.shade400)
+        ? (isDark ? Theme.of(context).disabledColor : Colors.grey.shade400)
         : Colors.white;
-    final disabledBg = isDark ? AppColors.surface : Colors.grey.shade300;
+    final disabledBg = isDark ? Theme.of(context).colorScheme.surface : Colors.grey.shade300;
 
     return Container(
       decoration: BoxDecoration(
@@ -79,7 +79,7 @@ class PrimaryButton extends StatelessWidget {
                           data: IconThemeData(color: textColor, size: 20),
                           child: icon!,
                         ),
-                        const SizedBox(width: AppSpacing.sm),
+                        SizedBox(width: AppSpacing.sm),
                       ],
                       Text(
                         text,

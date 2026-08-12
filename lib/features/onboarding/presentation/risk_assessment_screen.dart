@@ -42,7 +42,7 @@ class _RiskAssessmentScreenState extends ConsumerState<RiskAssessmentScreen> {
     return AppScaffold(
       title: 'Risk Guardrails',
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -50,13 +50,13 @@ class _RiskAssessmentScreenState extends ConsumerState<RiskAssessmentScreen> {
               'Set your risk guardrails',
               style: Theme.of(context).textTheme.displaySmall,
             ),
-            const SizedBox(height: AppSpacing.md),
+            SizedBox(height: AppSpacing.md),
             Text(
               _selectedUnit == '₹' 
                   ? 'TradeSense will alert you if your daily loss exceeds this amount.'
                   : 'TradeSense will alert you if your daily loss exceeds this percentage of your account.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   ),
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -64,10 +64,10 @@ class _RiskAssessmentScreenState extends ConsumerState<RiskAssessmentScreen> {
               controller: _lossLimitController,
               labelText: 'Max daily loss',
               hintText: _selectedUnit == '₹' ? 'e.g. 5000' : 'e.g. 1.5',
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
               prefixIcon: Container(
-                margin: const EdgeInsets.only(right: AppSpacing.sm),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                margin: EdgeInsets.only(right: AppSpacing.sm),
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 decoration: BoxDecoration(
                   border: Border(
                     right: BorderSide(color: Theme.of(context).dividerColor),
@@ -77,7 +77,7 @@ class _RiskAssessmentScreenState extends ConsumerState<RiskAssessmentScreen> {
                   child: DropdownButton<String>(
                     value: _selectedUnit,
                     dropdownColor: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
-                    icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.textSecondary, size: 20),
+                    icon: Icon(Icons.keyboard_arrow_down, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, size: 20),
                     items: ['₹', '%'].map((String unit) {
                       return DropdownMenuItem<String>(
                         value: unit,

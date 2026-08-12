@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../tokens/colors.dart';
 import '../../tokens/spacing.dart';
 
 /// A base card component used across the application.
@@ -22,7 +21,7 @@ class AppCard extends StatelessWidget {
   /// meaning you must pad the inner content yourself.
   final EdgeInsetsGeometry padding;
 
-  /// Optional background color. Defaults to [AppColors.surface].
+  /// Optional background color. Defaults to [Theme.of(context).colorScheme.surface].
   final Color? color;
 
   /// Whether the card should have an active glow/border (e.g. for selection)
@@ -34,7 +33,7 @@ class AppCard extends StatelessWidget {
   /// Action when the card is tapped
   final VoidCallback? onTap;
 
-  const AppCard({
+  AppCard({
     super.key,
     required this.child,
     this.padding = EdgeInsets.zero,

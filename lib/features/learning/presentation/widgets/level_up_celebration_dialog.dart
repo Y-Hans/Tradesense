@@ -65,9 +65,9 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     constraints: const BoxConstraints(maxWidth: 400),
-                    padding: const EdgeInsets.all(32.0),
+                    padding: EdgeInsets.all(32.0),
                     decoration: BoxDecoration(
-                      color: AppColors.oledSurface.withValues(alpha: 0.8),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(24.0),
                       border: Border.all(
                         color: AppColors.electricCyan.withValues(alpha: 0.5),
@@ -122,8 +122,8 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                         const SizedBox(height: 8.0),
                         Text(
                           levelTitle,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 22.0,
                             fontWeight: FontWeight.bold,
                           ),
@@ -132,8 +132,8 @@ class LevelUpCelebrationDialog extends StatelessWidget {
                         const SizedBox(height: 16.0),
                         Text(
                           unlockMessage,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             fontSize: 15.0,
                             height: 1.4,
                           ),

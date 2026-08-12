@@ -25,7 +25,7 @@ class AppScaffold extends StatelessWidget {
   /// Whether to show the back button
   final bool showBackButton;
 
-  const AppScaffold({
+  AppScaffold({
     super.key,
     required this.body,
     this.title,

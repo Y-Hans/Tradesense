@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import '../../app/theme/app_theme.dart';
 
@@ -192,7 +191,7 @@ class _LoadingLabelState extends State<_LoadingLabel>
         return Text(
           '${widget.text}$dots',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.textMuted,
+                color: Theme.of(context).textTheme.labelMedium?.color ?? Colors.grey,
                 letterSpacing: 1.2,
               ),
         );
@@ -224,7 +223,7 @@ class _FallbackSpinner extends StatelessWidget {
 ///  Drops a dimmed OLED backdrop + centered loader
 /// ───────────────────────────────────────────────
 class BitcoinLoadingOverlay extends StatelessWidget {
-  const BitcoinLoadingOverlay({
+  BitcoinLoadingOverlay({
     super.key,
     this.label = 'Syncing markets...',
   });
@@ -234,7 +233,7 @@ class BitcoinLoadingOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: AppColors.oledBlack.withValues(alpha: 0.85),
+      color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
       child: Center(
         child: BitcoinLoader(
           size: 140,

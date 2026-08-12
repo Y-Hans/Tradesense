@@ -5,7 +5,7 @@ import 'progress_controller.dart';
 import '../domain/progress_state.dart';
 
 class ProgressScreen extends ConsumerWidget {
-  const ProgressScreen({super.key});
+  ProgressScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,7 +38,7 @@ class ProgressScreen extends ConsumerWidget {
       backgroundColor: Theme.of(context).cardTheme.color ?? Theme.of(context).colorScheme.surface,
       onRefresh: () => ref.read(progressControllerProvider.notifier).refresh(),
       child: ListView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: EdgeInsets.all(AppSpacing.lg),
         children: [
           Text(
             'Weekly Overview',
@@ -49,7 +49,7 @@ class ProgressScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: AppCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: EdgeInsets.all(AppSpacing.md),
                   child: Column(
                     children: [
                       ScoreRing(
@@ -57,11 +57,11 @@ class ProgressScreen extends ConsumerWidget {
                         size: 64,
                         color: AppColors.primaryCyan,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(height: AppSpacing.sm),
                       Text(
                         'Discipline',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             ),
                       ),
                     ],
@@ -71,7 +71,7 @@ class ProgressScreen extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: AppCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: EdgeInsets.all(AppSpacing.md),
                   child: Column(
                     children: [
                       ScoreRing(
@@ -79,35 +79,35 @@ class ProgressScreen extends ConsumerWidget {
                         size: 64,
                         color: AppColors.successGreen,
                       ),
-                      const SizedBox(height: AppSpacing.sm),
+                      SizedBox(height: AppSpacing.sm),
                       Text(
                         'Win Rate',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              SizedBox(width: AppSpacing.md),
               Expanded(
                 child: AppCard(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  padding: EdgeInsets.all(AppSpacing.md),
                   child: Column(
                     children: [
                       Text(
                         state.profitFactor.toStringAsFixed(2),
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              color: AppColors.textPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(height: AppSpacing.md),
                       Text(
                         'Profit Factor',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             ),
                       ),
                     ],
@@ -116,14 +116,14 @@ class ProgressScreen extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xxl),
+          SizedBox(height: AppSpacing.xxl),
           Text(
             'Top Mistakes Detected',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: AppSpacing.lg),
           if (state.topMistakes.isEmpty)
-            const AppCard(
+            AppCard(
               padding: EdgeInsets.all(AppSpacing.lg),
               child: Center(
                 child: Text('No prominent mistake patterns detected yet.'),
@@ -135,7 +135,7 @@ class ProgressScreen extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: AppCard(
                   hasBorder: true,
-                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  padding: EdgeInsets.all(AppSpacing.lg),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -148,11 +148,11 @@ class ProgressScreen extends ConsumerWidget {
                                   fontWeight: FontWeight.w600,
                                 ),
                           ),
-                          const SizedBox(height: AppSpacing.xs),
+                          SizedBox(height: AppSpacing.xs),
                           Text(
                             'Occurred ${mistake.frequency} times',
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 ),
                           ),
                         ],

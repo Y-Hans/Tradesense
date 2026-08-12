@@ -44,13 +44,13 @@ class ScoreRing extends StatelessWidget {
           score: score,
           color: color,
           strokeWidth: strokeWidth,
-          backgroundColor: AppColors.border,
+          backgroundColor: Theme.of(context).dividerColor,
         ),
         child: Center(
           child: Text(
             score.toString(),
             style: AppTypography.textTheme.titleLarge?.copyWith(
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.bold,
               fontSize: size * 0.3,
             ),

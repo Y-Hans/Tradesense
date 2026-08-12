@@ -5,10 +5,10 @@ void main() {
   group('VirtualWallet', () {
     test('initial factory sets default values correctly', () {
       final wallet = VirtualWallet.initial();
-      expect(wallet.balanceInr, 100000.0);
+      expect(wallet.balanceInr, 10000000.0);
       expect(wallet.lockedInr, 0.0);
-      expect(wallet.initialBalanceInr, 100000.0);
-      expect(wallet.availableBalanceInr, 100000.0);
+      expect(wallet.initialBalanceInr, 10000000.0);
+      expect(wallet.availableBalanceInr, 10000000.0);
     });
 
     test('availableBalanceInr calculates correctly', () {
@@ -26,7 +26,7 @@ void main() {
       );
       expect(wallet.balanceInr, 120000.0);
       expect(wallet.lockedInr, 20000.0);
-      expect(wallet.initialBalanceInr, 100000.0); 
+      expect(wallet.initialBalanceInr, 10000000.0); 
       expect(wallet.availableBalanceInr, 100000.0);
     });
   });

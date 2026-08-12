@@ -42,6 +42,16 @@ class AppColors {
   static const Color cyberGold    = warning;
   static const Color alert        = loss;
   static const Color outline      = border;
+  
+  /// ── Missing UI Overhaul Tokens ─────────────────
+  static const Color crimsonSpark = Color(0xFFFF3366);
+  static const Color neonEmerald  = Color(0xFF00D09C);
+  static const Color oledObsidian = Color(0xFF0B0E14);
+  static const Color auroraEmerald = Color(0xFF00D09C);
+  static const Color auroraCyan   = Color(0xFF00E5FF);
+  static const Color auroraIndigo = Color(0xFF5E72E4);
+  static const Color auroraViolet = Color(0xFFB388FF);
+  static const Color auroraBase   = Color(0xFF0B0E14);
 }
 
 class AppGradients {
@@ -54,6 +64,33 @@ class AppGradients {
   static const LinearGradient oledSurfaceGradient = LinearGradient(
     colors: [AppColors.surface, AppColors.background],
   );
+
+  static const LinearGradient auroraDrift = LinearGradient(
+    colors: [AppColors.auroraCyan, AppColors.auroraIndigo],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static LinearGradient specular({Offset? focal}) {
+    final begin = focal != null ? Alignment(-focal.dx, -focal.dy) : Alignment.topLeft;
+    final end = focal != null ? Alignment(focal.dx, focal.dy) : Alignment.bottomRight;
+    return LinearGradient(
+      colors: [Colors.white.withValues(alpha: 0.8), Colors.white.withValues(alpha: 0.1)],
+      begin: begin,
+      end: end,
+    );
+  }
+
+  static LinearGradient glassSurface({bool hovered = false}) {
+    return LinearGradient(
+      colors: [
+        Colors.white.withValues(alpha: hovered ? 0.15 : 0.1), 
+        Colors.white.withValues(alpha: hovered ? 0.1 : 0.05)
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
 }
 
 class AppShadows {
@@ -98,11 +135,13 @@ class AppRadii {
 
 class AppTheme {
   static const _cardRadius = BorderRadius.all(Radius.circular(AppRadii.card));
-  static const _buttonRadius = BorderRadius.all(Radius.circular(AppRadii.md));
 
   // ── HELPER FOR TEXT THEME ─────────────────────────────
   static TextTheme _buildTextTheme(Color primaryText, Color secondaryText, Color mutedText) {
-    return GoogleFonts.interTextTheme().copyWith(
+    return GoogleFonts.interTextTheme().apply(
+      bodyColor: primaryText,
+      displayColor: primaryText,
+    ).copyWith(
       displayLarge: GoogleFonts.outfit(
         color: primaryText, fontWeight: FontWeight.w700, fontSize: 32, letterSpacing: -0.5,
       ),
@@ -165,13 +204,13 @@ class AppTheme {
         outline: borderColor,
       ),
       textTheme: _buildTextTheme(textColor, const Color(0xFF4A5568), const Color(0xFF718096)),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: cardColor,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: _cardRadius,
-          side: const BorderSide(color: borderColor, width: 1),
+          side: BorderSide(color: borderColor, width: 1),
         ),
       ),
       appBarTheme: const AppBarTheme(
@@ -314,13 +353,13 @@ class AppTheme {
         outline: borderColor,
       ),
       textTheme: _buildTextTheme(textColor, const Color(0xFFA0AABF), const Color(0xFF3E4659)),
-      cardTheme: CardThemeData(
+      cardTheme: const CardThemeData(
         color: cardColor,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: _cardRadius,
-          side: const BorderSide(color: borderColor, width: 1.5),
+          side: BorderSide(color: borderColor, width: 1.5),
         ),
       ),
       appBarTheme: const AppBarTheme(

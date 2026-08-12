@@ -27,11 +27,11 @@ class RecentRewardsTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (rewards.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.all(16.0),
         child: Text(
           'No recent rewards.',
-          style: TextStyle(color: AppColors.textSecondary),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
         ),
       );
     }
@@ -112,9 +112,9 @@ class _TimelineTile extends StatelessWidget {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
                   child: Container(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: EdgeInsets.all(16.0),
                     decoration: BoxDecoration(
-                      color: AppColors.oledSurface.withValues(alpha: 0.4),
+                      color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(12.0),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
@@ -156,11 +156,11 @@ class _TimelineTile extends StatelessWidget {
                               ),
                           ],
                         ),
-                        const SizedBox(height: 6.0),
+                        SizedBox(height: 6.0),
                         Text(
                           reward.subtitle,
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
+                          style: TextStyle(
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             fontSize: 13.0,
                           ),
                         ),

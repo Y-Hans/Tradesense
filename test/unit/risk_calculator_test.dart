@@ -68,7 +68,7 @@ void main() {
 
       final risk = RiskCalculator.compute(
         portfolio: portfolio,
-        proposedTradeSizeInr: 40000.0, // 40% of equity
+        proposedTradeSizeInr: 4000000.0, // 40% of equity (10,000,000 balance)
         hasStopLoss: true,
         assetVolatility: 2.0,
       );

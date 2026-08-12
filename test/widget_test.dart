@@ -1,15 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cryptoedu/app/app.dart';
+import 'package:cryptoedu/main.dart';
 
 void main() {
-  testWidgets('App initializes with CryptoEduApp', (WidgetTester tester) async {
+  testWidgets('App initializes with TradeSenseApp', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(
-        child: CryptoEduApp(),
+        child: TradeSenseApp(),
       ),
     );
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Trader'), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }

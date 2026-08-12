@@ -80,11 +80,11 @@ class _AchievementCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
         child: Container(
-          padding: const EdgeInsets.all(12.0),
+          padding: EdgeInsets.all(12.0),
           decoration: BoxDecoration(
             color: isActive
                 ? color.withValues(alpha: 0.1)
-                : AppColors.oledSurface.withValues(alpha: 0.5),
+                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(16.0),
             border: Border.all(
               color: isActive
@@ -132,7 +132,7 @@ class _AchievementCard extends StatelessWidget {
                 achievement.title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: isActive ? Colors.white : Colors.grey,
+                  color: isActive ? Theme.of(context).colorScheme.onSurface : Colors.grey,
                   fontSize: 13.0,
                   fontWeight: FontWeight.bold,
                 ),

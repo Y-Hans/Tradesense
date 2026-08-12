@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../tokens/colors.dart';
 import '../../tokens/spacing.dart';
 
 /// A stylized text input field for the application.
@@ -62,10 +61,10 @@ class AppTextField extends StatelessWidget {
           Text(
             labelText!,
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                 ),
           ),
-          const SizedBox(height: AppSpacing.xs),
+          SizedBox(height: AppSpacing.xs),
         ],
         TextField(
           controller: controller,
@@ -76,7 +75,7 @@ class AppTextField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textDisabled,
+                  color: Theme.of(context).disabledColor,
                 ),
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,

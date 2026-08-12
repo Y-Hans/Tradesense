@@ -16,34 +16,34 @@ class AchievementUnlockCard extends StatelessWidget {
     final rarityColor = achievement.rarity.color;
 
     return Container(
-      padding: const EdgeInsets.all(12.0),
+      padding: EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12.0),
         border: Border.all(
           color: isUnlocked
               ? rarityColor.withValues(alpha: 0.6)
-              : AppColors.outline,
+              : Theme.of(context).dividerColor,
           width: isUnlocked ? 1.5 : 1.0,
         ),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10.0),
+            padding: EdgeInsets.all(10.0),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isUnlocked
                   ? rarityColor.withValues(alpha: 0.2)
-                  : AppColors.card,
+                  : Theme.of(context).cardColor,
             ),
             child: Icon(
               achievement.icon,
-              color: isUnlocked ? rarityColor : AppColors.textSecondary,
+              color: isUnlocked ? rarityColor : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               size: 22.0,
             ),
           ),
-          const SizedBox(width: 12.0),
+          SizedBox(width: 12.0),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +55,7 @@ class AchievementUnlockCard extends StatelessWidget {
                       achievement.title,
                       style: TextStyle(
                         color:
-                            isUnlocked ? Colors.white : AppColors.textSecondary,
+                            isUnlocked ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                         fontSize: 14.0,
                         fontWeight: FontWeight.bold,
                       ),
@@ -84,8 +84,8 @@ class AchievementUnlockCard extends StatelessWidget {
                 const SizedBox(height: 4.0),
                 Text(
                   achievement.description,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     fontSize: 12.0,
                   ),
                 ),

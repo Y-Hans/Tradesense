@@ -1,6 +1,6 @@
 import 'package:cryptoedu/app/theme/app_theme.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cryptoedu/features/home/presentation/app_shell.dart';
+import 'package:cryptoedu/features/shell/presentation/app_shell.dart';
 import 'package:cryptoedu/features/trading/presentation/trade_entry_screen.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:cryptoedu/shared/widgets/primary_button.dart';
@@ -53,7 +53,7 @@ void main() {
         isNull);
   });
 
-  testWidgets('AppShell switches between its four primary destinations',
+  testWidgets('AppShell switches between its primary destinations',
       (tester) async {
     final router = GoRouter(
       initialLocation: '/0',
@@ -65,8 +65,10 @@ void main() {
           branches: [
             StatefulShellBranch(routes: [GoRoute(path: '/0', builder: (_, __) => const Center(child: Text('Dashboard content')))]),
             StatefulShellBranch(routes: [GoRoute(path: '/1', builder: (_, __) => const Center(child: Text('Markets content')))]),
-            StatefulShellBranch(routes: [GoRoute(path: '/2', builder: (_, __) => const Center(child: Text('Trade content')))]),
-            StatefulShellBranch(routes: [GoRoute(path: '/3', builder: (_, __) => const Center(child: Text('Portfolio content')))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/2', builder: (_, __) => const Center(child: Text('Portfolio content')))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/3', builder: (_, __) => const Center(child: Text('Coach content')))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/4', builder: (_, __) => const Center(child: Text('Missions content')))]),
+            StatefulShellBranch(routes: [GoRoute(path: '/5', builder: (_, __) => const Center(child: Text('Profile content')))]),
           ],
         ),
       ],
@@ -87,9 +89,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Markets content'), findsOneWidget);
-    expect(find.text('Dashboard'), findsOneWidget);
-    expect(find.text('Trade'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
     expect(find.text('Portfolio'), findsOneWidget);
+    expect(find.text('Coach'), findsOneWidget);
+    expect(find.text('Missions'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
   });
 
   testWidgets('TradeEntryScreen labels every order as simulated',

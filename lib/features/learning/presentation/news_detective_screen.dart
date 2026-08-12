@@ -168,10 +168,10 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.oledCard,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text('Score: $_score',
@@ -188,8 +188,8 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                       children: [
                           Text(
                               'Source: ${_questions[_currentIndex].sourceMetadata}',
-                              style: const TextStyle(
-                                  color: AppColors.textSecondary,
+                              style: TextStyle(
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                   fontSize: 12)),
                           const SizedBox(height: 12),
                           Text(
@@ -210,9 +210,9 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                                     padding: const EdgeInsets.only(bottom: 4.0),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.search,
+                                        Icon(Icons.search,
                                             size: 14,
-                                            color: AppColors.textSecondary),
+                                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                                         const SizedBox(width: 6),
                                         Expanded(
                                             child: Text(clue,
@@ -341,10 +341,10 @@ class _NewsDetectiveScreenState extends State<NewsDetectiveScreen> {
                     color: AppColors.electricCyan,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Great job practicing critical news evaluation! Always verify sources before acting on market rumors.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             ),
             const SizedBox(height: 24),
             ElevatedButton(

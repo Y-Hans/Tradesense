@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../app/theme/app_theme.dart';
 
@@ -87,7 +86,7 @@ class _AuroraBackgroundState extends State<AuroraBackground>
         ];
       case AuroraSentiment.neutral:
       case null:
-        return AppGradients.auroraDrift;
+        return AppGradients.auroraDrift.colors;
     }
   }
 
@@ -100,6 +99,7 @@ class _AuroraBackgroundState extends State<AuroraBackground>
         builder: (context, _) {
           return CustomPaint(
             painter: _AuroraPainter(
+              context: context,
               t: _drift.value,
               palette: palette,
               intensity: widget.intensity,
@@ -118,10 +118,13 @@ class _AuroraBackgroundState extends State<AuroraBackground>
 /// smooth aurora rather than discrete circles.
 class _AuroraPainter extends CustomPainter {
   _AuroraPainter({
+    required this.context,
     required this.t,
     required this.palette,
     required this.intensity,
   });
+
+  final BuildContext context;
 
   final double t;
   final List<Color> palette;
@@ -142,7 +145,7 @@ class _AuroraPainter extends CustomPainter {
         end: Alignment.bottomCenter,
         colors: [
           Colors.transparent,
-          AppColors.oledBlack.withValues(alpha: 0.55),
+          Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.55),
         ],
       ).createShader(Offset.zero & size);
     canvas.drawRect(Offset.zero & size, depth);
@@ -192,7 +195,7 @@ class _AuroraPainter extends CustomPainter {
         Offset(cx, cy),
         b.radius,
         Paint()
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 90)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, 90)
           ..color = b.color.withValues(alpha: alpha.clamp(0.0, 0.4)),
       );
     }
@@ -203,7 +206,7 @@ class _AuroraPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          AppColors.oledBlack.withValues(alpha: 0.35),
+          Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.35),
           Colors.transparent,
         ],
         stops: const [0.0, 0.25],

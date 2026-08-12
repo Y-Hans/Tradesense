@@ -27,7 +27,7 @@ class RiskMeterScreen extends StatelessWidget {
                     value: 0.35,
                     color: AppColors.profit,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text('35/100',
                       style: Theme.of(context).textTheme.displayLarge),
                 ],

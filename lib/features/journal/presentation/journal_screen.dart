@@ -7,7 +7,7 @@ import 'journal_controller.dart';
 import '../domain/journal_state.dart';
 
 class JournalScreen extends ConsumerWidget {
-  const JournalScreen({super.key});
+  JournalScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,7 +65,7 @@ class JournalScreen extends ConsumerWidget {
           
           return AppCard(
             hasBorder: true,
-            padding: const EdgeInsets.all(AppSpacing.lg),
+            padding: EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -87,7 +87,7 @@ class JournalScreen extends ConsumerWidget {
                         ),
                         if (trade.aiReviewed) ...[
                           const SizedBox(width: AppSpacing.sm),
-                          const Icon(Icons.auto_awesome, color: AppColors.primaryCyan, size: 14),
+                          Icon(Icons.auto_awesome, color: AppColors.primaryCyan, size: 14),
                         ],
                       ],
                     ),
@@ -100,7 +100,7 @@ class JournalScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.md),
+                SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     Expanded(
@@ -113,7 +113,7 @@ class JournalScreen extends ConsumerWidget {
                     Text(
                       DateFormat('MMM d, yyyy').format(trade.date),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                           ),
                     ),
                   ],

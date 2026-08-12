@@ -75,10 +75,10 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'CURRENT LEVEL',
                             style: TextStyle(
-                              color: AppColors.textSecondary,
+                              color: Colors.white70,
                               fontSize: 11.0,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1.2,
@@ -145,9 +145,9 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
               ),
             ),
             const SizedBox(height: 4.0),
-            const Text(
+            Text(
               'Complete learning objectives to earn XP and level up your discipline.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13.0),
+              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 13.0),
             ),
             const SizedBox(height: 16.0),
 
@@ -155,21 +155,21 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: missions.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12.0),
+              separatorBuilder: (_, __) => SizedBox(height: 12.0),
               itemBuilder: (context, index) {
                 final mission = missions[index];
                 final isCompleted = mission.isCompleted ||
                     completedMissionIds.contains(mission.id);
 
                 return Container(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12.0),
                     border: Border.all(
                       color: isCompleted
                           ? AppColors.profit.withValues(alpha: 0.5)
-                          : AppColors.card,
+                          : Theme.of(context).cardColor,
                     ),
                   ),
                   child: Row(
@@ -207,8 +207,8 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                             const SizedBox(height: 4.0),
                             Text(
                               mission.description,
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 fontSize: 12.5,
                               ),
                             ),

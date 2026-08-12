@@ -41,9 +41,9 @@ class _DailyStreakCardState extends State<DailyStreakCard> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               decoration: BoxDecoration(
-                color: AppColors.oledSurface.withValues(alpha: 0.4),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(16.0),
                 border: Border.all(
                   color: widget.isActive
@@ -93,7 +93,7 @@ class _DailyStreakCardState extends State<DailyStreakCard> {
                   Text(
                     '${widget.streakDays} Day${widget.streakDays == 1 ? '' : 's'}',
                     style: TextStyle(
-                      color: widget.isActive ? Colors.white : Colors.grey,
+                      color: widget.isActive ? Theme.of(context).colorScheme.onSurface : Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 14.0,
                     ),
@@ -102,7 +102,7 @@ class _DailyStreakCardState extends State<DailyStreakCard> {
                   Text(
                     'Streak',
                     style: TextStyle(
-                      color: widget.isActive ? Colors.white70 : Colors.grey,
+                      color: widget.isActive ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7) : Colors.grey,
                       fontSize: 11.0,
                       letterSpacing: 1.1,
                     ),

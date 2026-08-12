@@ -1,77 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
 
 class AppShell extends StatelessWidget {
-  final Widget child;
+  final StatefulNavigationShell navigationShell;
 
   const AppShell({
     super.key,
-    required this.child,
+    required this.navigationShell,
   });
 
-  int _calculateSelectedIndex(BuildContext context) {
-    final String location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/markets')) return 1;
-    if (location.startsWith('/portfolio')) return 2;
-    if (location.startsWith('/missions')) return 3;
-    if (location.startsWith('/profile')) return 4;
-    return 0; // Home / Today
-  }
-
   void _onItemTapped(int index, BuildContext context) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/markets');
-        break;
-      case 2:
-        context.go('/portfolio');
-        break;
-      case 3:
-        context.go('/missions');
-        break;
-      case 4:
-        context.go('/profile');
-        break;
+    if (index != navigationShell.currentIndex) {
+      HapticFeedback.selectionClick();
     }
+    navigationShell.goBranch(
+      index,
+      initialLocation: index == navigationShell.currentIndex,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       showBackButton: false,
-      body: child,
+      body: navigationShell,
       bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _calculateSelectedIndex(context),
+        currentIndex: navigationShell.currentIndex,
         onTap: (index) => _onItemTapped(index, context),
-        items: const [
+        items: [
           NavItemData(
             label: 'Home',
-            icon: Icon(Icons.home_outlined, color: AppColors.textSecondary),
+            icon: Icon(Icons.home_outlined, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             activeIcon: Icon(Icons.home, color: AppColors.primaryCyan),
           ),
           NavItemData(
             label: 'Markets',
-            icon: Icon(Icons.show_chart_outlined, color: AppColors.textSecondary),
+            icon: Icon(Icons.show_chart_outlined, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             activeIcon: Icon(Icons.show_chart, color: AppColors.primaryCyan),
           ),
           NavItemData(
             label: 'Portfolio',
-            icon: Icon(Icons.account_balance_wallet_outlined, color: AppColors.textSecondary),
+            icon: Icon(Icons.account_balance_wallet_outlined, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             activeIcon: Icon(Icons.account_balance_wallet, color: AppColors.primaryCyan),
           ),
           NavItemData(
+            label: 'Coach',
+            icon: Icon(Icons.psychology_outlined, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+            activeIcon: Icon(Icons.psychology, color: AppColors.primaryCyan),
+          ),
+          NavItemData(
             label: 'Missions',
-            icon: Icon(Icons.emoji_events_outlined, color: AppColors.textSecondary),
+            icon: Icon(Icons.emoji_events_outlined, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
             activeIcon: Icon(Icons.emoji_events, color: AppColors.primaryCyan),
           ),
           NavItemData(
             label: 'Profile',
-            icon: Icon(Icons.person_outline, color: AppColors.textSecondary),
-            activeIcon: Icon(Icons.person, color: AppColors.primaryCyan),
+            icon: Icon(Icons.person_outline, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+            activeIcon: const Icon(Icons.person, color: AppColors.primaryCyan),
           ),
         ],
       ),

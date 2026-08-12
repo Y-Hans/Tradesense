@@ -62,7 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
       if (currentUser != null) {
         // User session exists — go directly to home
-        context.go('/');
+        context.go('/home');
       } else {
         // No session — show welcome/login flow
         context.go('/welcome');
@@ -94,8 +94,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const AIAvatar(size: 80),
-              const SizedBox(height: AppSpacing.xl),
+              AIAvatar(size: 80),
+              SizedBox(height: AppSpacing.xl),
               Text(
                 'TradeSense',
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
@@ -103,18 +103,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       letterSpacing: -0.5,
                     ),
               ),
-              const SizedBox(height: AppSpacing.sm),
+              SizedBox(height: AppSpacing.sm),
               Text(
                 'AI-Powered Trading Education',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                     ),
               ),
-              const SizedBox(height: AppSpacing.xxxl),
+              SizedBox(height: AppSpacing.xxxl),
               SizedBox(
                 width: 120,
                 child: LinearProgressIndicator(
-                  backgroundColor: AppColors.border,
+                  backgroundColor: Theme.of(context).dividerColor,
                   valueColor: const AlwaysStoppedAnimation<Color>(
                     AppColors.primaryCyan,
                   ),

@@ -105,7 +105,7 @@ class CoachResultScreen extends ConsumerWidget {
         title: const Text('AI Coach Trade Explanation'),
       ),
       body: isOffline
-          ? const Center(
+          ? Center(
               child: OfflineStateWidget(
                 title: 'AI Coach Unavailable',
                 message: AppStrings.coachOfflineMessage,
@@ -128,53 +128,61 @@ class CoachResultScreen extends ConsumerWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            Column(
-                              children: [
-                                const Text(
-                                  'Discipline Score',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Discipline Score',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                                Text(
-                                  '${result.disciplineScore.score}/100',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.discipline,
+                                  Text(
+                                    '${result.disciplineScore.score}/100',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.discipline,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             Container(
                               width: 1,
                               height: 40,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             ),
-                            Column(
-                              children: [
-                                const Text(
-                                  'Risk Score',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
+                            Expanded(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Risk Score',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                                Text(
-                                  '${result.riskScore.score}/100',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.profit,
+                                  Text(
+                                    '${result.riskScore.score}/100',
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.profit,
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20),
                       Text(
                         'AI Coach Analysis',
                         style: Theme.of(context).textTheme.titleLarge,
@@ -222,8 +230,7 @@ class CoachResultScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => const Center(
-                child: OfflineStateWidget(
+              error: (err, stack) => Center(child: OfflineStateWidget(
                   title: 'AI Coach Unavailable',
                   message: AppStrings.coachOfflineMessage,
                 ),
@@ -249,9 +256,11 @@ class CoachResultScreen extends ConsumerWidget {
             children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(fontWeight: FontWeight.bold, color: color),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(fontWeight: FontWeight.bold, color: color),
+                ),
               ),
             ],
           ),

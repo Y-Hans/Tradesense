@@ -141,7 +141,7 @@ void main() {
 
       expect(find.textContaining('Showing cached data'), findsOneWidget);
       expect(find.text('Available Cash'), findsOneWidget);
-      expect(find.text('Invested'), findsOneWidget);
+      expect(find.text('Holdings Valuation'), findsOneWidget);
     });
   });
 }

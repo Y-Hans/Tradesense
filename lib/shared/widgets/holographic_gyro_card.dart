@@ -47,8 +47,6 @@ class _HolographicGyroCardState extends State<HolographicGyroCard>
 
   // Spring-back animation when gyro disabled or steady
   late AnimationController _springController;
-  late Animation<double> _springX;
-  late Animation<double> _springY;
 
   bool _isHovered = false;
 

@@ -19,7 +19,7 @@ class AIActionCard extends StatelessWidget {
   final VoidCallback onAccept;
   final VoidCallback? onDismiss;
   
-  const AIActionCard({
+  AIActionCard({
     super.key,
     required this.title,
     required this.description,
@@ -31,8 +31,8 @@ class AIActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final secondaryTextColor = isDark ? AppColors.textSecondary : const Color(0xFF64748B);
-    final btnBg = isDark ? AppColors.surface : theme.colorScheme.surface;
+    final secondaryTextColor = isDark ? Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey : Color(0xFF64748B);
+    final btnBg = isDark ? Theme.of(context).colorScheme.surface : theme.colorScheme.surface;
     final primaryColor = theme.colorScheme.primary;
 
     return AppCard(

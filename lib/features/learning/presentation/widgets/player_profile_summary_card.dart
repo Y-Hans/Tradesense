@@ -33,9 +33,9 @@ class PlayerProfileSummaryCard extends StatelessWidget {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
         child: Container(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0),
           decoration: BoxDecoration(
-            color: AppColors.oledSurface.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.1),
@@ -86,12 +86,12 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 4.0),
+                        SizedBox(height: 4.0),
                         Text(
                           rank,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14.0,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                             letterSpacing: 1.1,
                           ),
                         ),
@@ -104,16 +104,16 @@ class PlayerProfileSummaryCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24.0),
+              SizedBox(height: 24.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'XP Progress',
                     style: TextStyle(
                       fontSize: 12.0,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                       letterSpacing: 1.2,
                     ),
                   ),

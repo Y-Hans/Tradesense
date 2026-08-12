@@ -22,12 +22,12 @@ import '../../../shared/models/market_ticker.dart';
 class BinanceRestClient {
   BinanceRestClient({
     required Dio dio,
-    required double usdToInrRate,
+    required double Function() usdToInrRate,
   })  : _dio = dio,
         _usdToInrRate = usdToInrRate;
 
   final Dio _dio;
-  final double _usdToInrRate;
+  final double Function() _usdToInrRate;
 
   // ---------------------------------------------------------------------------
   // Supported symbols — Binance uses USDT pairs
@@ -116,10 +116,10 @@ class BinanceRestClient {
       // [0] open time ms, [1] open, [2] high, [3] low, [4] close, [5] volume
       return MarketCandle(
         timestamp: DateTime.fromMillisecondsSinceEpoch(kline[0] as int),
-        open: double.parse(kline[1] as String) * _usdToInrRate,
-        high: double.parse(kline[2] as String) * _usdToInrRate,
-        low: double.parse(kline[3] as String) * _usdToInrRate,
-        close: double.parse(kline[4] as String) * _usdToInrRate,
+        open: double.parse(kline[1] as String) * _usdToInrRate(),
+        high: double.parse(kline[2] as String) * _usdToInrRate(),
+        low: double.parse(kline[3] as String) * _usdToInrRate(),
+        close: double.parse(kline[4] as String) * _usdToInrRate(),
         volume: double.parse(kline[5] as String),
       );
     }).toList();
@@ -188,9 +188,10 @@ class BinanceRestClient {
   }
 
   MarketTicker _parseTicker(String symbol, Map<String, dynamic> raw) {
-    final lastPrice = double.parse(raw['lastPrice'] as String) * _usdToInrRate;
-    final high = double.parse(raw['highPrice'] as String) * _usdToInrRate;
-    final low = double.parse(raw['lowPrice'] as String) * _usdToInrRate;
+    final rate = _usdToInrRate();
+    final lastPrice = double.parse(raw['lastPrice'] as String) * rate;
+    final high = double.parse(raw['highPrice'] as String) * rate;
+    final low = double.parse(raw['lowPrice'] as String) * rate;
     final volume = double.parse(raw['volume'] as String);
     final changePercent =
         double.tryParse(raw['priceChangePercent'] as String) ?? 0.0;

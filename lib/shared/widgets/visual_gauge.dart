@@ -26,7 +26,7 @@ class VisualGauge extends StatelessWidget {
         painter: _GaugePainter(
           value: value,
           color: color,
-          backgroundColor: AppColors.oledBlack.withValues(alpha: 0.5),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
           strokeWidth: strokeWidth,
         ),
       ),

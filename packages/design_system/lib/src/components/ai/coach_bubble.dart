@@ -43,18 +43,18 @@ class CoachBubble extends StatelessWidget {
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.8,
         ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        margin: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        padding: EdgeInsets.all(AppSpacing.lg),
+        margin: EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: isUser ? AppColors.surface : AppColors.primaryCyan.withValues(alpha: 0.1),
+          color: isUser ? Theme.of(context).colorScheme.surface : AppColors.primaryCyan.withValues(alpha: 0.1),
           borderRadius: borderRadius,
           border: Border.all(
-            color: isUser ? AppColors.border : AppColors.primaryCyan.withValues(alpha: 0.3),
+            color: isUser ? Theme.of(context).dividerColor : AppColors.primaryCyan.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
         child: isThinking
-            ? const SizedBox(
+            ? SizedBox(
                 width: 40,
                 height: 20,
                 child: Center(
@@ -67,7 +67,7 @@ class CoachBubble extends StatelessWidget {
             : Text(
                 message,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: isUser ? AppColors.textPrimary : AppColors.primaryCyan,
+                      color: isUser ? Theme.of(context).colorScheme.onSurface : AppColors.primaryCyan,
                       height: 1.4,
                     ),
               ),

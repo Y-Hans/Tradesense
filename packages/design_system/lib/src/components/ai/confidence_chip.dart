@@ -51,7 +51,7 @@ class ConfidenceChip extends StatelessWidget {
             size: 12,
             color: color,
           ),
-          const SizedBox(width: AppSpacing.xs),
+          SizedBox(width: AppSpacing.xs),
           Text(
             '$percentage% match',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(

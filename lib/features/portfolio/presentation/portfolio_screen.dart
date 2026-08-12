@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +7,7 @@ import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 import '../../../shared/models/holding.dart';
 import '../../../shared/widgets/trade_card.dart';
+import '../../../shared/widgets/offline_state_widget.dart';
 
 class PortfolioScreen extends ConsumerWidget {
   const PortfolioScreen({super.key});
@@ -84,20 +85,35 @@ class PortfolioScreen extends ConsumerWidget {
         ],
       ),
       body: portfolioAsync.when(
-        data: (portfolio) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TradeCard(
+        data: (portfolio) => Consumer(
+          builder: (context, ref, child) {
+            final isOffline = ref.watch(connectivityProvider) == ConnectivityStatus.offline;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isOffline)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: OfflineStateWidget(
+                        compact: true,
+                        message: 'Showing cached data',
+                      ),
+                    ),
+                  TradeCard(
                 semanticLabel: 'Virtual portfolio balances',
                 child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Available Cash',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                          Expanded(
+                            child: Text('Available Cash',
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           Text(
                               FinancialMath.formatInr(
                                   portfolio.wallet.availableBalanceInr),
@@ -105,12 +121,16 @@ class PortfolioScreen extends ConsumerWidget {
                                   const TextStyle(fontWeight: FontWeight.bold)),
                         ],
                       ),
-                      const Divider(height: 24),
+                      Divider(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text('Holdings Valuation',
-                              style: TextStyle(color: AppColors.textSecondary)),
+                          Expanded(
+                            child: Text('Holdings Valuation',
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
+                                overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                           Text(
                               FinancialMath.formatInr(
                                   portfolio.holdingsValueInr),
@@ -122,7 +142,7 @@ class PortfolioScreen extends ConsumerWidget {
 
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Text('Active Holdings',
                   style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 8),
@@ -137,41 +157,73 @@ class PortfolioScreen extends ConsumerWidget {
                   children: portfolio.holdings.map((h) {
                     return TradeCard(
                       margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(
-                            '${h.symbol} (${h.quantity.toStringAsFixed(4)})',
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                            'Avg Entry: ${FinancialMath.formatInr(h.averageEntryPriceInr)}'),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(FinancialMath.formatInr(h.currentValueInr),
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold)),
-                            Text(
-                              '${FinancialMath.formatInr(h.unrealisedPnlInr)} (${h.unrealisedPnlPercent.toStringAsFixed(2)}%)',
-                              style: TextStyle(
-                                  color: h.unrealisedPnlInr >= 0
-                                      ? AppColors.profit
-                                      : AppColors.loss,
-                                  fontSize: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${h.symbol} (${h.quantity.toStringAsFixed(4)})',
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Avg Entry: ${FinancialMath.formatInr(h.averageEntryPriceInr)}',
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 13),
+                                  ),
+                                ],
+                              ),
                             ),
-                            TextButton(
-                              onPressed: () => _closePosition(context, ref, h),
-                              child: const Text('Close'),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    FinancialMath.formatInr(h.currentValueInr),
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${h.unrealisedPnlInr >= 0 ? '+' : ''}${FinancialMath.formatInr(h.unrealisedPnlInr)} (${h.unrealisedPnlPercent.toStringAsFixed(2)}%)',
+                                    style: TextStyle(
+                                      color: h.unrealisedPnlInr >= 0 ? AppColors.profit : AppColors.loss,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                SizedBox(
+                                  height: 32,
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                                      backgroundColor: AppColors.loss.withValues(alpha: 0.1),
+                                      foregroundColor: AppColors.loss,
+                                    ),
+                                    onPressed: () => _closePosition(context, ref, h),
+                                    child: const Text('Close'),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    );
+                    ),
+                  );
                   }).toList(),
                 ),
             ],
           ),
-        ),
+        );
+        },
+      ),
         loading: () => const Center(child: CryptoLoadingIndicator()),
         error: (err, stack) => Text('Error: $err'),
       ),

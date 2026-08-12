@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../tokens/colors.dart';
 import '../../tokens/spacing.dart';
 
 /// A reusable Bottom Navigation item definition
@@ -35,7 +34,7 @@ class AppBottomNavBar extends StatelessWidget {
   /// Callback when an item is tapped
   final ValueChanged<int> onTap;
 
-  const AppBottomNavBar({
+  AppBottomNavBar({
     super.key,
     required this.items,
     required this.currentIndex,
@@ -46,10 +45,10 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final navBg = isDark ? AppColors.surface : theme.colorScheme.surface;
-    final borderColor = isDark ? AppColors.border : theme.dividerColor;
+    final navBg = isDark ? Theme.of(context).colorScheme.surface : theme.colorScheme.surface;
+    final borderColor = isDark ? Theme.of(context).dividerColor : theme.dividerColor;
     final selectedColor = theme.colorScheme.primary;
-    final unselectedColor = isDark ? AppColors.textSecondary : const Color(0xFF64748B);
+    final unselectedColor = isDark ? Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey : Color(0xFF64748B);
 
     return Container(
       padding: EdgeInsets.only(
@@ -70,38 +69,44 @@ class AppBottomNavBar extends StatelessWidget {
           final isSelected = index == currentIndex;
           final item = items[index];
 
-          return GestureDetector(
-            onTap: () => onTap(index),
-            behavior: HitTestBehavior.opaque,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: isSelected ? selectedColor.withValues(alpha: 0.15) : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconTheme(
-                    data: IconThemeData(
-                      color: isSelected ? selectedColor : unselectedColor,
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onTap(index),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.xs,
+                  vertical: AppSpacing.sm,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected ? selectedColor.withValues(alpha: 0.15) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconTheme(
+                      data: IconThemeData(
+                        color: isSelected ? selectedColor : unselectedColor,
+                      ),
+                      child: isSelected ? item.activeIcon : item.icon,
                     ),
-                    child: isSelected ? item.activeIcon : item.icon,
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  Text(
-                    item.label,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                          color: isSelected ? selectedColor : unselectedColor,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          fontSize: 10,
-                        ),
-                  ),
-                ],
+                    const SizedBox(height: AppSpacing.xs),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                              color: isSelected ? selectedColor : unselectedColor,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                              fontSize: 10,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           );

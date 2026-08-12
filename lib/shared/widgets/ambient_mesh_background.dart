@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../app/theme/app_theme.dart';
 
@@ -120,6 +118,7 @@ class _AmbientMeshBackgroundState extends State<AmbientMeshBackground>
         builder: (context, child) {
           return CustomPaint(
             painter: _AmbientMeshPainter(
+              context: context,
               breatheValue: _breatheController.value,
               sentimentColor: _sentimentColor,
               intensity: widget.intensity,
@@ -148,6 +147,7 @@ class _Ripple {
 }
 
 class _AmbientMeshPainter extends CustomPainter {
+  final BuildContext context;
   final double breatheValue;
   final Color sentimentColor;
   final double intensity;
@@ -155,6 +155,7 @@ class _AmbientMeshPainter extends CustomPainter {
   final double rippleProgress;
 
   _AmbientMeshPainter({
+    required this.context,
     required this.breatheValue,
     required this.sentimentColor,
     required this.intensity,
@@ -173,11 +174,11 @@ class _AmbientMeshPainter extends CustomPainter {
     // 2. Deep vignette
     final vignettePaint = Paint()
       ..shader = RadialGradient(
-        center: const Alignment(0, -0.3),
+        center: Alignment(0, -0.3),
         radius: 1.2,
         colors: [
           Colors.transparent,
-          AppColors.oledBlack.withValues(alpha: 0.6),
+          Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.6),
         ],
         stops: const [0.4, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));

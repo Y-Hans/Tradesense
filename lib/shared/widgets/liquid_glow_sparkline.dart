@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../app/theme/app_theme.dart';
 
@@ -37,7 +36,6 @@ class _LiquidGlowSparklineState extends State<LiquidGlowSparkline>
   late AnimationController _emberController;
   final List<_Ember> _embers = [];
   Offset? _touchPoint;
-  double? _touchValue;
 
   @override
   void initState() {
@@ -78,7 +76,6 @@ class _LiquidGlowSparklineState extends State<LiquidGlowSparkline>
 
     setState(() {
       _touchPoint = tangent.position;
-      _touchValue = widget.data[index];
     });
 
     // Spawn ember
@@ -97,7 +94,6 @@ class _LiquidGlowSparklineState extends State<LiquidGlowSparkline>
   void _onPanEnd(DragEndDetails details) {
     setState(() {
       _touchPoint = null;
-      _touchValue = null;
     });
   }
 

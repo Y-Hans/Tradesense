@@ -14,7 +14,7 @@ class ImportChoiceScreen extends ConsumerWidget {
     // Listen for completion
     ref.listen(onboardingControllerProvider, (previous, next) {
       if (next.isCompleted) {
-        context.go('/');
+        context.go('/home');
       }
     });
 

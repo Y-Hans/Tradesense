@@ -304,7 +304,7 @@ void main() {
           () {
         final exactBoundary = RiskReasonCodeEvaluator.evaluate(
           portfolio: balancedPortfolio,
-          proposedTradeSizeInr: 25000.0, // 25% of ₹100,000 equity
+          proposedTradeSizeInr: 2500000.0, // 25% of ₹10,000,000 equity
           hasStopLoss: true,
           assetVolatility: 2.0,
           score: const RiskScore(
@@ -323,7 +323,7 @@ void main() {
 
         final justAboveBoundary = RiskReasonCodeEvaluator.evaluate(
           portfolio: balancedPortfolio,
-          proposedTradeSizeInr: 25100.0, // 25.1% of equity
+          proposedTradeSizeInr: 2510000.0, // 25.1% of equity
           hasStopLoss: true,
           assetVolatility: 2.0,
           score: const RiskScore(

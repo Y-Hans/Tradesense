@@ -46,8 +46,8 @@ class DioClientFactory {
     );
 
     dio.interceptors.addAll([
-      _LoggingInterceptor(tag: 'Binance'),
-      _RetryInterceptor(maxRetries: 2),
+      const _LoggingInterceptor(tag: 'Binance'),
+      const _RetryInterceptor(maxRetries: 2),
     ]);
 
     return dio;
@@ -78,8 +78,8 @@ class DioClientFactory {
     );
 
     dio.interceptors.addAll([
-      _LoggingInterceptor(tag: 'CoinGecko'),
-      _RetryInterceptor(maxRetries: 1),
+      const _LoggingInterceptor(tag: 'CoinGecko'),
+      const _RetryInterceptor(maxRetries: 1),
     ]);
 
     return dio;

@@ -49,7 +49,7 @@ class AIInsightCard extends StatelessWidget {
                 color: AppColors.primaryCyan,
                 size: 20,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              SizedBox(width: AppSpacing.sm),
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -58,14 +58,14 @@ class AIInsightCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.md),
+          SizedBox(height: AppSpacing.md),
           if (isLoading)
-            const SizedBox(
+            SizedBox(
               height: 40,
               child: Center(
                 child: LinearProgressIndicator(
                   color: AppColors.primaryCyan,
-                  backgroundColor: AppColors.border,
+                  backgroundColor: Theme.of(context).dividerColor,
                 ),
               ),
             )

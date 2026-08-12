@@ -19,7 +19,7 @@ class StatusBanner extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? action;
 
-  const StatusBanner({
+  StatusBanner({
     super.key,
     required this.title,
     this.subtitle,

@@ -51,7 +51,7 @@ class _ThinkingIndicatorState extends State<ThinkingIndicator>
             size: 16,
             color: AppColors.primaryCyan,
           ),
-          const SizedBox(width: AppSpacing.sm),
+          SizedBox(width: AppSpacing.sm),
           Text(
             widget.text,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
+import '../../../app/theme/theme_provider.dart';
 import '../domain/educational_disclosures.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -73,7 +74,7 @@ class ProfileScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Privacy & Disclosures'),
-        content: const SingleChildScrollView(
+        content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -91,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
               SizedBox(height: 8),
               Text(
                 EducationalDisclosures.regulatoryDisclaimer,
-                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 11, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
               ),
             ],
           ),
@@ -129,13 +130,13 @@ class ProfileScreen extends ConsumerWidget {
           const int xp = 250;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // User Profile Header Card
                 Card(
-                  color: AppColors.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -154,33 +155,33 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 16),
+                        SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 displayName,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              SizedBox(height: 4),
                               Text(
                                 email,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              SizedBox(height: 2),
                               Text(
                                 joinedText,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -200,38 +201,41 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
 
                 // Discipline Tier & XP Badge Card
                 Card(
-                  color: AppColors.card,
+                  color: Theme.of(context).cardColor,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'DISCIPLINE TIER',
-                              style: TextStyle(
-                                color: AppColors.discipline,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.0,
+                         Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'DISCIPLINE TIER',
+                                style: TextStyle(
+                                  color: AppColors.discipline,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.0,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              levelTitle,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                              const SizedBox(height: 4),
+                              Text(
+                                levelTitle,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -253,14 +257,14 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
-                const Text(
+                Text(
                   'Learning Features',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -272,9 +276,9 @@ class ProfileScreen extends ConsumerWidget {
                         color: AppColors.discipline),
                     title: const Text('Missions & Rewards'),
                     subtitle:
-                        const Text('Earn XP and boost your Discipline Tier'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
+                        Text('Earn XP and boost your Discipline Tier'),
+                    trailing: Icon(Icons.arrow_forward_ios,
+                        size: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                     onTap: () => context.push('/missions'),
                   ),
                 ),
@@ -285,25 +289,67 @@ class ProfileScreen extends ConsumerWidget {
                     leading: const Icon(Icons.search_rounded,
                         color: AppColors.primary),
                     title: const Text('News Detective 🕵️‍♂️'),
-                    subtitle: const Text(
+                    subtitle: Text(
                         'Train source verification & spot clickbait'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
+                    trailing: Icon(Icons.arrow_forward_ios,
+                        size: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                     onTap: () => context.push('/news-detective'),
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
-                const Text(
+                Text(
                   'Settings & Account',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                // Appearance Settings
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.brightness_6, color: AppColors.primary),
+                            SizedBox(width: 16),
+                            Text('Appearance', style: TextStyle(fontSize: 16)),
+                          ],
+                        ),
+                        DropdownButton<ThemeMode>(
+                          value: ref.watch(themeModeProvider),
+                          underline: const SizedBox.shrink(),
+                          onChanged: (ThemeMode? newMode) {
+                            if (newMode != null) {
+                              ref.read(themeModeProvider.notifier).setThemeMode(newMode);
+                            }
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                              value: ThemeMode.system,
+                              child: Text('System'),
+                            ),
+                            DropdownMenuItem(
+                              value: ThemeMode.light,
+                              child: Text('Light'),
+                            ),
+                            DropdownMenuItem(
+                              value: ThemeMode.dark,
+                              child: Text('Dark'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
                 // Privacy & Disclaimers
                 Card(
@@ -312,9 +358,9 @@ class ProfileScreen extends ConsumerWidget {
                         color: AppColors.primary),
                     title: const Text('Privacy & Disclaimers'),
                     subtitle:
-                        const Text('Educational policy & simulation rules'),
-                    trailing: const Icon(Icons.arrow_forward_ios,
-                        size: 16, color: AppColors.textSecondary),
+                        Text('Educational policy & simulation rules'),
+                    trailing: Icon(Icons.arrow_forward_ios,
+                        size: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey),
                     onTap: () => _showPrivacyDialog(context),
                   ),
                 ),
@@ -327,7 +373,7 @@ class ProfileScreen extends ConsumerWidget {
                     title: const Text('Subscription Status'),
                     trailing: Text(
                       user?.isPremium == true ? 'PREMIUM' : 'FREE',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () => context.push('/paywall'),
                   ),
@@ -337,7 +383,7 @@ class ProfileScreen extends ConsumerWidget {
                 Card(
                   child: ListTile(
                     leading:
-                        const Icon(Icons.logout, color: AppColors.textPrimary),
+                        Icon(Icons.logout, color: Theme.of(context).colorScheme.onSurface),
                     title: const Text('Sign Out'),
                     onTap: () async {
                       await ref.read(authStateProvider.notifier).signOut();
@@ -363,14 +409,14 @@ class ProfileScreen extends ConsumerWidget {
 
                 // Educational Disclaimer Card
                 Container(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                         color: AppColors.primary.withValues(alpha: 0.3)),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.info_outline, color: AppColors.primary),
                       SizedBox(width: 12),
@@ -390,7 +436,7 @@ class ProfileScreen extends ConsumerWidget {
                             Text(
                               '${EducationalDisclosures.simulationNotice} ${EducationalDisclosures.noRealCryptoNotice}',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                                 fontSize: 12,
                               ),
                             ),

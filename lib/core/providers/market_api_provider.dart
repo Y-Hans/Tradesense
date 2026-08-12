@@ -61,9 +61,13 @@ final usdToInrRateProvider = FutureProvider<double>((ref) async {
 /// available (e.g. on first frame).
 final binanceRestClientProvider = Provider<BinanceRestClient>((ref) {
   final dio = ref.watch(binanceDioProvider);
-  final rateAsync = ref.watch(usdToInrRateProvider);
-  final rate = rateAsync.valueOrNull ?? 83.5;
-  return BinanceRestClient(dio: dio, usdToInrRate: rate);
+  
+  double currentRate = ref.read(usdToInrRateProvider).valueOrNull ?? 83.5;
+  ref.listen<AsyncValue<double>>(usdToInrRateProvider, (_, next) {
+    if (next.hasValue) currentRate = next.value!;
+  });
+
+  return BinanceRestClient(dio: dio, usdToInrRate: () => currentRate);
 });
 
 /// Binance WebSocket client provider.

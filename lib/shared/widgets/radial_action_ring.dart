@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../app/theme/app_theme.dart';
@@ -158,6 +157,7 @@ class _RadialActionRingState extends State<RadialActionRing>
                 builder: (context, child) {
                   return CustomPaint(
                     painter: _RadialRingPainter(
+                      context: context,
                       origin: _origin,
                       actions: widget.actions,
                       ringRadius: widget.ringRadius,
@@ -198,6 +198,7 @@ class _BurstParticle {
 }
 
 class _RadialRingPainter extends CustomPainter {
+  final BuildContext context;
   final Offset origin;
   final List<RadialAction> actions;
   final double ringRadius;
@@ -206,6 +207,7 @@ class _RadialRingPainter extends CustomPainter {
   final List<_BurstParticle> particles;
 
   _RadialRingPainter({
+    required this.context,
     required this.origin,
     required this.actions,
     required this.ringRadius,
@@ -218,7 +220,7 @@ class _RadialRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Dim overlay
     final dimPaint = Paint()
-      ..color = AppColors.oledBlack.withValues(alpha: 0.4 * progress);
+      ..color = Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.4 * progress);
     canvas.drawRect(Offset.zero & size, dimPaint);
 
     // Ring glow
@@ -272,7 +274,7 @@ class _RadialRingPainter extends CustomPainter {
 
       // Icon background
       final bgPaint = Paint()
-        ..color = AppColors.oledSurface.withValues(
+        ..color = Theme.of(context).colorScheme.surface.withValues(
           alpha: isHovered ? 0.95 * progress : 0.8 * progress,
         );
       canvas.drawCircle(iconPos, 18 * progress, bgPaint);

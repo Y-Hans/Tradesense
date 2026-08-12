@@ -27,7 +27,7 @@ class DisciplineMeterScreen extends StatelessWidget {
                     value: 0.85,
                     color: AppColors.alert,
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text('85/100',
                       style: Theme.of(context)
                           .textTheme

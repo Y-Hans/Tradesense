@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../app/theme/app_theme.dart';
 import 'dart:math';
 
 class VisualGauge extends StatelessWidget {
@@ -26,15 +25,15 @@ class VisualGauge extends StatelessWidget {
             painter: _GaugePainter(
               progress: progress,
               activeColor: activeColor,
-              backgroundColor: AppColors.oledCard,
+              backgroundColor: Theme.of(context).cardColor,
             ),
             child: Center(
               child: Text(
                 '${(progress * 100).toInt()}%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),
@@ -43,8 +42,8 @@ class VisualGauge extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),

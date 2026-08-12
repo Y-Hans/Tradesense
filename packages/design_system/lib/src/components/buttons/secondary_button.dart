@@ -28,7 +28,7 @@ class SecondaryButton extends StatelessWidget {
   final bool isDestructive;
 
   /// Create a SecondaryButton
-  const SecondaryButton({
+  SecondaryButton({
     super.key,
     required this.text,
     this.onPressed,
@@ -45,7 +45,7 @@ class SecondaryButton extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     Color getTextColor() {
-      if (_isDisabled) return isDark ? AppColors.textDisabled : Colors.grey.shade400;
+      if (_isDisabled) return isDark ? Theme.of(context).disabledColor : Colors.grey.shade400;
       if (isDestructive) return AppColors.errorRed;
       return theme.colorScheme.onSurface;
     }
@@ -53,8 +53,8 @@ class SecondaryButton extends StatelessWidget {
     final textColor = getTextColor();
     final borderColor = isDestructive
         ? AppColors.errorRed.withValues(alpha: 0.5)
-        : (isDark ? AppColors.border : theme.dividerColor);
-    final buttonBg = isDark ? AppColors.background : theme.colorScheme.surface;
+        : (isDark ? Theme.of(context).dividerColor : theme.dividerColor);
+    final buttonBg = isDark ? Theme.of(context).scaffoldBackgroundColor : theme.colorScheme.surface;
 
     return Material(
       color: buttonBg,
@@ -91,7 +91,7 @@ class SecondaryButton extends StatelessWidget {
                         data: IconThemeData(color: textColor, size: 20),
                         child: icon!,
                       ),
-                      const SizedBox(width: AppSpacing.sm),
+                      SizedBox(width: AppSpacing.sm),
                     ],
                     Text(
                       text,

@@ -41,14 +41,14 @@ class _TradeCardState extends State<TradeCard> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
               borderRadius: borderRadius,
               border: Border.all(
                 color: _isHovered
                     ? AppColors.electricCyan
-                    : AppColors.outline.withValues(alpha: 0.6),
+                    : Theme.of(context).dividerColor.withValues(alpha: 0.6),
                 width: _isHovered ? 2.0 : 1.5,
               ),
               boxShadow: _isHovered
@@ -64,8 +64,8 @@ class _TradeCardState extends State<TradeCard> {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  AppColors.oledCard.withValues(alpha: _isHovered ? 0.8 : 0.7),
-                  AppColors.oledCard.withValues(alpha: _isHovered ? 0.4 : 0.3),
+                  Theme.of(context).cardColor.withValues(alpha: _isHovered ? 0.8 : 0.7),
+                  Theme.of(context).cardColor.withValues(alpha: _isHovered ? 0.4 : 0.3),
                 ],
               ),
             ),

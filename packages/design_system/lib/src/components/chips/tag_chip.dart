@@ -31,7 +31,7 @@ class TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
+      padding: EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs + 2,
       ),
@@ -39,7 +39,7 @@ class TagChip extends StatelessWidget {
         color: isSelected ? AppColors.primaryCyan.withValues(alpha: 0.1) : Colors.transparent,
         borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
         border: Border.all(
-          color: isSelected ? AppColors.primaryCyan : AppColors.border,
+          color: isSelected ? AppColors.primaryCyan : Theme.of(context).dividerColor,
           width: 1,
         ),
       ),
@@ -49,18 +49,18 @@ class TagChip extends StatelessWidget {
           Text(
             label,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isSelected ? AppColors.primaryCyan : AppColors.textSecondary,
+                  color: isSelected ? AppColors.primaryCyan : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   fontWeight: FontWeight.w500,
                 ),
           ),
           if (onDeleted != null) ...[
-            const SizedBox(width: AppSpacing.xs),
+            SizedBox(width: AppSpacing.xs),
             GestureDetector(
               onTap: onDeleted,
               child: Icon(
                 Icons.close,
                 size: 14,
-                color: isSelected ? AppColors.primaryCyan : AppColors.textSecondary,
+                color: isSelected ? AppColors.primaryCyan : Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
               ),
             ),
           ],

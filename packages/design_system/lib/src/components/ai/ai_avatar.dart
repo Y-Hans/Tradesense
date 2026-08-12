@@ -29,7 +29,7 @@ class AIAvatar extends StatelessWidget {
       child: Center(
         child: Icon(
           Icons.auto_awesome,
-          color: AppColors.background,
+          color: Theme.of(context).scaffoldBackgroundColor,
           size: size * 0.5,
         ),
       ),

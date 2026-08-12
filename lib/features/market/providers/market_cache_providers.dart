@@ -1,4 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/networking/dio_client_factory.dart';
+import '../../../core/networking/binance/binance_rest_client.dart';
+import '../../../core/networking/binance/binance_ws_client.dart';
+import '../../../core/networking/coingecko/coingecko_client.dart';
+import '../../../core/networking/binance_market_provider.dart';
+import '../../../core/providers/app_providers.dart';
 import '../../../core/cache/domain/models/cache_policy.dart';
 import '../../../core/cache/providers/cache_providers.dart';
 import '../../../core/contracts/market_provider.dart';
@@ -40,7 +46,30 @@ final marketCandleListCacheRepositoryProvider =
 
 /// Provider exposing [CachedMarketRepository] initialized with generic cache repositories.
 final cachedMarketRepositoryProvider = Provider<MarketProvider>((ref) {
-  final innerProvider = MockMarketRepository();
+  final isMock = ref.watch(mockModeProvider);
+  
+  MarketProvider innerProvider;
+  if (isMock) {
+    innerProvider = MockMarketRepository();
+  } else {
+    BinanceMarketProvider? providerRef;
+    final provider = BinanceMarketProvider(
+      binanceRest: BinanceRestClient(
+        dio: DioClientFactory.forBinanceRest(),
+        usdToInrRate: () => providerRef?.usdToInrRate ?? 83.5,
+      ),
+      binanceWs: BinanceWebSocketClient(
+        usdToInrRate: () => providerRef?.usdToInrRate ?? 83.5,
+      ),
+      coinGecko: CoinGeckoClient(dio: DioClientFactory.forCoinGecko()),
+      initialUsdToInrRate: 83.5,
+    );
+    providerRef = provider;
+    provider.startRateRefresh();
+    ref.onDispose(() => provider.dispose());
+    innerProvider = provider;
+  }
+
   return CachedMarketRepository(
     innerProvider: innerProvider,
     assetListCache: ref.watch(cryptoAssetListCacheRepositoryProvider),

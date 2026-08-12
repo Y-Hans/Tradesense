@@ -38,7 +38,7 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
     return AppScaffold(
       title: 'Profile',
       body: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxl),
+        padding: EdgeInsets.all(AppSpacing.xxl),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -46,20 +46,20 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
               'Let\'s personalize your coaching',
               style: Theme.of(context).textTheme.displaySmall,
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            SizedBox(height: AppSpacing.xxl),
             AppTextField(
               controller: _nameController,
               labelText: 'What should the AI call you?',
               hintText: 'Your name',
             ),
-            const SizedBox(height: AppSpacing.xl),
+            SizedBox(height: AppSpacing.xl),
             Text(
               'Primary trading style',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
                   ),
             ),
-            const SizedBox(height: AppSpacing.xs),
+            SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.sm,
               children: _styles.map((style) {
