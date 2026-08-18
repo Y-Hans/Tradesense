@@ -5,6 +5,8 @@ import 'package:cryptoedu/core/providers/app_providers.dart';
 import 'package:cryptoedu/core/providers/mocks/mock_repositories.dart';
 import 'package:cryptoedu/features/auth/application/auth_notifier.dart';
 import 'package:cryptoedu/features/profile/presentation/profile_screen.dart';
+import 'package:cryptoedu/features/profile/data/profile_repository.dart';
+import 'package:cryptoedu/features/profile/domain/profile_state.dart';
 
 void main() {
   late MockAuthRepository mockAuthRepo;
@@ -17,7 +19,7 @@ void main() {
     return ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(mockAuthRepo),
-        authStateProvider.overrideWith((ref) => AuthNotifier(mockAuthRepo)),
+        authStateProvider.overrideWith((ref) => AuthNotifier(mockAuthRepo, authStateChanges: const Stream.empty())),
       ],
       child: const MaterialApp(
         home: ProfileScreen(),
@@ -100,5 +102,33 @@ void main() {
 
       expect(await mockAuthRepo.getCurrentUser(), isNull);
     });
+
+    testWidgets('shows error view and retry button when profile loading fails',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(mockAuthRepo),
+            authStateProvider.overrideWith((ref) => AuthNotifier(mockAuthRepo, authStateChanges: const Stream.empty())),
+            profileRepositoryProvider.overrideWithValue(ThrowingProfileRepository()),
+          ],
+          child: const MaterialApp(
+            home: ProfileScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to load profile'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
   });
 }
+
+class ThrowingProfileRepository extends ProfileRepository {
+  @override
+  Future<UserProfile> fetchProfile({String? name, String? email}) async {
+    throw Exception('Database connection timeout');
+  }
+}
+

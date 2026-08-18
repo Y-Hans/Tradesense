@@ -85,6 +85,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.local_fire_department_rounded,
                   iconColor: Colors.orangeAccent,
                   label: 'Streak',
@@ -93,6 +94,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
               ),
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.emoji_events_rounded,
                   iconColor: AppColors.discipline,
                   label: 'Achievements',
@@ -106,6 +108,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.task_alt_rounded,
                   iconColor: AppColors.profit,
                   label: 'Missions',
@@ -114,6 +117,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
               ),
               Expanded(
                 child: _buildMetricTile(
+                  context: context,
                   icon: Icons.pie_chart_outline_rounded,
                   iconColor: AppColors.primary,
                   label: 'Completion',
@@ -162,6 +166,7 @@ class PlayerProfileSummaryCard extends StatelessWidget {
   }
 
   Widget _buildMetricTile({
+    required BuildContext context,
     required IconData icon,
     required Color iconColor,
     required String label,

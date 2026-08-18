@@ -42,10 +42,8 @@ class DomainEventLearningAdapter {
   ///
   /// Ignores unsupported/unknown domain events safely.
   void handleDomainEvent(DomainEvent event) {
-    final learningEvent = translateEvent(event);
-    if (learningEvent != null) {
-      _notifier.processEvent(learningEvent);
-    }
+    // We just refresh the backend-authoritative state when domain events happen
+    _notifier.refresh();
   }
 
   /// Translates a generic [DomainEvent] to a [LearningEvent].

@@ -225,7 +225,23 @@ class PortfolioScreen extends ConsumerWidget {
         },
       ),
         loading: () => const Center(child: CryptoLoadingIndicator()),
-        error: (err, stack) => Text('Error: $err'),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, color: AppColors.loss, size: 48),
+              const SizedBox(height: 16),
+              Text('Failed to load portfolio', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              Text(err.toString(), textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(portfolioProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

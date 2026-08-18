@@ -7,6 +7,7 @@ import '../networking/binance/binance_rest_client.dart';
 import '../networking/binance/binance_ws_client.dart';
 import '../networking/coingecko/coingecko_client.dart';
 import '../networking/binance_market_provider.dart';
+import '../pricing/public_fx_provider.dart';
 
 // =============================================================================
 // Dio instances
@@ -44,8 +45,8 @@ final coinGeckoClientProvider = Provider<CoinGeckoClient>((ref) {
 
 /// USD → INR exchange rate, fetched from CoinGecko at startup.
 ///
-/// Falls back to `83.5` on network failure so that the app can continue to
-/// show approximate INR prices even without network access at launch.
+/// Fails when a live rate cannot be obtained. Approximate FX values are not
+/// valid for execution and are not silently substituted.
 ///
 /// This is a [FutureProvider] so that callers can show a loading state while
 /// the rate is being fetched, and so that the rate is only fetched once.
@@ -54,20 +55,40 @@ final usdToInrRateProvider = FutureProvider<double>((ref) async {
   return client.fetchUsdToInrRate();
 });
 
+final fxRatesToInrProvider = FutureProvider<Map<String, double>>((ref) async {
+  final provider = PublicFxProvider(
+    usdDio: DioClientFactory.forUsdFx(),
+    coinGeckoDio: DioClientFactory.forCoinGecko(),
+  );
+  final rates = <String, double>{};
+  for (final quote in const ['USD', 'USDT', 'USDC']) {
+    try {
+      rates[quote] = (await provider.getExchangeRate(quote, 'INR')).rate;
+    } catch (_) {
+      // Keep this quote unavailable; do not substitute another currency.
+    }
+  }
+  return rates;
+});
+
 /// Binance REST client provider.
 ///
 /// Depends on [usdToInrRateProvider] so that prices are always converted at
-/// the live exchange rate.  Falls back to `83.5` if the rate is not yet
-/// available (e.g. on first frame).
+/// the live exchange rate. If it is unavailable, non-INR prices surface an
+/// explicit pricing error.
 final binanceRestClientProvider = Provider<BinanceRestClient>((ref) {
   final dio = ref.watch(binanceDioProvider);
-  
-  double currentRate = ref.read(usdToInrRateProvider).valueOrNull ?? 83.5;
-  ref.listen<AsyncValue<double>>(usdToInrRateProvider, (_, next) {
-    if (next.hasValue) currentRate = next.value!;
+
+  var currentRates =
+      ref.read(fxRatesToInrProvider).valueOrNull ?? const <String, double>{};
+  ref.listen<AsyncValue<Map<String, double>>>(fxRatesToInrProvider, (_, next) {
+    if (next.hasValue) currentRates = next.value!;
   });
 
-  return BinanceRestClient(dio: dio, usdToInrRate: () => currentRate);
+  return BinanceRestClient(
+    dio: dio,
+    fxRateForQuote: (quote) => currentRates[quote],
+  );
 });
 
 /// Binance WebSocket client provider.
@@ -75,7 +96,7 @@ final binanceRestClientProvider = Provider<BinanceRestClient>((ref) {
 /// The WebSocket client reads the USD→INR rate via a callback so it always
 /// uses the most recently resolved rate without being rebuilt itself.
 final binanceWsClientProvider = Provider<BinanceWebSocketClient>((ref) {
-  double currentRate = ref.read(usdToInrRateProvider).valueOrNull ?? 83.5;
+  double? currentRate = ref.read(usdToInrRateProvider).valueOrNull;
 
   // Keep currentRate in sync with the provider.
   ref.listen<AsyncValue<double>>(usdToInrRateProvider, (_, next) {
@@ -125,12 +146,16 @@ final liveMarketProviderInstance = Provider<MarketProvider>((ref) {
   final binanceRest = ref.watch(binanceRestClientProvider);
   final binanceWs = ref.watch(binanceWsClientProvider);
   final coinGecko = ref.watch(coinGeckoClientProvider);
-  final rate = ref.watch(usdToInrRateProvider).valueOrNull ?? 83.5;
+  final rate = ref.watch(usdToInrRateProvider).valueOrNull;
 
   final provider = BinanceMarketProvider(
     binanceRest: binanceRest,
     binanceWs: binanceWs,
     coinGecko: coinGecko,
+    fxProvider: PublicFxProvider(
+      usdDio: DioClientFactory.forUsdFx(),
+      coinGeckoDio: DioClientFactory.forCoinGecko(),
+    ),
     initialUsdToInrRate: rate,
   );
 

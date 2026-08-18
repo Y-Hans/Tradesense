@@ -31,10 +31,10 @@ import '../../../shared/models/market_ticker.dart';
 /// final subscription = stream.listen((ticker) { … });
 /// ```
 class BinanceWebSocketClient {
-  BinanceWebSocketClient({required double Function() usdToInrRate})
+  BinanceWebSocketClient({required double? Function() usdToInrRate})
       : _usdToInrRate = usdToInrRate;
 
-  final double Function() _usdToInrRate;
+  final double? Function() _usdToInrRate;
 
   // ---------------------------------------------------------------------------
   // WebSocket infrastructure
@@ -180,6 +180,7 @@ class BinanceWebSocketClient {
       if (controller == null || !controller.hasListener) return;
 
       final rate = _usdToInrRate();
+      if (rate == null || !rate.isFinite || rate <= 0) return;
       controller.add(MarketTicker(
         symbol: canonical,
         priceInr: double.parse(payload['c'] as String) * rate,

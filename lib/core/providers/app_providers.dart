@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/app_config.dart';
+import '../../core/config/app_environment.dart';
 import '../contracts/market_provider.dart';
 import '../contracts/provider_contracts.dart';
 import '../contracts/repository_contracts.dart';
 import 'mocks/mock_repositories.dart';
+import 'mocks/mock_market_repository.dart';
 import '../../shared/models/user_profile.dart';
 import '../../shared/models/portfolio.dart';
 import '../../shared/models/crypto_asset.dart';
@@ -18,6 +20,11 @@ import '../../features/auth/application/user_lifecycle_notifier.dart';
 import '../../features/onboarding/application/onboarding_notifier.dart';
 import '../events/domain_event_providers.dart';
 
+import '../../features/trading/data/supabase_trading_repository.dart';
+import '../../features/portfolio/data/supabase_portfolio_repository.dart';
+import '../../features/intelligence/data/supabase_intelligence_repository.dart';
+import '../../features/subscription/data/revenue_cat_subscription_repository.dart';
+
 export '../services/connectivity/connectivity_provider.dart';
 export '../services/connectivity/connectivity_service.dart';
 export '../services/connectivity/connectivity_status.dart';
@@ -25,40 +32,70 @@ export '../events/domain_event_providers.dart';
 
 import '../../features/market/providers/market_cache_providers.dart';
 /// Flag to toggle between Mock repository mode and Live backend mode
-final mockModeProvider = StateProvider<bool>((ref) => true);
+final mockModeProvider = StateProvider<bool>((ref) {
+  final config = AppConfig.resolved();
+  if (config.environment == AppEnvironment.production) {
+    if (!config.isSupabaseConfigured) {
+      throw StateError('FATAL: Production mode requires SUPABASE_URL and SUPABASE_ANON_KEY to be configured.');
+    }
+    return false; // Force false in production
+  }
+  return !config.isSupabaseConfigured;
+});
 
-/// Market Provider
 final marketRepositoryProvider = Provider<MarketProvider>((ref) {
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock) {
+    return MockMarketRepository();
+  }
   return ref.watch(cachedMarketRepositoryProvider);
 });
 
 final tradingRepositoryProvider = Provider<TradingRepository>((ref) {
   final marketRepo = ref.watch(marketRepositoryProvider);
   final eventPublisher = ref.watch(domainEventPublisherProvider);
-  final repo = MockTradingRepository(marketRepo, eventPublisher: eventPublisher, initialBalance: 100000.0);
-  ref.onDispose(() {
-    repo.dispose();
-  });
-  return repo;
+  final isMock = ref.watch(mockModeProvider);
+  
+  if (isMock) {
+    final repo = MockTradingRepository(marketRepo, eventPublisher: eventPublisher, initialBalance: 100000.0);
+    ref.onDispose(() {
+      repo.dispose();
+    });
+    return repo;
+  }
+  
+  return SupabaseTradingRepository(eventPublisher: eventPublisher);
 });
 
 /// Portfolio Repository Provider
 final portfolioRepositoryProvider = Provider<PortfolioRepository>((ref) {
-  final tradingRepo =
-      ref.watch(tradingRepositoryProvider) as MockTradingRepository;
-  return MockPortfolioRepository(tradingRepo);
+  final isMock = ref.watch(mockModeProvider);
+  
+  if (isMock) {
+    final tradingRepo = ref.watch(tradingRepositoryProvider) as MockTradingRepository;
+    return MockPortfolioRepository(tradingRepo);
+  }
+  
+  final marketRepo = ref.watch(marketRepositoryProvider);
+  return SupabasePortfolioRepository(marketRepo);
 });
 
 /// Intelligence Repository Provider
 final intelligenceRepositoryProvider = Provider<IntelligenceRepository>((ref) {
   final eventPublisher = ref.watch(domainEventPublisherProvider);
-  return MockIntelligenceRepository(eventPublisher);
+  final isMock = ref.watch(mockModeProvider);
+  
+  if (isMock) {
+    return MockIntelligenceRepository(eventPublisher);
+  }
+  
+  return SupabaseIntelligenceRepository(eventPublisher: eventPublisher);
 });
 
 /// Auth Repository Provider
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final isMock = ref.watch(mockModeProvider);
-  if (isMock || !AppConfig.resolved().isSupabaseConfigured) {
+  if (isMock) {
     return MockAuthRepository();
   }
   return SupabaseAuthRepository();
@@ -67,12 +104,20 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 /// Auth State Provider (manages session lifecycle)
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock) {
+    return AuthNotifier(authRepo, authStateChanges: const Stream.empty());
+  }
   return AuthNotifier(authRepo);
 });
 
 /// Subscription Provider
 final subscriptionProvider = Provider<SubscriptionProvider>((ref) {
-  return MockSubscriptionRepository();
+  final isMock = ref.watch(mockModeProvider);
+  if (isMock || !AppConfig.resolved().isRevenueCatConfigured) {
+    return MockSubscriptionRepository();
+  }
+  return RevenueCatSubscriptionRepository();
 });
 
 /// Remote Config Provider
@@ -139,7 +184,7 @@ final userLifecycleProvider =
 
 /// Onboarding State Provider (manages onboarding completion per user)
 final onboardingNotifierProvider =
-    StateNotifierProvider<OnboardingNotifier, Map<String, bool>>((ref) {
+    StateNotifierProvider<OnboardingNotifier, void>((ref) {
   return OnboardingNotifier();
 });
 

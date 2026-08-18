@@ -1,30 +1,61 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../../../core/contracts/repository_contracts.dart';
+import '../../../shared/models/user_profile.dart';
 import '../domain/auth_exception.dart';
 import '../domain/auth_state.dart';
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  StreamSubscription<supabase.AuthState>? _supabaseAuthSubscription;
 
-  AuthNotifier(this._authRepository) : super(AuthState.restoringSession()) {
-    restoreSession();
-  }
+  AuthNotifier(this._authRepository, {Stream<supabase.AuthState>? authStateChanges}) : super(AuthState.restoringSession()) {
+    final stream = authStateChanges ?? supabase.Supabase.instance.client.auth.onAuthStateChange;
+    _supabaseAuthSubscription = stream.listen((data) async {
+      final event = data.event;
+      final session = data.session;
 
-  /// Restores active user session on app launch.
-  /// Prevents flashing login screens during initialization.
-  Future<void> restoreSession() async {
-    state = AuthState.restoringSession();
-    try {
-      final user = await _authRepository.getCurrentUser();
-      if (user != null) {
-        state = AuthState.authenticated(user);
+      if (event == supabase.AuthChangeEvent.passwordRecovery) {
+        state = AuthState.resettingPassword();
+      } else if (event == supabase.AuthChangeEvent.signedOut) {
+        if (state.status == AuthStatus.recoveryAwaitingOtp) return;
+        state = AuthState.unauthenticated();
+      } else if (session != null) {
+        // A signup response can briefly emit a session before the OTP gate is
+        // rendered. Do not let that transient event bypass verification.
+        if (state.status == AuthStatus.unverified ||
+            state.status == AuthStatus.resettingPassword) return;
+        final userProfile = await _authRepository.getCurrentUser();
+        if (userProfile != null) {
+          state = AuthState.authenticated(userProfile);
+        } else {
+          state = AuthState.unverified();
+        }
       } else {
+        if (state.isAuthenticating || state.status == AuthStatus.resettingPassword) return;
         state = AuthState.unauthenticated();
       }
-    } catch (e) {
-      state = AuthState.unauthenticated();
+    });
+
+    if (authStateChanges != null) {
+      _authRepository.getCurrentUser().then((userProfile) {
+        if (userProfile != null) {
+          state = AuthState.authenticated(userProfile);
+        } else {
+          state = AuthState.unauthenticated();
+        }
+      });
     }
   }
+
+  @override
+  void dispose() {
+    _supabaseAuthSubscription?.cancel();
+    super.dispose();
+  }
+
+
 
   /// Authenticates user with email and password.
   /// UI handles input validation (empty fields, email regex, min password length).
@@ -64,7 +95,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         displayName: displayName?.trim(),
       );
-      state = AuthState.authenticated(user);
+      state = AuthState.unverified(user: user);
       return true;
     } on AuthException catch (e) {
       state = AuthState.error(e.message);
@@ -110,6 +141,85 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.user != null
           ? AuthState.authenticated(state.user!)
           : AuthState.unauthenticated();
+    }
+  }
+
+  Future<bool> verifyOTP({required String email, required String token, required String type}) async {
+    state = AuthState.authenticating();
+    try {
+      await _authRepository.verifyOTP(email: email, token: token, type: type);
+
+      final user = await _authRepository.getCurrentUser();
+      if (user != null) {
+        state = type == 'recovery'
+            ? AuthState.resettingPassword()
+            : AuthState.authenticated(user);
+      } else {
+        state = AuthState.error(
+          type == 'recovery'
+              ? 'Recovery verification succeeded, but the recovery session is unavailable. Please request a new code.'
+              : 'Verification succeeded but session was not established.',
+        );
+        return false;
+      }
+
+      return true;
+    } on AuthException catch (e) {
+      state = AuthState.error(e.message);
+      return false;
+    } catch (e) {
+      state = AuthState.error('Verification failed: ${e.toString()}');
+      return false;
+    }
+  }
+
+  Future<bool> resendOTP({required String email, required String type}) async {
+    try {
+      await _authRepository.resendOTP(email: email.trim(), type: type);
+      return true;
+    } on AuthException catch (e) {
+      state = AuthState.error(e.message);
+      return false;
+    } catch (_) {
+      state = AuthState.error('Unable to resend the verification code. Please try again.');
+      return false;
+    }
+  }
+
+  Future<bool> resetPasswordForEmail(String email) async {
+    state = AuthState.authenticating();
+    try {
+      await _authRepository.resetPasswordForEmail(email);
+      // Keep this state distinct from unauthenticated so the router cannot
+      // lose the recovery OTP flow while the user is entering the code.
+      state = const AuthState(status: AuthStatus.recoveryAwaitingOtp);
+      return true;
+    } on AuthException catch (e) {
+      state = AuthState.error(e.message);
+      return false;
+    } catch (e) {
+      state = AuthState.error('Password reset failed: ${e.toString()}');
+      return false;
+    }
+  }
+
+  Future<bool> updatePassword(String newPassword) async {
+    state = AuthState.authenticating();
+    try {
+      await _authRepository.updatePassword(newPassword);
+      final user = await _authRepository.getCurrentUser();
+      if (user != null) {
+        state = AuthState.authenticated(user);
+      } else {
+        state = AuthState.unauthenticated();
+      }
+      return true;
+    } on AuthException catch (e) {
+      state = AuthState.error(e.message);
+      return false;
+    } catch (e) {
+      state = AuthState.error('Password update failed: ${e.toString()}');
+      return false;
     }
   }
 }

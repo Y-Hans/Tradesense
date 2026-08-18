@@ -1,44 +1,34 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../../../core/providers/app_providers.dart';
+import '../../../shared/models/trade.dart' show TradeSide;
+import '../../trading/data/supabase_trading_repository.dart';
 import '../domain/journal_state.dart';
 
 part 'journal_repository.g.dart';
 
 class JournalRepository {
+  final Ref ref;
+  JournalRepository(this.ref);
+
   Future<List<Trade>> fetchTrades() async {
-    await Future.delayed(const Duration(seconds: 1)); // Mock latency
-    return [
-      Trade(
-        id: '1',
-        symbol: 'BTCUSDT',
-        type: 'Buy',
-        pnl: 3450.50,
-        date: DateTime.now().subtract(const Duration(hours: 2)),
-        tags: ['Momentum', 'StopLoss'],
-        aiReviewed: true,
-      ),
-      Trade(
-        id: '2',
-        symbol: 'ETHUSDT',
-        type: 'Sell',
-        pnl: -1200.00,
-        date: DateTime.now().subtract(const Duration(days: 1)),
-        tags: ['FOMO', 'Early exit'],
-        aiReviewed: true,
-      ),
-      Trade(
-        id: '3',
-        symbol: 'SOLUSDT',
-        type: 'Buy',
-        pnl: 850.25,
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        tags: ['Breakout'],
-        aiReviewed: false,
-      ),
-    ];
+    final tradingRepo = ref.read(tradingRepositoryProvider);
+    final history = await tradingRepo.getTradeHistory();
+    // Since JournalState.Trade is different from shared/models/trade.dart,
+    // we need to map it. Wait, if JournalState.Trade is different, we map it here.
+    return history.map((t) => Trade(
+      id: t.id,
+      symbol: t.symbol,
+      type: t.side.name.toUpperCase(),
+      pnl: t.side == TradeSide.sell ? (t.realizedPnl ?? 0.0) : 0.0,
+      date: t.timestamp,
+      tags: [],
+      aiReviewed: false,
+    )).toList();
   }
 }
 
 @riverpod
 JournalRepository journalRepository(JournalRepositoryRef ref) {
-  return JournalRepository();
+  return JournalRepository(ref);
 }

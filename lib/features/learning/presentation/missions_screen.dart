@@ -13,30 +13,8 @@ class MissionsScreen extends ConsumerStatefulWidget {
 }
 
 class _MissionsScreenState extends ConsumerState<MissionsScreen> {
-  void _claimMission(Mission mission) {
-    final result = ref
-        .read(learningProgressionNotifierProvider.notifier)
-        .claimMission(mission.id);
-
-    if (result.isDuplicate || !result.success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Reward already claimed for this mission.'),
-          backgroundColor: AppColors.discipline,
-        ),
-      );
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content:
-            Text('Claimed +${mission.xpReward} XP for "${mission.title}"!'),
-        backgroundColor: AppColors.profit,
-      ),
-    );
-  }
-
+  // XP is awarded automatically by the backend upon verified actions.
+  // The client no longer manages XP state mutations.
   @override
   Widget build(BuildContext context) {
     final progressionState = ref.watch(learningProgressionNotifierProvider);
@@ -234,20 +212,17 @@ class _MissionsScreenState extends ConsumerState<MissionsScreen> {
                           ),
                         )
                       else
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12.0, vertical: 8.0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0, vertical: 8.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                          onPressed: () => _claimMission(mission),
                           child: Text(
                             '+${mission.xpReward} XP',
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: AppColors.primary,
                               fontSize: 12.0,
                               fontWeight: FontWeight.bold,
                             ),

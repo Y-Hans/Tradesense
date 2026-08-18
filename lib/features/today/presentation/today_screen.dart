@@ -9,6 +9,7 @@ import '../../../shared/models/portfolio.dart';
 import '../../../shared/models/trade.dart';
 import '../../../shared/models/user_profile.dart';
 import '../../intelligence/providers/score_providers.dart';
+import '../../learning/application/learning_progression_notifier.dart';
 import 'today_controller.dart';
 import '../domain/today_state.dart';
 
@@ -651,73 +652,63 @@ class _MissionsProgress extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Integration Point (Learning Module):
-    // Real mission data will come from the learning/gamification provider.
-    // Currently showing calculated state based on portfolio activity.
-    final portfolioAsync = ref.watch(portfolioProvider);
+    final progressionState = ref.watch(learningProgressionNotifierProvider);
+    final completedCount = progressionState.completedMissionIds.length;
+    final totalCount = progressionState.missions.length;
+    final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
+    final hasStarted = completedCount > 0;
 
-    return portfolioAsync.when(
-      data: (portfolio) {
-        final hasTraded = portfolio.holdings.isNotEmpty;
-        final completedMissions = hasTraded ? 1 : 0;
-        const totalMissions = 2;
-        final progress = completedMissions / totalMissions;
-
-        return AppCard(
-          hasBorder: true,
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppCard(
+      hasBorder: true,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.emoji_events,
-                    color: AppColors.warningOrange,
-                    size: 20,
-                  ),
-                  SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      '$completedMissions/$totalMissions missions completed',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ),
-                  StatusChip(
-                    label: hasTraded ? 'In Progress' : 'Not Started',
-                    type: hasTraded ? StatusType.warning : StatusType.neutral,
-                  ),
-                ],
+              const Icon(
+                Icons.emoji_events,
+                color: AppColors.warningOrange,
+                size: 20,
               ),
-              SizedBox(height: AppSpacing.md),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Theme.of(context).dividerColor,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppColors.warningOrange,
-                  ),
-                  minHeight: 8,
+              SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  '$completedCount/$totalCount missions completed',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
               ),
-              SizedBox(height: AppSpacing.sm),
-              Text(
-                hasTraded
-                    ? '🏆 Mission 1 complete! Set a stop-loss to earn Mission 2.'
-                    : '📋 Place your first virtual trade to start earning XP.',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
-                    ),
+              StatusChip(
+                label: hasStarted ? 'In Progress' : 'Not Started',
+                type: hasStarted ? StatusType.warning : StatusType.neutral,
               ),
             ],
           ),
-        );
-      },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+          SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusRound),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Theme.of(context).dividerColor,
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.warningOrange,
+              ),
+              minHeight: 8,
+            ),
+          ),
+          SizedBox(height: AppSpacing.sm),
+          Text(
+            hasStarted
+                ? '🏆 $completedCount completed! Keep completing missions to earn XP and level up.'
+                : '📋 Complete educational missions to level up your discipline.',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey,
+                ),
+          ),
+        ],
+      ),
     );
   }
 }

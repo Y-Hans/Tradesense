@@ -11,15 +11,12 @@ import '../../intelligence/domain/discipline_reason_code_evaluator.dart';
 import '../../intelligence/domain/risk_reason_code_evaluator.dart';
 import '../domain/coach_context_builder.dart';
 import '../domain/coach_result.dart';
-import '../providers/coach_cache_providers.dart';
 
-export '../providers/coach_cache_providers.dart' show aiProviderOverrideProvider;
-
-/// Family provider driving the Coach pipeline flow:
-/// Trade -> CoachContextBuilder -> CoachOrchestrator -> CoachResult
+/// Family provider driving the Coach pipeline flow using IntelligenceRepository
 final coachResultProvider =
     FutureProvider.family<CoachResult?, String>((ref, tradeId) async {
   final tradingRepo = ref.watch(tradingRepositoryProvider);
+  final intelligenceRepo = ref.watch(intelligenceRepositoryProvider);
   final history = await tradingRepo.getTradeHistory();
 
   Trade? trade;
@@ -34,58 +31,14 @@ final coachResultProvider =
 
   final portfolio = await ref.watch(portfolioProvider.future);
 
-  final hasStopLoss =
-      trade.stopLossPriceInr != null || trade.type == OrderType.stopLoss;
-
-  final riskResult = RiskReasonCodeEvaluator.analyze(
-    portfolio: portfolio,
-    proposedTradeSizeInr: trade.totalAmountInr,
-    hasStopLoss: hasStopLoss,
-    assetVolatility: 3.5,
-  );
-
-  final positionSizePct = portfolio.totalPortfolioValueInr > 0
-      ? (trade.totalAmountInr / portfolio.totalPortfolioValueInr) * 100.0
-      : 0.0;
-
-  double maxConcentration = 0.0;
-  if (portfolio.holdings.isNotEmpty && portfolio.totalPortfolioValueInr > 0) {
-    for (final h in portfolio.holdings) {
-      final share =
-          (h.currentValueInr / portfolio.totalPortfolioValueInr) * 100.0;
-      if (share > maxConcentration) maxConcentration = share;
-    }
-  }
-
-  final disciplineResult = DisciplineReasonCodeEvaluator.analyze(
-    currentRiskScore: riskResult.score,
-    positionSizePercentage: positionSizePct,
-    usedStopLoss: hasStopLoss,
-    portfolioConcentration: maxConcentration,
-    tradeFrequency24h: 1,
-  );
-
-  final coachContext = CoachContextBuilder.fromTradeAndPortfolio(
-    trade: trade,
-    portfolio: portfolio,
-    riskScore: riskResult.score,
-    disciplineScore: disciplineResult.score,
-    riskReasonCodes: riskResult.reasonCodes,
-    disciplineReasonCodes: disciplineResult.reasonCodes,
-  );
-
-  final orchestrator = ref.watch(coachOrchestratorProvider);
-
-  final feedback = await orchestrator.getCoachResponse(
-    coachContext,
-    userId: trade.userId,
-  );
+  // Use the central intelligence repository to perform analysis
+  final analysis = await intelligenceRepo.analyzeTrade(trade, portfolio);
 
   return CoachResult(
     trade: trade,
-    disciplineScore: disciplineResult.score,
-    riskScore: riskResult.score,
-    coachFeedback: feedback,
+    disciplineScore: analysis.disciplineScore,
+    riskScore: analysis.riskScore,
+    coachFeedback: analysis.coachFeedback,
   );
 });
 

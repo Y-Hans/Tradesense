@@ -11,12 +11,13 @@ part 'profile_controller.g.dart';
 class ProfileController extends _$ProfileController {
   @override
   FutureOr<ProfileState> build() async {
-    final repo = ref.read(profileRepositoryProvider);
-    final onboardingRepo = ref.read(onboardingRepositoryProvider);
-    final currentUser = ref.read(currentUserProvider).valueOrNull;
+    final repo = ref.watch(profileRepositoryProvider);
+    final onboardingRepo = ref.watch(onboardingRepositoryProvider);
+    final currentUser = ref.watch(currentUserProvider).valueOrNull;
     
     final name = currentUser?.displayName ?? onboardingRepo.userName;
     final email = currentUser?.email;
+    
     final profile = await repo.fetchProfile(name: name, email: email);
     return ProfileState(
       isLoading: false,

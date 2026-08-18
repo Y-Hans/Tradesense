@@ -36,15 +36,61 @@ class CoachController extends _$CoachController {
         state.requireValue.copyWith(
           messages: [...state.requireValue.messages, response],
           isTyping: false,
+          error: null,
         ),
       );
     } catch (e) {
       state = AsyncValue.data(
         state.requireValue.copyWith(
           isTyping: false,
-          error: 'Failed to get response',
+          error: e.toString().replaceFirst('Exception: ', ''),
         ),
       );
     }
+  }
+
+  Future<void> retryLastMessage() async {
+    final msgs = state.valueOrNull?.messages ?? [];
+    final userMsgs = msgs.where((m) => m.isUser).toList();
+    if (userMsgs.isNotEmpty) {
+      final lastUserMsg = userMsgs.last;
+      if (lastUserMsg.text.isNotEmpty) {
+        final repo = ref.read(coachRepositoryProvider);
+        state = AsyncValue.data(
+          state.requireValue.copyWith(
+            isTyping: true,
+            error: null,
+          ),
+        );
+      try {
+        final response = await repo.getCoachResponse(lastUserMsg.text);
+        state = AsyncValue.data(
+          state.requireValue.copyWith(
+            messages: [...state.requireValue.messages, response],
+            isTyping: false,
+            error: null,
+          ),
+        );
+      } catch (e) {
+        state = AsyncValue.data(
+          state.requireValue.copyWith(
+            isTyping: false,
+            error: e.toString().replaceFirst('Exception: ', ''),
+          ),
+        );
+      }
+    }
+  }
+}
+
+  void clearHistory() {
+    final repo = ref.read(coachRepositoryProvider);
+    repo.clearHistory();
+    state = AsyncValue.data(
+      CoachState(
+        isLoading: false,
+        messages: repo.getHistorySync(), // We need this getter
+      ),
+    );
   }
 }

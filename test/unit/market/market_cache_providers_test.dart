@@ -17,7 +17,9 @@ void main() {
       expect(policy.version, equals(MarketCachePolicyDefaults.currentVersion));
     });
 
-    test('cachedMarketRepositoryProvider builds CachedMarketRepository instance', () {
+    test(
+        'cachedMarketRepositoryProvider builds CachedMarketRepository instance',
+        () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -25,15 +27,21 @@ void main() {
       expect(repo, isA<CachedMarketRepository>());
     });
 
-    test('app marketRepositoryProvider resolves to cachedMarketRepositoryProvider', () {
-      final container = ProviderContainer();
+    test('live app marketRepositoryProvider resolves to cached repository', () {
+      final container = ProviderContainer(
+        overrides: [
+          mockModeProvider.overrideWith((ref) => false),
+        ],
+      );
       addTearDown(container.dispose);
 
       final repo = container.read(marketRepositoryProvider);
       expect(repo, isA<CachedMarketRepository>());
     });
 
-    test('supportedAssetsProvider seamlessly fetches data via cached repository', () async {
+    test(
+        'supportedAssetsProvider seamlessly fetches data via cached repository',
+        () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -42,7 +50,9 @@ void main() {
       expect(assets.first.symbol, equals('BTC'));
     });
 
-    test('marketTickersProvider seamlessly fetches tickers via cached repository', () async {
+    test(
+        'marketTickersProvider seamlessly fetches tickers via cached repository',
+        () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 

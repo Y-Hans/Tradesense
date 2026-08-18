@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/app_preferences.dart';
 
 class DisclaimerScreen extends StatelessWidget {
   const DisclaimerScreen({super.key});
@@ -80,8 +81,11 @@ class DisclaimerScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             PrimaryButton(
               text: 'I understand',
-              onPressed: () {
-                context.go('/profile-setup');
+              onPressed: () async {
+                await AppPreferences.setInstallationDisclaimerAccepted(true);
+                if (context.mounted) {
+                  context.go('/login');
+                }
               },
             ),
             const SizedBox(height: AppSpacing.xl),

@@ -14,6 +14,7 @@ import '../../../shared/models/market_ticker.dart';
 import '../data/config/market_cache_policy.dart';
 import '../data/repositories/cached_market_repository.dart';
 import '../data/serializers/market_serializers.dart';
+import '../../../core/pricing/public_fx_provider.dart';
 
 /// Provider for default market cache policy configuration.
 final marketCachePolicyProvider = Provider<CachePolicy>((ref) {
@@ -46,32 +47,28 @@ final marketCandleListCacheRepositoryProvider =
 
 /// Provider exposing [CachedMarketRepository] initialized with generic cache repositories.
 final cachedMarketRepositoryProvider = Provider<MarketProvider>((ref) {
-  final isMock = ref.watch(mockModeProvider);
-  
-  MarketProvider innerProvider;
-  if (isMock) {
-    innerProvider = MockMarketRepository();
-  } else {
-    BinanceMarketProvider? providerRef;
-    final provider = BinanceMarketProvider(
-      binanceRest: BinanceRestClient(
-        dio: DioClientFactory.forBinanceRest(),
-        usdToInrRate: () => providerRef?.usdToInrRate ?? 83.5,
-      ),
-      binanceWs: BinanceWebSocketClient(
-        usdToInrRate: () => providerRef?.usdToInrRate ?? 83.5,
-      ),
-      coinGecko: CoinGeckoClient(dio: DioClientFactory.forCoinGecko()),
-      initialUsdToInrRate: 83.5,
-    );
-    providerRef = provider;
-    provider.startRateRefresh();
-    ref.onDispose(() => provider.dispose());
-    innerProvider = provider;
-  }
+  BinanceMarketProvider? providerRef;
+  final provider = BinanceMarketProvider(
+    binanceRest: BinanceRestClient(
+      dio: DioClientFactory.forBinanceRest(),
+      fxRateForQuote: (quote) => providerRef?.fxRateForQuote(quote),
+    ),
+    binanceWs: BinanceWebSocketClient(
+      usdToInrRate: () => providerRef?.usdToInrRate,
+    ),
+    coinGecko: CoinGeckoClient(dio: DioClientFactory.forCoinGecko()),
+    fxProvider: PublicFxProvider(
+      usdDio: DioClientFactory.forUsdFx(),
+      coinGeckoDio: DioClientFactory.forCoinGecko(),
+    ),
+    initialUsdToInrRate: null,
+  );
+  providerRef = provider;
+  provider.startRateRefresh();
+  ref.onDispose(() => provider.dispose());
 
   return CachedMarketRepository(
-    innerProvider: innerProvider,
+    innerProvider: provider,
     assetListCache: ref.watch(cryptoAssetListCacheRepositoryProvider),
     tickersMapCache: ref.watch(marketTickersMapCacheRepositoryProvider),
     tickerCache: ref.watch(marketTickerCacheRepositoryProvider),

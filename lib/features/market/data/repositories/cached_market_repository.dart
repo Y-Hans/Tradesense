@@ -4,6 +4,7 @@ import '../../../../core/cache/domain/models/cache_policy.dart';
 import '../../../../core/cache/domain/models/cache_result.dart';
 import '../../../../shared/models/crypto_asset.dart';
 import '../../../../shared/models/market_ticker.dart';
+import '../../../../core/pricing/market_pricing.dart';
 import '../config/market_cache_policy.dart';
 import '../keys/market_cache_keys.dart';
 
@@ -31,7 +32,8 @@ class CachedMarketRepository implements MarketProvider {
         _tickersMapCache = tickersMapCache,
         _tickerCache = tickerCache,
         _candleListCache = candleListCache,
-        _defaultPolicy = defaultPolicy ?? MarketCachePolicyDefaults.defaultPolicy;
+        _defaultPolicy =
+            defaultPolicy ?? MarketCachePolicyDefaults.defaultPolicy;
 
   @override
   Future<List<CryptoAsset>> getSupportedAssets({CachePolicy? policy}) async {
@@ -121,6 +123,9 @@ class CachedMarketRepository implements MarketProvider {
     } catch (error) {
       // Fallback to stale cached data if policy allows and stale value is available
       if (effectivePolicy.allowStale && staleValue != null) {
+        if (staleValue is MarketTicker) {
+          return staleValue.copyWith(freshness: MarketFreshness.stale) as T;
+        }
         return staleValue;
       }
       rethrow;

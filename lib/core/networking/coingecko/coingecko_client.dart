@@ -46,8 +46,8 @@ class CoinGeckoClient {
   ///
   /// Returns the number of INR per 1 USD.
   ///
-  /// Falls back to a hard-coded sentinel value of `83.5` if the request fails,
-  /// so that dependent clients degrade gracefully rather than crashing.
+  /// Throws when a live rate cannot be obtained. Execution paths must never
+  /// guess an FX rate.
   Future<double> fetchUsdToInrRate() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
@@ -58,13 +58,14 @@ class CoinGeckoClient {
         },
       );
       final inrPerUsdt = (response.data?['tether']?['inr'] as num?)?.toDouble();
-      return inrPerUsdt ?? _kFallbackUsdInrRate;
+      if (inrPerUsdt == null || !inrPerUsdt.isFinite || inrPerUsdt <= 0) {
+        throw StateError('CoinGecko returned an invalid USD/INR rate.');
+      }
+      return inrPerUsdt;
     } on DioException catch (_) {
-      return _kFallbackUsdInrRate;
+      throw StateError('Live USD/INR rate unavailable.');
     }
   }
-
-  static const double _kFallbackUsdInrRate = 83.5;
 
   // ---------------------------------------------------------------------------
   // Market data
@@ -100,6 +101,9 @@ class CoinGeckoClient {
           (data['inr'] as num).toDouble(),
       volume24h: (data['inr_24h_vol'] as num?)?.toDouble() ?? 0.0,
       timestamp: DateTime.now(),
+      exchangeSymbol: '${symbol.toUpperCase()}INR',
+      quoteCurrency: 'INR',
+      source: 'CoinGecko',
     );
   }
 
@@ -135,6 +139,9 @@ class CoinGeckoClient {
             (data['inr'] as num).toDouble(),
         volume24h: (data['inr_24h_vol'] as num?)?.toDouble() ?? 0.0,
         timestamp: DateTime.now(),
+        exchangeSymbol: '${symbol}INR',
+        quoteCurrency: 'INR',
+        source: 'CoinGecko',
       );
     }
     return result;
@@ -176,6 +183,10 @@ class CoinGeckoClient {
         currentPriceInr: (raw['current_price'] as num?)?.toDouble() ?? 0.0,
         change24hPercent:
             (raw['price_change_percentage_24h'] as num?)?.toDouble() ?? 0.0,
+        exchangeSymbol: '${symbol}INR',
+        quoteCurrency: 'INR',
+        source: 'CoinGecko',
+        priceTimestamp: DateTime.now(),
       ));
     }
     return result;

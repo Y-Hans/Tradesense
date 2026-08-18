@@ -60,7 +60,6 @@
 #
 # The following MUST NEVER appear as dart-define values:
 #   - Supabase service_role key
-#   - OpenRouter API key
 #   - RevenueCat server secret
 #   - Any private key or server-side credential
 #

@@ -20,7 +20,7 @@ void main() {
 
   setUp(() {
     mockRepo = MockAuthRepository();
-    authNotifier = AuthNotifier(mockRepo);
+    authNotifier = AuthNotifier(mockRepo, authStateChanges: const Stream.empty());
     userLifecycleNotifier = UserLifecycleNotifier();
   });
 
@@ -97,7 +97,7 @@ void main() {
     test('Delete account failure handles repository exception gracefully',
         () async {
       final failingRepo = FailingMockAuthRepository();
-      final failingNotifier = AuthNotifier(failingRepo);
+      final failingNotifier = AuthNotifier(failingRepo, authStateChanges: const Stream.empty());
 
       final success = await failingNotifier.deleteAccount();
 

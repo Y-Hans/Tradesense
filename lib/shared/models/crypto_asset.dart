@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import '../../core/pricing/market_pricing.dart';
 
 @immutable
 class CryptoAsset {
@@ -8,6 +9,11 @@ class CryptoAsset {
   final double currentPriceInr;
   final double change24hPercent;
   final bool isSupportedV1;
+  final String? exchangeSymbol;
+  final String? quoteCurrency;
+  final String? source;
+  final DateTime? priceTimestamp;
+  final MarketFreshness freshness;
 
   const CryptoAsset({
     required this.symbol,
@@ -16,6 +22,11 @@ class CryptoAsset {
     required this.currentPriceInr,
     required this.change24hPercent,
     this.isSupportedV1 = true,
+    this.exchangeSymbol,
+    this.quoteCurrency,
+    this.source,
+    this.priceTimestamp,
+    this.freshness = MarketFreshness.live,
   });
 
   static const List<String> supportedV1Symbols = [
@@ -33,6 +44,11 @@ class CryptoAsset {
         'current_price_inr': currentPriceInr,
         'change_24h_percent': change24hPercent,
         'is_supported_v1': isSupportedV1,
+        'exchange_symbol': exchangeSymbol,
+        'quote_currency': quoteCurrency,
+        'source': source,
+        'price_timestamp': priceTimestamp?.toIso8601String(),
+        'freshness': freshness.name,
       };
 
   factory CryptoAsset.fromJson(Map<String, dynamic> json) => CryptoAsset(
@@ -42,5 +58,14 @@ class CryptoAsset {
         currentPriceInr: (json['current_price_inr'] as num).toDouble(),
         change24hPercent: (json['change_24h_percent'] as num).toDouble(),
         isSupportedV1: json['is_supported_v1'] as bool? ?? true,
+        exchangeSymbol: json['exchange_symbol'] as String?,
+        quoteCurrency: json['quote_currency'] as String?,
+        source: json['source'] as String?,
+        priceTimestamp: json['price_timestamp'] == null
+            ? null
+            : DateTime.parse(json['price_timestamp'] as String),
+        freshness: MarketFreshness.values.firstWhere(
+            (value) => value.name == json['freshness'],
+            orElse: () => MarketFreshness.live),
       );
 }

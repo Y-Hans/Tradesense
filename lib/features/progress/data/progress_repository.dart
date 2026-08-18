@@ -5,7 +5,6 @@ part 'progress_repository.g.dart';
 
 class ProgressRepository {
   Future<ProgressState> fetchProgress() async {
-    await Future.delayed(const Duration(milliseconds: 600));
     return const ProgressState(
       isLoading: false,
       overallDisciplineScore: 78,

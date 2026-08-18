@@ -8,6 +8,9 @@ import 'package:cryptoedu/features/coach/presentation/coach_result_screen.dart';
 import 'package:cryptoedu/shared/models/trade.dart';
 import 'package:cryptoedu/shared/models/portfolio.dart';
 import 'package:cryptoedu/shared/models/virtual_wallet.dart';
+import 'package:cryptoedu/shared/models/risk_score.dart';
+import 'package:cryptoedu/shared/models/discipline_score.dart';
+import 'package:cryptoedu/shared/models/coach_request.dart';
 
 class FakeTradingRepository implements TradingRepository {
   final List<Trade> _trades;
@@ -39,6 +42,38 @@ class FakeTradingRepository implements TradingRepository {
   }
 }
 
+class FakeIntelligenceRepository implements IntelligenceRepository {
+  @override
+  RiskScore calculateRiskScore({required Portfolio portfolio, required double proposedTradeSizeInr, required bool hasStopLoss, required double assetVolatility}) {
+    return const RiskScore(score: 35, level: RiskLevel.low, explanations: [], concentrationScore: 10, sizingScore: 10, stopLossScore: 10, volatilityScore: 5);
+  }
+
+  @override
+  DisciplineScore calculateDisciplineScore({required RiskScore currentRiskScore, required double positionSizePercentage, required bool usedStopLoss, required double portfolioConcentration, required int tradeFrequency24h}) {
+    return const DisciplineScore(score: 85, breakdownNotes: [], concentrationScore: 15, frequencyScore: 15, positionSizingScore: 20, riskMgmtScore: 15, stopLossDisciplineScore: 20);
+  }
+
+  @override
+  Future<TradeAnalysis> analyzeTrade(Trade trade, Portfolio portfolio) async {
+    return TradeAnalysis(
+      tradeId: trade.id,
+      disciplineScore: const DisciplineScore(score: 85, breakdownNotes: [], concentrationScore: 15, frequencyScore: 15, positionSizingScore: 20, riskMgmtScore: 15, stopLossDisciplineScore: 20),
+      riskScore: const RiskScore(score: 35, level: RiskLevel.low, explanations: [], concentrationScore: 10, sizingScore: 10, stopLossScore: 10, volatilityScore: 5),
+      coachFeedback: const CoachResponse(
+        whatDoneWell: 'Good',
+        whatIncreasedRisk: 'None',
+        whatToLearn: 'Nothing',
+        whatToConsiderNext: 'Keep going',
+        aiProvider: 'Mock',
+        modelId: 'Mock',
+        promptVersion: '1',
+        latencyMs: 10,
+      ),
+      analyzedAt: DateTime.now(),
+    );
+  }
+}
+
 void main() {
   final testTrade = Trade(
     id: 'test_trade_123',
@@ -59,6 +94,7 @@ void main() {
     return ProviderScope(
       overrides: [
         tradingRepositoryProvider.overrideWithValue(FakeTradingRepository(history)),
+        intelligenceRepositoryProvider.overrideWithValue(FakeIntelligenceRepository()),
         portfolioProvider.overrideWith((ref) => Future.value(
           const Portfolio(
             wallet: VirtualWallet(balanceInr: 100000, lockedInr: 0, initialBalanceInr: 100000),

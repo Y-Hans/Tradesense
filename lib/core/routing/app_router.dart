@@ -14,10 +14,15 @@ import '../../features/onboarding/presentation/import_choice_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/auth/presentation/register_screen.dart';
+import '../../features/auth/presentation/email_verification_screen.dart';
+import '../../features/auth/presentation/password_reset_verification_screen.dart';
+import '../../features/auth/presentation/set_new_password_screen.dart';
+import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/today/presentation/today_screen.dart';
 import '../../features/market/presentation/markets_screen.dart';
 import '../../features/market/presentation/asset_detail_screen.dart';
+import '../../features/market/presentation/currency_converter_screen.dart';
 import '../../features/portfolio/presentation/portfolio_screen.dart';
 import '../../features/portfolio/presentation/trade_history_screen.dart';
 import '../../features/learning/presentation/missions_screen.dart';
@@ -38,7 +43,7 @@ class RouterListenable extends ChangeNotifier {
 
   RouterListenable(this._ref) {
     _ref.listen<AuthState>(authStateProvider, (_, __) => notifyListeners());
-    _ref.listen<Map<String, bool>>(
+    _ref.listen<void>(
         onboardingNotifierProvider, (_, __) => notifyListeners());
   }
 
@@ -50,7 +55,7 @@ class RouterListenable extends ChangeNotifier {
     }
 
     final loc = state.matchedLocation;
-    final isAuthRoute = loc == '/login' || loc == '/register' || loc == '/welcome' || loc == '/disclaimer';
+    final isAuthRoute = loc == '/login' || loc == '/register' || loc == '/welcome' || loc == '/disclaimer' || loc == '/forgot-password' || loc == '/verify-email' || loc == '/verify-reset-password' || loc == '/set-new-password';
     final isOnboardingRoute = loc == '/onboarding' || loc == '/profile-setup' || loc == '/risk-assessment' || loc == '/import-choice';
     final isSplash = loc == '/splash';
     
@@ -58,6 +63,11 @@ class RouterListenable extends ChangeNotifier {
     if (loc == '/') return '/home';
 
     if (!authState.isAuthenticated && !authState.isAuthenticating) {
+      // Protect recovery routes: only allow if we are actively resetting password
+      if (loc == '/set-new-password' && authState.status != AuthStatus.resettingPassword) {
+        return '/login';
+      }
+      
       if (isAuthRoute || isSplash) return null;
       return '/login';
     }
@@ -129,6 +139,28 @@ GoRouter appRouter(AppRouterRef ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
+        path: '/verify-email',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return EmailVerificationScreen(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/verify-reset-password',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return PasswordResetVerificationScreen(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/set-new-password',
+        builder: (context, state) => const SetNewPasswordScreen(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
@@ -179,6 +211,10 @@ GoRouter appRouter(AppRouterRef ref) {
           final symbol = state.pathParameters['symbol'] ?? 'BTC';
           return AssetDetailScreen(symbol: symbol);
         },
+      ),
+      GoRoute(
+        path: '/currency-converter',
+        builder: (context, state) => const CurrencyConverterScreen(),
       ),
       GoRoute(
         path: '/discipline-meter',

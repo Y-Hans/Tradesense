@@ -95,7 +95,7 @@ class LevelUpDialog extends StatelessWidget {
             ],
             if (newlyUnlockedAchievements.isNotEmpty) ...[
               const SizedBox(height: 16.0),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Newly Unlocked Achievements:',

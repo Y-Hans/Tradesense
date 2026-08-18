@@ -260,7 +260,7 @@ class AdaptiveLoader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isFullScreen) {
-      return const BitcoinLoadingOverlay();
+      return BitcoinLoadingOverlay();
     }
     return SizedBox(
       width: size,

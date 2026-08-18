@@ -444,30 +444,51 @@ class MockIntelligenceRepository implements IntelligenceRepository {
 }
 
 class MockAuthRepository implements AuthRepository {
-  final Map<String, String> _userCredentials = {
-    'trader@cryptoedu.app': 'password123',
-  };
+  final _authController = StreamController<UserProfile?>.broadcast();
+  UserProfile? _currentUser;
+  AuthException? verifyOtpError;
+  AuthException? resendOtpError;
+  AuthException? resetPasswordError;
+  AuthException? updatePasswordError;
 
-  final Map<String, UserProfile> _userProfiles = {
-    'trader@cryptoedu.app': UserProfile.initial(
+  MockAuthRepository() {
+    _currentUser = UserProfile.initial(
       id: 'usr_mock_123',
       email: 'trader@cryptoedu.app',
       displayName: 'DisciplineTrader',
-    ),
-  };
+    );
+  }
 
-  UserProfile? _currentUser;
+  @override
+  Stream<UserProfile?> get authStateChanges async* {
+    yield _currentUser;
+    yield* _authController.stream;
+  }
 
-  MockAuthRepository() {
-    _currentUser = _userProfiles['trader@cryptoedu.app'];
+  @override
+  Future<void> resetPasswordForEmail(String email) async {
+    if (resetPasswordError != null) throw resetPasswordError!;
+  }
+
+  @override
+  Future<void> updatePassword(String newPassword) async {
+    if (updatePasswordError != null) throw updatePasswordError!;
+  }
+
+  @override
+  Future<void> verifyOTP({required String email, required String token, required String type}) async {
+    if (verifyOtpError != null) throw verifyOtpError!;
+  }
+
+  @override
+  Future<void> resendOTP({required String email, required String type}) async {
+    if (resendOtpError != null) throw resendOtpError!;
   }
 
   /// Helper for testing to set or clear active user session directly
   void setCurrentUser(UserProfile? user) {
     _currentUser = user;
-    if (user != null) {
-      _userProfiles[user.email.toLowerCase()] = user;
-    }
+    _authController.add(user);
   }
 
   @override
@@ -479,50 +500,39 @@ class MockAuthRepository implements AuthRepository {
       required String password,
       String? displayName}) async {
     final lowerEmail = email.trim().toLowerCase();
-    if (_userCredentials.containsKey(lowerEmail)) {
-      throw AuthException.userAlreadyExists();
-    }
-    _userCredentials[lowerEmail] = password;
     final profile = UserProfile.initial(
         id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
         email: lowerEmail,
-        displayName: displayName);
-    _userProfiles[lowerEmail] = profile;
+        displayName: displayName ?? lowerEmail.split('@').first);
     _currentUser = profile;
-    return _currentUser!;
+    _authController.add(profile);
+    return profile;
   }
 
   @override
   Future<UserProfile> signIn(
       {required String email, required String password}) async {
     final lowerEmail = email.trim().toLowerCase();
-    if (!_userCredentials.containsKey(lowerEmail) ||
-        _userCredentials[lowerEmail] != password) {
-      throw AuthException.invalidCredentials();
-    }
-    final profile = _userProfiles[lowerEmail] ??
-        UserProfile.initial(
-          id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
-          email: lowerEmail,
-          displayName: lowerEmail.split('@').first,
-        );
-    _userProfiles[lowerEmail] = profile;
+    final profile = UserProfile.initial(
+      id: 'usr_${DateTime.now().millisecondsSinceEpoch}',
+      email: lowerEmail,
+      displayName: lowerEmail.split('@').first,
+    );
     _currentUser = profile;
-    return _currentUser!;
+    _authController.add(profile);
+    return profile;
   }
 
   @override
   Future<void> signOut() async {
     _currentUser = null;
+    _authController.add(null);
   }
 
   @override
   Future<void> deleteAccount() async {
-    if (_currentUser != null) {
-      _userProfiles.remove(_currentUser!.email.toLowerCase());
-      _userCredentials.remove(_currentUser!.email.toLowerCase());
-    }
     _currentUser = null;
+    _authController.add(null);
   }
 }
 

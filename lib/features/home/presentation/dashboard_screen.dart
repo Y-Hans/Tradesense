@@ -122,7 +122,7 @@ class DashboardScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: portfolioAsync.when(
                     data: (portfolio) => _PortfolioCard(portfolio: portfolio),
-                    loading: () => const _LoadingCard(),
+                    loading: () => _LoadingCard(),
                     error: (e, _) => _ErrorCard(error: e.toString()),
                   ),
                 ),

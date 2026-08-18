@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cryptoedu/core/config/app_preferences.dart';
 import 'package:cryptoedu/core/providers/mocks/mock_repositories.dart';
 import 'package:cryptoedu/features/auth/application/auth_notifier.dart';
 import 'package:cryptoedu/features/auth/domain/auth_state.dart';
@@ -10,25 +12,29 @@ void main() {
   late AuthNotifier authNotifier;
   late OnboardingNotifier onboardingNotifier;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await AppPreferences.resetForTesting(clear: false);
+    await AppPreferences.initialize();
     mockRepo = MockAuthRepository();
-    authNotifier = AuthNotifier(mockRepo);
+    authNotifier =
+        AuthNotifier(mockRepo, authStateChanges: const Stream.empty());
     onboardingNotifier = OnboardingNotifier();
   });
 
   group('Onboarding Flow & Persistence Unit Tests', () {
-    test('Default mock user is completed by default', () {
-      expect(onboardingNotifier.isCompleted('usr_mock_123'), isTrue);
+    test('Fresh install starts every user with incomplete onboarding', () {
+      expect(onboardingNotifier.isCompleted('usr_mock_123'), isFalse);
     });
 
     test('New user ID defaults to incomplete onboarding', () {
       expect(onboardingNotifier.isCompleted('usr_new_999'), isFalse);
     });
 
-    test('completeOnboarding marks user ID as completed', () {
+    test('completeOnboarding marks user ID as completed', () async {
       expect(onboardingNotifier.isCompleted('usr_new_999'), isFalse);
 
-      onboardingNotifier.completeOnboarding('usr_new_999');
+      await onboardingNotifier.completeOnboarding('usr_new_999');
 
       expect(onboardingNotifier.isCompleted('usr_new_999'), isTrue);
     });
@@ -44,7 +50,7 @@ void main() {
       expect(onboardingNotifier.isCompleted(user2.id), isFalse);
 
       // User 1 completes onboarding
-      onboardingNotifier.completeOnboarding(user1.id);
+      await onboardingNotifier.completeOnboarding(user1.id);
 
       expect(onboardingNotifier.isCompleted(user1.id), isTrue);
       expect(onboardingNotifier.isCompleted(user2.id), isFalse);
@@ -57,11 +63,11 @@ void main() {
         id: 'usr_mock_123',
         email: 'trader@cryptoedu.app',
       ));
-      await authNotifier.restoreSession();
+      await Future.delayed(Duration.zero);
 
       expect(authNotifier.state.status, equals(AuthStatus.authenticated));
       final userId = authNotifier.state.user?.id;
-      expect(onboardingNotifier.isCompleted(userId), isTrue);
+      expect(onboardingNotifier.isCompleted(userId), isFalse);
     });
 
     test(
@@ -74,7 +80,7 @@ void main() {
       final userId = authNotifier.state.user!.id;
       expect(onboardingNotifier.isCompleted(userId), isFalse);
 
-      onboardingNotifier.completeOnboarding(userId);
+      await onboardingNotifier.completeOnboarding(userId);
       expect(onboardingNotifier.isCompleted(userId), isTrue);
 
       await authNotifier.signOut();
@@ -82,6 +88,19 @@ void main() {
 
       // After logging back in, user 2 still has completed onboarding
       expect(onboardingNotifier.isCompleted(userId), isTrue);
+    });
+
+    test('Restart preserves onboarding completion without sharing users',
+        () async {
+      await onboardingNotifier.completeOnboarding('usr_restart_user');
+
+      final sharedPreferences = await SharedPreferences.getInstance();
+      await AppPreferences.resetForTesting(clear: false);
+      await AppPreferences.initialize(preferences: sharedPreferences);
+      final restartedNotifier = OnboardingNotifier();
+
+      expect(restartedNotifier.isCompleted('usr_restart_user'), isTrue);
+      expect(restartedNotifier.isCompleted('usr_other_user'), isFalse);
     });
   });
 }

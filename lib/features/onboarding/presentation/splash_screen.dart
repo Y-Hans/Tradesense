@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/app_providers.dart';
+import '../../../core/config/app_preferences.dart';
+import '../../auth/domain/auth_state.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -55,17 +57,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final currentUser = await authRepo.getCurrentUser();
+      final authState = ref.read(authStateProvider);
 
-      if (!mounted) return;
+      if (authState.isRestoring) {
+        await Future.delayed(const Duration(milliseconds: 400));
+        if (!mounted) return;
+      }
 
-      if (currentUser != null) {
+      final resolvedAuth = ref.read(authStateProvider);
+
+      if (resolvedAuth.isAuthenticated) {
         // User session exists — go directly to home
         context.go('/home');
+      } else if (resolvedAuth.status == AuthStatus.unverified) {
+        context.go('/verify-email', extra: resolvedAuth.user?.email ?? '');
       } else {
-        // No session — show welcome/login flow
-        context.go('/welcome');
+        // No session — check disclaimer flag
+        final hasAcceptedDisclaimer = AppPreferences.isInstallationDisclaimerAccepted;
+        if (hasAcceptedDisclaimer) {
+          context.go('/login');
+        } else {
+          context.go('/welcome');
+        }
       }
     } catch (_) {
       // On any error, show welcome screen

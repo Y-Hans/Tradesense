@@ -8,9 +8,13 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'core/config/app_config.dart';
+import 'core/config/secure_local_storage.dart';
+
+import 'core/config/app_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppPreferences.initialize();
 
   final config = AppConfig.resolved();
 
@@ -18,10 +22,28 @@ Future<void> main() async {
   // During local UI-only development (no dart-defines) the SDK is skipped
   // and providers that need it will surface a clear StateError if accessed.
   if (config.isSupabaseConfigured) {
+    // Sanitize the URL to remove accidental quotes, whitespace, or trailing slashes
+    // which can cause SocketException during host lookup.
+    String cleanUrl = config.supabaseUrl.trim().replaceAll('"', '').replaceAll("'", "");
+    if (cleanUrl.endsWith('/')) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - 1);
+    }
+    
+    // Temporary diagnostic logging (hostname only, no secrets)
+    try {
+      final uri = Uri.parse(cleanUrl);
+      debugPrint('[Supabase Diagnostic] Parsed Hostname: ${uri.host}');
+    } catch (e) {
+      debugPrint('[Supabase Diagnostic] Error parsing URL: $e');
+    }
+
     await Supabase.initialize(
-      url: config.supabaseUrl,
-      publishableKey: config.supabaseAnonKey,
+      url: cleanUrl,
+      publishableKey: config.supabaseAnonKey.trim().replaceAll('"', '').replaceAll("'", ""),
       debug: config.environment.isDebugLoggingEnabled,
+      authOptions: const FlutterAuthClientOptions(
+        localStorage: SecureLocalStorage(),
+      ),
     );
   }
 

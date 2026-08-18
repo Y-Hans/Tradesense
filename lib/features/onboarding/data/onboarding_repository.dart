@@ -1,7 +1,6 @@
 // ignore_for_file: unused_field
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-
 part 'onboarding_repository.g.dart';
 
 class OnboardingRepository {
@@ -15,13 +14,10 @@ class OnboardingRepository {
   String? get userName => _userName;
 
   Future<void> completeOnboarding() async {
-    // Simulate network/storage delay
-    await Future.delayed(const Duration(milliseconds: 500));
     _hasCompletedOnboarding = true;
   }
 
   Future<bool> checkOnboardingStatus() async {
-    await Future.delayed(const Duration(milliseconds: 300));
     return _hasCompletedOnboarding;
   }
 

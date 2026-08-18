@@ -7,10 +7,15 @@ import '../../shared/models/discipline_score.dart';
 import '../../shared/models/coach_request.dart';
 
 abstract class AuthRepository {
+  Stream<UserProfile?> get authStateChanges;
   Future<UserProfile?> getCurrentUser();
   Future<UserProfile> signUp(
       {required String email, required String password, String? displayName});
   Future<UserProfile> signIn({required String email, required String password});
+  Future<void> verifyOTP({required String email, required String token, required String type});
+  Future<void> resendOTP({required String email, required String type});
+  Future<void> resetPasswordForEmail(String email);
+  Future<void> updatePassword(String newPassword);
   Future<void> signOut();
   Future<void> deleteAccount();
 }

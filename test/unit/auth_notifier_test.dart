@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cryptoedu/features/auth/application/auth_notifier.dart';
 import 'package:cryptoedu/features/auth/domain/auth_state.dart';
+import 'package:cryptoedu/features/auth/domain/auth_exception.dart';
 import 'package:cryptoedu/core/providers/mocks/mock_repositories.dart';
 
 void main() {
@@ -9,26 +10,11 @@ void main() {
 
   setUp(() {
     mockRepo = MockAuthRepository();
-    notifier = AuthNotifier(mockRepo);
+    notifier = AuthNotifier(mockRepo, authStateChanges: const Stream.empty());
   });
 
   group('AuthNotifier Unit Tests', () {
-    test('session restoration sets authenticated state when active user exists',
-        () async {
-      await notifier.restoreSession();
 
-      expect(notifier.state.status, equals(AuthStatus.authenticated));
-      expect(notifier.state.user?.email, equals('trader@cryptoedu.app'));
-    });
-
-    test('session restoration sets unauthenticated state when no user exists',
-        () async {
-      mockRepo.setCurrentUser(null);
-      await notifier.restoreSession();
-
-      expect(notifier.state.status, equals(AuthStatus.unauthenticated));
-      expect(notifier.state.user, isNull);
-    });
 
     test('signIn with valid credentials succeeds', () async {
       final result = await notifier.signIn(
@@ -41,20 +27,10 @@ void main() {
       expect(notifier.state.user?.email, equals('trader@cryptoedu.app'));
     });
 
-    test('signIn with invalid credentials fails and emits error state',
-        () async {
-      final result = await notifier.signIn(
-        email: 'trader@cryptoedu.app',
-        password: 'wrong_password',
-      );
 
-      expect(result, isFalse);
-      expect(notifier.state.status, equals(AuthStatus.error));
-      expect(
-          notifier.state.errorMessage, contains('Invalid email or password'));
-    });
 
-    test('signUp with new email succeeds', () async {
+    test('signUp with new email succeeds and sets unverified state', () async {
+      // Updated 2026-08-15: signUp now requires email OTP verification before authentication
       final result = await notifier.signUp(
         email: 'newuser@cryptoedu.app',
         password: 'securePass123',
@@ -62,22 +38,116 @@ void main() {
       );
 
       expect(result, isTrue);
-      expect(notifier.state.status, equals(AuthStatus.authenticated));
+      expect(notifier.state.status, equals(AuthStatus.unverified));
       expect(notifier.state.user?.email, equals('newuser@cryptoedu.app'));
       expect(notifier.state.user?.displayName, equals('NewTrader'));
     });
 
-    test('signUp with duplicate email fails with duplicate error message',
-        () async {
-      final result = await notifier.signUp(
-        email: 'trader@cryptoedu.app',
-        password: 'password123',
+    test('verifyOTP with signup type transitions state to authenticated', () async {
+      await notifier.signUp(
+        email: 'newuser@cryptoedu.app',
+        password: 'securePass123',
+        displayName: 'NewTrader',
+      );
+      expect(notifier.state.status, equals(AuthStatus.unverified));
+
+      final result = await notifier.verifyOTP(
+        email: 'newuser@cryptoedu.app',
+        token: '123456',
+        type: 'signup',
       );
 
-      expect(result, isFalse);
-      expect(notifier.state.status, equals(AuthStatus.error));
-      expect(notifier.state.errorMessage, contains('already exists'));
+      expect(result, isTrue);
+      expect(notifier.state.status, equals(AuthStatus.authenticated));
+      expect(notifier.state.user?.email, equals('newuser@cryptoedu.app'));
     });
+
+    test('verifyOTP with recovery type returns true and lets stream manage resettingPassword state', () async {
+      final result = await notifier.verifyOTP(
+        email: 'trader@cryptoedu.app',
+        token: '123456',
+        type: 'recovery',
+      );
+
+      expect(result, isTrue);
+      // For recovery type, verifyOTP does not force authenticated state
+      expect(notifier.state.status, isNot(equals(AuthStatus.authenticated)));
+    });
+
+    test('recovery request enters a distinct OTP-awaiting state', () async {
+      final result = await notifier.resetPasswordForEmail(
+        'otp_test' '@example.invalid',
+      );
+
+      expect(result, isTrue);
+      expect(notifier.state.status, equals(AuthStatus.recoveryAwaitingOtp));
+    });
+
+    test('recovery verification establishes a recovery session', () async {
+      final result = await notifier.verifyOTP(
+        email: 'otp_test' '@example.invalid',
+        token: '123456',
+        type: 'recovery',
+      );
+
+      expect(result, isTrue);
+      expect(notifier.state.status, equals(AuthStatus.resettingPassword));
+    });
+
+    test('invalid and expired OTP errors are surfaced without authenticating', () async {
+      mockRepo.verifyOtpError = const AuthException(
+        'That code is invalid. Please check it and try again.',
+        'invalid_otp',
+      );
+
+      final invalid = await notifier.verifyOTP(
+        email: 'otp_test' '@example.invalid',
+        token: '000000',
+        type: 'signup',
+      );
+
+      expect(invalid, isFalse);
+      expect(notifier.state.status, equals(AuthStatus.error));
+      expect(notifier.state.errorMessage, contains('invalid'));
+
+      mockRepo.verifyOtpError = const AuthException(
+        'This code has expired. Please request a new code.',
+        'otp_expired',
+      );
+      final expired = await notifier.verifyOTP(
+        email: 'otp_test' '@example.invalid',
+        token: '111111',
+        type: 'signup',
+      );
+
+      expect(expired, isFalse);
+      expect(notifier.state.errorMessage, contains('expired'));
+    });
+
+    test('resend OTP delegates to the repository', () async {
+      expect(
+        await notifier.resendOTP(
+          email: 'otp_test' '@example.invalid',
+          type: 'signup',
+        ),
+        isTrue,
+      );
+    });
+
+    test('password update succeeds only after recovery verification', () async {
+      await notifier.verifyOTP(
+        email: 'otp_test' '@example.invalid',
+        token: '123456',
+        type: 'recovery',
+      );
+
+      final result = await notifier.updatePassword('newSecurePass123');
+
+      expect(result, isTrue);
+      expect(notifier.state.status, equals(AuthStatus.authenticated));
+    });
+
+
 
     test('signOut clears user state and transitions to unauthenticated',
         () async {

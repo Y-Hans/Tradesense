@@ -84,6 +84,18 @@ class DioClientFactory {
 
     return dio;
   }
+
+  /// Keyless current-rate endpoint used for fiat USD/INR conversion.
+  static Dio forUsdFx() {
+    return Dio(BaseOptions(
+      baseUrl: 'https://api.frankfurter.app',
+      connectTimeout: _connectTimeout,
+      receiveTimeout: _receiveTimeout,
+      sendTimeout: _sendTimeout,
+      responseType: ResponseType.json,
+      headers: const {'Accept': 'application/json'},
+    ));
+  }
 }
 
 // -----------------------------------------------------------------------------

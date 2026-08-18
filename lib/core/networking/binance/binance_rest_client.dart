@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../../shared/models/crypto_asset.dart';
 import '../../../shared/models/market_ticker.dart';
+import '../../pricing/market_pricing.dart';
 
 /// Binance public REST API client.
 ///
@@ -12,9 +13,8 @@ import '../../../shared/models/market_ticker.dart';
 /// live Binance production cluster at `https://api.binance.com`.
 ///
 /// ## Currency conversion
-/// Binance quotes prices in USDT.  This client converts to INR using the
-/// [usdToInrRate] parameter which callers must supply (e.g. sourced from a
-/// separate forex endpoint or [CoinGeckoClient]).
+/// Pair selection is discovered from Binance exchange metadata. Direct INR
+/// pairs are preferred; non-INR pairs require a current injected FX rate.
 ///
 /// ## Usage
 /// Obtain an instance through the Riverpod provider rather than constructing
@@ -22,26 +22,20 @@ import '../../../shared/models/market_ticker.dart';
 class BinanceRestClient {
   BinanceRestClient({
     required Dio dio,
-    required double Function() usdToInrRate,
+    required double? Function(String quoteCurrency) fxRateForQuote,
   })  : _dio = dio,
-        _usdToInrRate = usdToInrRate;
+        _fxRateForQuote = fxRateForQuote;
 
   final Dio _dio;
-  final double Function() _usdToInrRate;
+  final double? Function(String quoteCurrency) _fxRateForQuote;
 
   // ---------------------------------------------------------------------------
-  // Supported symbols — Binance uses USDT pairs
+  // Supported quotes, ordered by product policy.
   // ---------------------------------------------------------------------------
 
   /// Maps our canonical symbol (e.g. `'BTC'`) to its Binance trading pair
   /// (e.g. `'BTCUSDT'`).
-  static const Map<String, String> _pairMap = {
-    'BTC': 'BTCUSDT',
-    'ETH': 'ETHUSDT',
-    'SOL': 'SOLUSDT',
-    'XRP': 'XRPUSDT',
-    'BNB': 'BNBUSDT',
-  };
+  static const List<String> _quotePriority = ['INR', 'USDT', 'USDC', 'USD'];
 
   // ---------------------------------------------------------------------------
   // Public API
@@ -49,18 +43,18 @@ class BinanceRestClient {
 
   /// Returns a [MarketTicker] for [symbol] (e.g. `'BTC'`).
   ///
-  /// Fetches 24-hour statistics from Binance and converts the USDT price to
-  /// INR using the stored [_usdToInrRate].
+  /// Fetches 24-hour statistics from a discovered pair and converts to INR
+  /// only when the quote is not already INR.
   ///
   /// Throws [ArgumentError] if [symbol] is not in the supported set.
   /// Throws [DioException] on network failure (after retries).
   Future<MarketTicker> getTicker(String symbol) async {
-    final pair = _requirePair(symbol);
+    final pair = await resolvePair(symbol);
     final response = await _dio.get<Map<String, dynamic>>(
       '/api/v3/ticker/24hr',
-      queryParameters: {'symbol': pair},
+      queryParameters: {'symbol': pair.exchangeSymbol},
     );
-    return _parseTicker(symbol, response.data!);
+    return _parseTicker(symbol.toUpperCase(), pair, response.data!);
   }
 
   /// Returns 24-hour statistics for all supported symbols in one batch call.
@@ -68,7 +62,9 @@ class BinanceRestClient {
   /// Uses the array-form of `/api/v3/ticker/24hr` so that a single round-trip
   /// fetches all pairs.
   Future<Map<String, MarketTicker>> getAllTickers() async {
-    final pairs = _pairMap.values.toList();
+    final pairsByAsset = await resolveAllPairs();
+    final pairs =
+        pairsByAsset.values.map((pair) => pair.exchangeSymbol).toList();
     final symbols = '[${pairs.map((p) => '"$p"').join(',')}]';
 
     final response = await _dio.get<List<dynamic>>(
@@ -80,12 +76,18 @@ class BinanceRestClient {
     for (final item in response.data!) {
       final raw = item as Map<String, dynamic>;
       final pair = raw['symbol'] as String;
-      final canonical = _pairMap.entries
-          .firstWhere((e) => e.value == pair,
-              orElse: () => const MapEntry('', ''))
-          .key;
-      if (canonical.isNotEmpty) {
-        result[canonical] = _parseTicker(canonical, raw);
+      final resolved = pairsByAsset.values.firstWhere(
+        (entry) => entry.exchangeSymbol == pair,
+        orElse: () => const MarketPair(
+            assetSymbol: '',
+            exchangeSymbol: '',
+            baseCurrency: '',
+            quoteCurrency: QuoteCurrency.inr,
+            source: 'Binance'),
+      );
+      if (resolved.assetSymbol.isNotEmpty) {
+        result[resolved.assetSymbol] =
+            _parseTicker(resolved.assetSymbol, resolved, raw);
       }
     }
     return result;
@@ -100,11 +102,11 @@ class BinanceRestClient {
     String interval = '1h',
     int limit = 100,
   }) async {
-    final pair = _requirePair(symbol);
+    final pair = await resolvePair(symbol);
     final response = await _dio.get<List<dynamic>>(
       '/api/v3/klines',
       queryParameters: {
-        'symbol': pair,
+        'symbol': pair.exchangeSymbol,
         'interval': interval,
         'limit': limit,
       },
@@ -116,10 +118,10 @@ class BinanceRestClient {
       // [0] open time ms, [1] open, [2] high, [3] low, [4] close, [5] volume
       return MarketCandle(
         timestamp: DateTime.fromMillisecondsSinceEpoch(kline[0] as int),
-        open: double.parse(kline[1] as String) * _usdToInrRate(),
-        high: double.parse(kline[2] as String) * _usdToInrRate(),
-        low: double.parse(kline[3] as String) * _usdToInrRate(),
-        close: double.parse(kline[4] as String) * _usdToInrRate(),
+        open: _toInr(double.parse(kline[1] as String), pair),
+        high: _toInr(double.parse(kline[2] as String), pair),
+        low: _toInr(double.parse(kline[3] as String), pair),
+        close: _toInr(double.parse(kline[4] as String), pair),
         volume: double.parse(kline[5] as String),
       );
     }).toList();
@@ -146,6 +148,11 @@ class BinanceRestClient {
         iconUrl: _iconUrl(symbol),
         currentPriceInr: priceInr,
         change24hPercent: change,
+        exchangeSymbol: ticker?.exchangeSymbol,
+        quoteCurrency: ticker?.quoteCurrency,
+        source: ticker?.source,
+        priceTimestamp: ticker?.timestamp,
+        freshness: ticker?.freshness ?? MarketFreshness.error,
       );
     }).toList();
   }
@@ -178,20 +185,59 @@ class BinanceRestClient {
     'BNB': '825/bnb',
   };
 
-  String _requirePair(String symbol) {
-    final pair = _pairMap[symbol.toUpperCase()];
-    if (pair == null) {
-      throw ArgumentError(
-          'Symbol "$symbol" is not in the supported Binance pair map.');
-    }
+  Future<MarketPair> resolvePair(String symbol) async {
+    final pair = (await resolveAllPairs())[symbol.toUpperCase()];
+    if (pair == null) throw NoSupportedMarketPair(symbol.toUpperCase());
     return pair;
   }
 
-  MarketTicker _parseTicker(String symbol, Map<String, dynamic> raw) {
-    final rate = _usdToInrRate();
-    final lastPrice = double.parse(raw['lastPrice'] as String) * rate;
-    final high = double.parse(raw['highPrice'] as String) * rate;
-    final low = double.parse(raw['lowPrice'] as String) * rate;
+  Future<Map<String, MarketPair>> resolveAllPairs() async {
+    final response =
+        await _dio.get<Map<String, dynamic>>('/api/v3/exchangeInfo');
+    final rawSymbols = response.data?['symbols'];
+    if (rawSymbols is! List)
+      throw const NoSupportedMarketPair('exchange metadata');
+    final result = <String, MarketPair>{};
+    for (final item in rawSymbols) {
+      if (item is! Map<String, dynamic> || item['status'] != 'TRADING')
+        continue;
+      final base = item['baseAsset'] as String?;
+      final quote = item['quoteAsset'] as String?;
+      final exchangeSymbol = item['symbol'] as String?;
+      if (base == null ||
+          quote == null ||
+          exchangeSymbol == null ||
+          !_quotePriority.contains(quote)) continue;
+      final candidate = MarketPair(
+        assetSymbol: base,
+        exchangeSymbol: exchangeSymbol,
+        baseCurrency: base,
+        quoteCurrency: QuoteCurrency.values.firstWhere(
+            (currency) => currency.code == quote,
+            orElse: () => QuoteCurrency.usdt),
+        source: 'Binance',
+      );
+      final existing = result[base];
+      result[base] =
+          selectPreferredPair([if (existing != null) existing, candidate]) ??
+              candidate;
+    }
+    return result;
+  }
+
+  double _toInr(double nativePrice, MarketPair pair) {
+    if (pair.isInr) return nativePrice;
+    final rate = _fxRateForQuote(pair.quoteCurrency.code);
+    if (rate == null || !rate.isFinite || rate <= 0)
+      throw ExchangeRateUnavailable(pair.quoteCurrency.code, 'INR');
+    return nativePrice * rate;
+  }
+
+  MarketTicker _parseTicker(
+      String symbol, MarketPair pair, Map<String, dynamic> raw) {
+    final lastPrice = _toInr(double.parse(raw['lastPrice'] as String), pair);
+    final high = _toInr(double.parse(raw['highPrice'] as String), pair);
+    final low = _toInr(double.parse(raw['lowPrice'] as String), pair);
     final volume = double.parse(raw['volume'] as String);
     final changePercent =
         double.tryParse(raw['priceChangePercent'] as String) ?? 0.0;
@@ -205,6 +251,9 @@ class BinanceRestClient {
       low24h: low,
       volume24h: volume,
       timestamp: DateTime.now(),
+      exchangeSymbol: pair.exchangeSymbol,
+      quoteCurrency: pair.quoteCurrency.code,
+      source: pair.source,
     );
   }
 }

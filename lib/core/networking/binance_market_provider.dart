@@ -5,6 +5,7 @@ import '../../shared/models/market_ticker.dart';
 import 'binance/binance_rest_client.dart';
 import 'binance/binance_ws_client.dart';
 import 'coingecko/coingecko_client.dart';
+import '../pricing/market_pricing.dart';
 
 /// Live [MarketProvider] implementation backed by Binance REST + WebSocket
 /// with CoinGecko as a fallback.
@@ -29,18 +30,24 @@ class BinanceMarketProvider implements MarketProvider {
     required BinanceRestClient binanceRest,
     required BinanceWebSocketClient binanceWs,
     required CoinGeckoClient coinGecko,
-    required double initialUsdToInrRate,
+    required FxProvider fxProvider,
+    double? initialUsdToInrRate,
   })  : _binanceRest = binanceRest,
         _binanceWs = binanceWs,
         _coinGecko = coinGecko,
-        _usdToInrRate = initialUsdToInrRate;
+        _fxProvider = fxProvider,
+        _fxRates = {
+          if (initialUsdToInrRate != null) 'USDT': initialUsdToInrRate,
+        };
 
   final BinanceRestClient _binanceRest;
   final BinanceWebSocketClient _binanceWs;
   final CoinGeckoClient _coinGecko;
+  final FxProvider _fxProvider;
 
-  double _usdToInrRate;
-  double get usdToInrRate => _usdToInrRate;
+  final Map<String, double> _fxRates;
+  double? get usdToInrRate => _fxRates['USDT'];
+  double? fxRateForQuote(String quoteCurrency) => _fxRates[quoteCurrency];
   Timer? _rateRefreshTimer;
 
   static const Duration _rateRefreshInterval = Duration(minutes: 15);
@@ -54,13 +61,26 @@ class BinanceMarketProvider implements MarketProvider {
   /// Call this once after construction.  The provider factory in
   /// `market_api_provider.dart` handles this.
   void startRateRefresh() {
+    _refreshRate();
     _rateRefreshTimer = Timer.periodic(_rateRefreshInterval, (_) async {
-      try {
-        _usdToInrRate = await _coinGecko.fetchUsdToInrRate();
-      } catch (_) {
-        // Retain the last known rate on failure; do not crash.
-      }
+      await _refreshRate();
     });
+  }
+
+  Future<void> _refreshRate() async {
+    try {
+      for (final quote in const ['USD', 'USDT', 'USDC']) {
+        try {
+          _fxRates[quote] =
+              (await _fxProvider.getExchangeRate(quote, 'INR')).rate;
+        } catch (_) {
+          // A failed quote remains unavailable; no other quote's rate is
+          // substituted.
+        }
+      }
+    } catch (_) {
+      // No guessed value is installed. Non-INR prices remain unavailable.
+    }
   }
 
   /// Cancels the rate refresh timer and disposes the WebSocket client.
@@ -119,8 +139,19 @@ class BinanceMarketProvider implements MarketProvider {
   }
 
   @override
-  Stream<MarketTicker> streamTicker(String symbol) {
-    return _binanceWs.streamTicker(symbol);
+  Stream<MarketTicker> streamTicker(String symbol) async* {
+    // REST polling uses the same discovered pair and FX policy as one-shot
+    // prices. The legacy fixed-USDT websocket path cannot represent direct
+    // INR priority, so it is not used as an authority.
+    while (true) {
+      try {
+        yield await getTicker(symbol);
+      } catch (error) {
+        yield* Stream<MarketTicker>.error(error);
+        return;
+      }
+      await Future<void>.delayed(const Duration(seconds: 5));
+    }
   }
 
   // ---------------------------------------------------------------------------

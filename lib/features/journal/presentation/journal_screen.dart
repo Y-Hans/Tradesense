@@ -61,7 +61,11 @@ class JournalScreen extends ConsumerWidget {
         separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
         itemBuilder: (context, index) {
           final trade = state.trades[index];
+          final isBuy = trade.type == 'BUY';
           final isPositive = trade.pnl >= 0;
+          final pnlDisplay = isBuy
+              ? '—'
+              : '${isPositive ? '+' : '-'}₹${trade.pnl.abs().toStringAsFixed(2)}';
           
           return AppCard(
             hasBorder: true,
@@ -92,9 +96,11 @@ class JournalScreen extends ConsumerWidget {
                       ],
                     ),
                     Text(
-                      '${isPositive ? '+' : ''}\$${trade.pnl.abs().toStringAsFixed(2)}',
+                      pnlDisplay,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: isPositive ? AppColors.successGreen : AppColors.errorRed,
+                            color: isBuy
+                                ? (Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey)
+                                : (isPositive ? AppColors.successGreen : AppColors.errorRed),
                             fontWeight: FontWeight.bold,
                           ),
                     ),

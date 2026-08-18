@@ -32,6 +32,25 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
       body: FutureBuilder(
         future: marketRepo.getTicker(widget.symbol),
         builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: AppColors.loss, size: 48),
+                  const SizedBox(height: 16),
+                  Text('Failed to load market data', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Text(snapshot.error.toString(), textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => setState(() {}),
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
           if (!snapshot.hasData) {
             return const Center(child: CryptoLoadingIndicator());
           }
@@ -145,23 +164,34 @@ class _TradeScreenState extends ConsumerState<TradeScreen> {
                     ),
                     onPressed: () async {
                       final tradingRepo = ref.read(tradingRepositoryProvider);
-                      final trade = isBuy
-                          ? await tradingRepo.executeMarketBuy(
-                              symbol: widget.symbol,
-                              quantity: quantity,
-                              executionPriceInr: ticker.priceInr,
-                              stopLossPriceInr:
-                                  useStopLoss ? stopLossPrice : null,
-                            )
-                          : await tradingRepo.executeMarketSell(
-                              symbol: widget.symbol,
-                              quantity: quantity,
-                              executionPriceInr: ticker.priceInr,
-                            );
+                      try {
+                        final trade = isBuy
+                            ? await tradingRepo.executeMarketBuy(
+                                symbol: widget.symbol,
+                                quantity: quantity,
+                                executionPriceInr: ticker.priceInr,
+                                stopLossPriceInr:
+                                    useStopLoss ? stopLossPrice : null,
+                              )
+                            : await tradingRepo.executeMarketSell(
+                                symbol: widget.symbol,
+                                quantity: quantity,
+                                executionPriceInr: ticker.priceInr,
+                              );
 
-                      ref.invalidate(portfolioProvider);
-                      if (context.mounted) {
-                        context.push('/coach-result/${trade.id}');
+                        ref.invalidate(portfolioProvider);
+                        if (context.mounted) {
+                          context.push('/coach-result/${trade.id}');
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(e.toString().replaceAll('Exception: ', '')),
+                              backgroundColor: AppColors.loss,
+                            ),
+                          );
+                        }
                       }
                     },
                     child: Text('EXECUTE ${isBuy ? "BUY" : "SELL"} ORDER',

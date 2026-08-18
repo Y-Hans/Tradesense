@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cryptoedu/shared/widgets/crypto_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +16,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _nameController = TextEditingController();
+  bool _obscurePassword = true;
 
   final _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
 
@@ -39,7 +40,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     if (mounted) {
       if (success) {
-        context.go('/home');
+        context.go('/verify-email', extra: _emailController.text.trim());
       } else {
         final errorMsg = ref.read(authStateProvider).errorMessage ??
             'Registration failed. Please try again.';
@@ -90,8 +91,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _passController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () {
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your password.';

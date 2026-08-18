@@ -14,6 +14,15 @@ enum AuthStatus {
   /// Valid authenticated user session.
   authenticated,
 
+  /// User is registered but not yet verified.
+  unverified,
+
+  /// A password-recovery OTP has been requested and is awaiting verification.
+  recoveryAwaitingOtp,
+
+  /// A recovery OTP was verified and a recovery session is ready for update.
+  resettingPassword,
+
   /// Authentication failure state.
   error,
 }
@@ -41,6 +50,12 @@ class AuthState {
 
   factory AuthState.authenticated(UserProfile user) =>
       AuthState(status: AuthStatus.authenticated, user: user);
+
+  factory AuthState.unverified({UserProfile? user, String? errorMessage}) =>
+      AuthState(status: AuthStatus.unverified, user: user, errorMessage: errorMessage);
+
+  factory AuthState.resettingPassword() =>
+      const AuthState(status: AuthStatus.resettingPassword);
 
   factory AuthState.error(String message, {UserProfile? user}) =>
       AuthState(status: AuthStatus.error, errorMessage: message, user: user);

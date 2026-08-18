@@ -39,7 +39,19 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return AppScaffold(
       showBackButton: false,
       title: 'AI Coach',
-      trailing: const AIAvatar(size: 32),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.add_comment),
+            onPressed: () {
+              ref.read(coachControllerProvider.notifier).clearHistory();
+            },
+          ),
+          const SizedBox(width: 8),
+          const AIAvatar(size: 32),
+        ],
+      ),
       body: asyncState.when(
         data: (state) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
@@ -61,7 +73,35 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
     return Column(
       children: [
         Expanded(
-          child: ListView.builder(
+          child: state.messages.isEmpty && !state.isTyping
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.forum_outlined, size: 48, color: Colors.grey),
+                        const SizedBox(height: AppSpacing.md),
+                        const Text(
+                          'Ask me anything about trading!',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            _buildExampleChip('How do I manage risk?'),
+                            _buildExampleChip('What is a stop loss?'),
+                            _buildExampleChip('Explain leverage.'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
             controller: _scrollController,
             padding: const EdgeInsets.all(AppSpacing.lg),
             itemCount: state.messages.length + (state.isTyping ? 1 : 0),
@@ -83,8 +123,45 @@ class _CoachScreenState extends ConsumerState<CoachScreen> {
             },
           ),
         ),
+        if (state.error != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+            margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: AppColors.errorRed.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline, color: AppColors.errorRed, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    state.error!,
+                    style: const TextStyle(color: AppColors.errorRed, fontSize: 13),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    ref.read(coachControllerProvider.notifier).retryLastMessage();
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         _buildInputArea(context, state),
       ],
+    );
+  }
+
+  Widget _buildExampleChip(String text) {
+    return ActionChip(
+      label: Text(text),
+      onPressed: () {
+        ref.read(coachControllerProvider.notifier).sendMessage(text);
+      },
     );
   }
 

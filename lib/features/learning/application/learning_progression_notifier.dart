@@ -7,6 +7,7 @@ import '../domain/level.dart';
 import '../domain/mission.dart';
 import '../domain/player_profile_summary.dart';
 import '../domain/xp_state.dart';
+import '../../../core/providers/supabase_provider.dart';
 import 'level_engine.dart';
 import 'mission_engine.dart';
 
@@ -135,145 +136,45 @@ class LearningProgressionState {
 
 class LearningProgressionNotifier
     extends StateNotifier<LearningProgressionState> {
-  LearningProgressionNotifier() : super(LearningProgressionState.initial());
+  final Ref ref;
+  
+  LearningProgressionNotifier(this.ref) : super(LearningProgressionState.initial()) {
+    refresh();
+  }
 
-  /// Processes an incoming [LearningEvent] through mission, XP, achievement, and streak logic.
-  /// Guarantees idempotent execution, duplicate prevention, and non-financial reward policies.
-  ProgressionEventResult processEvent(LearningEvent event) {
-    final previousXp = state.totalXp;
-    final processResult = MissionEngine.processEvent(
-      event: event,
-      missions: state.missions,
-      xpState: state.xpState,
-    );
+  Future<void> refresh() async {
+    try {
+      // In a real app, we'd import the repository properly. 
+      // Using Supabase directly here for simplicity since it's a mirror.
+      final supabase = ref.read(supabaseClientProvider);
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
 
-    final isDuplicate =
-        processResult.isIdempotentSkip || processResult.isDuplicateAttempt;
+      final profileResp = await supabase
+          .from('profiles')
+          .select('total_xp')
+          .eq('id', user.id)
+          .maybeSingle();
+      
+      final totalXp = profileResp != null ? (profileResp['total_xp'] as int? ?? 0) : 0;
 
-    if (processResult.isIdempotentSkip) {
-      final result = ProgressionEventResult(
-        success: false,
-        xpGained: 0,
-        newlyCompletedMissions: const [],
-        didLevelUp: false,
-        newLevel: state.currentLevel,
-        isDuplicate: true,
-        message: 'Event "${event.eventId}" was already processed.',
+      final missionsResp = await supabase
+          .from('mission_progress')
+          .select('mission_id')
+          .eq('user_id', user.id);
+          
+      final completedMissionIds = (missionsResp as List<dynamic>)
+          .map((e) => e['mission_id'] as String)
+          .toSet();
+
+      restoreState(
+        totalXp: totalXp,
+        completedMissionIds: completedMissionIds,
+        processedEventIds: {}, // no longer used for mutation
       );
-      state = state.copyWith(lastResult: result);
-      return result;
+    } catch (e) {
+      // Keep existing state on error
     }
-
-    final newXp = processResult.updatedXpState.totalXp;
-    final levelEval = LevelEngine.evaluateLevel(
-      previousXp: previousXp,
-      currentXp: newXp,
-    );
-
-    // Update daily streak on activity
-    final updatedStreak = state.streak.registerActivity(
-      activityDate: event.timestamp,
-    );
-
-    // Collect processed event types to evaluate achievement unlocks
-    final processedTypes = state.missions
-        .where((m) =>
-            m.isCompleted ||
-            processResult.updatedXpState.completedMissionIds.contains(m.id))
-        .map((m) => m.eventType)
-        .toSet();
-    processedTypes.add(event.type);
-
-    // Check achievement unlocks
-    final achievementEval = Achievement.checkUnlocks(
-      currentAchievements: state.achievements,
-      totalXp: newXp,
-      processedEventTypes: processedTypes,
-      timestamp: event.timestamp,
-      streakDays: updatedStreak.currentStreak,
-    );
-
-    final updatedTitle = LearningTitle.fromXp(newXp);
-    final xpGained = processResult.totalXpGained;
-
-    final updatedSummary = PlayerProfileSummary.calculate(
-      totalXp: newXp,
-      currentLevel: levelEval.currentLevel,
-      currentTitle: updatedTitle,
-      streak: updatedStreak,
-      achievements: achievementEval.achievements,
-      missions: processResult.updatedMissions,
-      completedMissionIds: processResult.updatedXpState.completedMissionIds,
-    );
-
-    final result = ProgressionEventResult(
-      success: xpGained > 0,
-      xpGained: xpGained,
-      newlyCompletedMissions: processResult.newlyCompletedMissions,
-      didLevelUp: levelEval.didLevelUp,
-      newLevel: levelEval.currentLevel,
-      isDuplicate: isDuplicate,
-      message: xpGained > 0
-          ? 'Gained +$xpGained XP!'
-          : (isDuplicate
-              ? 'Reward already claimed.'
-              : 'Event processed with 0 new rewards.'),
-    );
-
-    state = LearningProgressionState(
-      xpState: processResult.updatedXpState,
-      currentLevel: levelEval.currentLevel,
-      currentTitle: updatedTitle,
-      progressToNextLevel: levelEval.progressToNext,
-      xpToNextLevel: levelEval.xpToNext,
-      missions: processResult.updatedMissions,
-      achievements: achievementEval.achievements,
-      streak: updatedStreak,
-      playerProfileSummary: updatedSummary,
-      showXpGainAnimation: xpGained > 0,
-      recentXpGained: xpGained,
-      showLevelUpAnimation: levelEval.didLevelUp,
-      unlockedAchievements: achievementEval.newlyUnlocked,
-      lastResult: result,
-    );
-
-    return result;
-  }
-
-  /// Dismisses the XP gain animation trigger state.
-  void dismissXpGainAnimation() {
-    state = state.copyWith(
-      showXpGainAnimation: false,
-      recentXpGained: 0,
-    );
-  }
-
-  /// Dismisses the Level-Up celebration animation trigger state.
-  void dismissLevelUpAnimation() {
-    state = state.copyWith(
-      showLevelUpAnimation: false,
-      unlockedAchievements: const [],
-    );
-  }
-
-  /// Claims a specific mission by ID manually.
-  ProgressionEventResult claimMission(String missionId) {
-    final mission = state.missions.firstWhere(
-      (m) => m.id == missionId,
-      orElse: () => throw ArgumentError('Mission "$missionId" not found.'),
-    );
-
-    final event = LearningEvent(
-      type: mission.eventType,
-      eventId: 'claim_${missionId}_${DateTime.now().microsecondsSinceEpoch}',
-    );
-
-    return processEvent(event);
-  }
-
-  /// Resets state back to initial (useful on logout or user switch).
-  void reset() {
-    state = LearningProgressionState.initial();
   }
 
   /// Restores learning progression state from persistent storage or snapshot.
@@ -347,5 +248,5 @@ class LearningProgressionNotifier
 /// Global Riverpod Provider for Learning Progression StateNotifier.
 final learningProgressionNotifierProvider = StateNotifierProvider<
     LearningProgressionNotifier, LearningProgressionState>((ref) {
-  return LearningProgressionNotifier();
+  return LearningProgressionNotifier(ref);
 });

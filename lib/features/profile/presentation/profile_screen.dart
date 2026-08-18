@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'profile_controller.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_theme.dart';
 import '../../../core/providers/app_providers.dart';
 import '../../../core/utils/financial_math.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../domain/educational_disclosures.dart';
+import '../../learning/application/learning_progression_notifier.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -109,25 +111,29 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(currentUserProvider);
+    final profileAsync = ref.watch(profileControllerProvider);
+    final user = ref.watch(currentUserProvider).valueOrNull;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Account & Profile'),
         elevation: 0,
       ),
-      body: userAsync.when(
-        data: (user) {
-          final displayName = user?.displayName ?? 'Discipline Trader';
-          final email = user?.email ?? 'trader@cryptoedu.app';
+      body: profileAsync.when(
+        data: (profileState) {
+          final profile = profileState.profile;
+          final displayName = user?.displayName ?? profile?.name ?? 'Discipline Trader';
+          final email = user?.email ?? profile?.email ?? 'trader@cryptoedu.app';
           final balance = user?.virtualBalanceInr ?? 100000.0;
-          final joinedText = user != null
-              ? 'Joined: ${user.createdAt.day}/${user.createdAt.month}/${user.createdAt.year}'
+          final joinedDate = user?.createdAt ?? profile?.joinDate;
+          final joinedText = joinedDate != null
+              ? 'Joined: ${joinedDate.day}/${joinedDate.month}/${joinedDate.year}'
               : 'Status: Authenticated';
 
-          // Level Title
-          const String levelTitle = 'Risk-Aware Trader';
-          const int xp = 250;
+          // Level Title & XP from Learning Progression
+          final progressionState = ref.watch(learningProgressionNotifierProvider);
+          final String levelTitle = progressionState.currentLevel.title;
+          final int xp = progressionState.totalXp;
 
           return SingleChildScrollView(
             padding: EdgeInsets.all(16.0),
@@ -244,9 +250,9 @@ class ProfileScreen extends ConsumerWidget {
                             color: AppColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
+                          child: Text(
                             '$xp XP',
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
                             ),
@@ -372,7 +378,7 @@ class ProfileScreen extends ConsumerWidget {
                         const Icon(Icons.star, color: AppColors.discipline),
                     title: const Text('Subscription Status'),
                     trailing: Text(
-                      user?.isPremium == true ? 'PREMIUM' : 'FREE',
+                      user?.isPremium == true || profile?.accountType == 'premium' ? 'PREMIUM' : 'FREE',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     onTap: () => context.push('/paywall'),
@@ -451,7 +457,34 @@ class ProfileScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Text('Error: $err'),
+        error: (err, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: AppColors.loss),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load profile',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  err.toString(),
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => ref.invalidate(profileControllerProvider),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

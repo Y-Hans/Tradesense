@@ -18,6 +18,7 @@ class Trade {
   final DateTime timestamp;
   final int disciplineScoreAtTrade;
   final int riskScoreAtTrade;
+  final double? realizedPnl;
 
   const Trade({
     required this.id,
@@ -32,6 +33,7 @@ class Trade {
     required this.timestamp,
     required this.disciplineScoreAtTrade,
     required this.riskScoreAtTrade,
+    this.realizedPnl,
   });
 
   Map<String, dynamic> toJson() => {
@@ -47,6 +49,7 @@ class Trade {
         'timestamp': timestamp.toIso8601String(),
         'discipline_score_at_trade': disciplineScoreAtTrade,
         'risk_score_at_trade': riskScoreAtTrade,
+        'realized_pnl': realizedPnl,
       };
 
   factory Trade.fromJson(Map<String, dynamic> json) => Trade(
@@ -65,5 +68,8 @@ class Trade {
         disciplineScoreAtTrade:
             (json['discipline_score_at_trade'] as num).toInt(),
         riskScoreAtTrade: (json['risk_score_at_trade'] as num).toInt(),
+        realizedPnl: json['realized_pnl'] != null
+            ? (json['realized_pnl'] as num).toDouble()
+            : null,
       );
 }
